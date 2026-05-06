@@ -2293,22 +2293,50 @@ async function processSLPayment() {
   btn.disabled = true;
   try {
     if (!window.stripeInst || !_slStripeCard) {
-      // No card entered yet - simulate for testing
-      closeSLPayModal();
-      confirmSLReservation();
+      btn.textContent = 'Try Again';
+      btn.disabled = false;
+      showToast('Please enter your card details.');
       return;
     }
-    var result = await window.stripeInst.createPaymentMethod({ type: 'card', card: _slStripeCard });
-    if (result.error) {
+    var auth = window._fbAuth;
+    var email = (auth && auth.currentUser) ? auth.currentUser.email : '';
+    var plan = window._userPlan || 'ting';
+
+    var pmResult = await window.stripeInst.createPaymentMethod({ type: 'card', card: _slStripeCard });
+    if (pmResult.error) {
       var err = document.getElementById('sl-stripe-err');
-      if (err) err.textContent = result.error.message;
+      if (err) err.textContent = pmResult.error.message;
       btn.textContent = 'Try Again';
       btn.disabled = false;
       return;
     }
+
+    // Call Netlify Function
+    var response = await fetch('/.netlify/functions/create-speedlink-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentMethodId: pmResult.paymentMethod.id,
+        plan: plan,
+        email: email
+      })
+    });
+
+    var data = await response.json();
+
+    if(data.error){
+      var err2 = document.getElementById('sl-stripe-err');
+      if (err2) err2.textContent = data.error;
+      btn.textContent = 'Try Again';
+      btn.disabled = false;
+      return;
+    }
+
     closeSLPayModal();
     confirmSLReservation();
+
   } catch(e) {
+    console.log('SL payment error:', e);
     btn.textContent = 'Try Again';
     btn.disabled = false;
     showToast('Payment failed. Please try again.');
@@ -2390,126 +2418,95 @@ async function startCheckout(plan){
 }
 function closePayModal(){document.getElementById('pay-modal').classList.remove('show');}
 async function processPayment(){
-  const nm=document.getElementById('pay-nm').value.trim(),em=document.getElementById('pay-em').value.trim(),addr=document.getElementById('pay-addr').value.trim();
-  if(!nm){document.getElementById('stripe-err').textContent='Please enter the name on your card.';return;}
-  if(!em){document.getElementById('stripe-err').textContent='Please enter your email.';return;}
-  if(!addr){document.getElementById('stripe-err').textContent='Please enter your billing address.';return;}
-  const btn=document.getElementById('pay-btn');btn.textContent='Processing...';btn.disabled=true;
-  try{const {paymentMethod,error}=await stripeInst.createPaymentMethod({type:'card',card:stripeCard,billing_details:{name:nm,email:em,address:{line1:addr,city:document.getElementById('pay-city').value.trim(),postal_code:document.getElementById('pay-post').value.trim(),country:document.getElementById('pay-ctry').value}}});if(error){document.getElementById('stripe-err').textContent=error.message;btn.textContent='Pay Now';btn.disabled=false;return;}const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");if(auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{plan:checkoutPlan,stripePaymentMethodId:paymentMethod.id,subscribedAt:new Date().toISOString()});closePayModal();showUpgradeSuccess(checkoutPlan);}catch(e){document.getElementById('stripe-err').textContent='Payment failed. Please try again.';btn.textContent='Pay Now';btn.disabled=false;}
-}
-function showUpgradeSuccess(plan){
-  const isD=plan==='diamond';
-  const perks=isD?['💎 Diamond badge now live','📞 Video & audio calls unlocked','⚡ Unlimited Speed Link','🎯 Unlimited Compatibility Circle','🔝 Priority placement in search','↩ Unlimited undo swipes']:['⭐ Real badge available - record video','👁 See who liked you','↩ Undo 3 swipes/day','📖 Stories access','⚡ Speed Link events','🚀 Weekly profile boost'];
-  const m=document.createElement('div');
-  m.style.cssText='position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center;padding:20px;';
-  m.innerHTML=`<div style="text-align:center;max-width:360px;width:100%;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;"><div style="font-size:3.8rem;margin-bottom:11px;">${isD?'💎':'🔗'}</div><h2 style="font-size:1.9rem;font-weight:900;letter-spacing:-.05em;color:${isD?'#A8EDFF':'var(--gold)'};margin-bottom:6px;">You're ${isD?'Diamond':'Linked'}!</h2><p style="color:var(--muted);font-size:.8rem;margin-bottom:14px;">Here is what just unlocked:</p><div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px;margin-bottom:16px;text-align:left;">${perks.map(p=>`<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.79rem;color:#e0e0e0;">${p}</div>`).join('')}</div><button onclick="this.closest('div[style*=fixed]').remove();go('discover');" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.93rem;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;">Start Linking 🔥</button>${!isD?`<button onclick="this.closest('div[style*=fixed]').remove();go('real-verify');" style="width:100%;padding:11px;border-radius:12px;background:rgba(255,210,26,.07);border:1px solid rgba(255,210,26,.2);color:var(--gold);font-size:.83rem;cursor:pointer;font-family:inherit;">Get my ⭐ Real badge now →</button>`:''}`;
-  document.body.appendChild(m);loadProfile();
-}
+  var btn = document.getElementById('pay-btn');
+  if(btn){btn.textContent='Processing...';btn.disabled=true;}
+  try {
+    var nameVal = (document.getElementById('pay-nm')||{value:''}).value;
+    var emailVal = (document.getElementById('pay-em')||{value:''}).value;
+    var addrVal = (document.getElementById('pay-addr')||{value:''}).value;
+    var cityVal = (document.getElementById('pay-city')||{value:''}).value;
+    var postVal = (document.getElementById('pay-post')||{value:''}).value;
+    var ctryVal = (document.getElementById('pay-ctry')||{value:''}).value;
 
-// ══════════════════════════════════
-// PROFILE VIEW MODAL
-// ══════════════════════════════════
-function openProfModal(p) {
-  if(!p) return;
-  const modal = document.getElementById('prof-view-modal');
-  if(!modal) return;
+    var pmResult = await window.stripeInst.createPaymentMethod({
+      type: 'card',
+      card: window.stripeCard,
+      billing_details: {
+        name: nameVal,
+        email: emailVal,
+        address: { line1: addrVal, city: cityVal, postal_code: postVal, country: ctryVal }
+      }
+    });
 
-  // Set name/age
-  const nameEl = document.getElementById('pvm-name');
-  if(nameEl) nameEl.textContent = p.name + ', ' + p.age;
+    if(pmResult.error){
+      var errEl = document.getElementById('stripe-err');
+      if(errEl) errEl.textContent = pmResult.error.message;
+      if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+      return;
+    }
 
-  // Set meta
-  const metaEl = document.getElementById('pvm-meta');
-  if(metaEl) {
-    const parts = [];
-    if(p.loc) parts.push('📍 ' + p.loc);
-    if(p.height) parts.push('📏 ' + p.height);
-    if(p.job) parts.push('💼 ' + p.job);
-    metaEl.textContent = parts.join(' · ');
+    // Call Netlify Function
+    var response = await fetch('/.netlify/functions/create-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentMethodId: pmResult.paymentMethod.id,
+        plan: checkoutPlan,
+        email: emailVal,
+        name: nameVal
+      })
+    });
+
+    var data = await response.json();
+
+    if(data.error){
+      var errEl2 = document.getElementById('stripe-err');
+      if(errEl2) errEl2.textContent = data.error;
+      if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+      return;
+    }
+
+    // Confirm payment if needed
+    if(data.clientSecret){
+      var confirmResult = await window.stripeInst.confirmCardPayment(data.clientSecret);
+      if(confirmResult.error){
+        var errEl3 = document.getElementById('stripe-err');
+        if(errEl3) errEl3.textContent = confirmResult.error.message;
+        if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+        return;
+      }
+    }
+
+    // Update Firebase
+    try {
+      var auth = window._fbAuth;
+      var db = window._fbDb;
+      var firestoreModule = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      var docFn = firestoreModule.doc;
+      var updateDocFn = firestoreModule.updateDoc;
+      if(auth && auth.currentUser){
+        await updateDocFn(docFn(db,"users",auth.currentUser.uid),{
+          plan: checkoutPlan,
+          stripeCustomerId: data.customerId,
+          stripeSubscriptionId: data.subscriptionId,
+          subscribedAt: new Date().toISOString()
+        });
+      }
+    } catch(fbErr){ console.log('Firebase update error:', fbErr); }
+
+    window._userPlan = checkoutPlan;
+    closePayModal();
+    showToast(checkoutPlan === 'diamond' ? 'Welcome to Diamond!' : 'Welcome to Linked!');
+    setTimeout(function(){ go('dashboard'); }, 1500);
+
+  } catch(e){
+    console.log('Payment error:', e);
+    if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+    showToast('Payment failed. Please try again.');
   }
-
-  // Set badges
-  const badgesEl = document.getElementById('pvm-badges');
-  if(badgesEl) {
-    let badges = '';
-    if(p.bc === 'bv') badges += '<span class="cbdg bv">✅ Verified</span>';
-    if(p.bc === 'br') badges += '<span class="cbdg br">⭐ Real</span>';
-    if(p.bc === 'bd') badges += '<span class="cbdg bd">💎 Diamond</span>';
-    badgesEl.innerHTML = badges;
-  }
-
-  // Set bio
-  const bioEl = document.getElementById('pvm-bio');
-  if(bioEl) {
-    if(p.bio) { bioEl.textContent = '"' + p.bio + '"'; bioEl.style.display = 'block'; }
-    else bioEl.style.display = 'none';
-  }
-
-  // Set interests
-  const intSec = document.getElementById('pvm-interests-section');
-  const intEl = document.getElementById('pvm-interests');
-  if(intEl && p.tags && p.tags.length) {
-    intEl.innerHTML = p.tags.map(t => '<span class="prof-modal-tag">' + t + '</span>').join('');
-    if(intSec) intSec.style.display = 'block';
-  } else if(intSec) intSec.style.display = 'none';
-
-  // Set info grid
-  const infoEl = document.getElementById('pvm-info');
-  if(infoEl) {
-    const items = [
-      {label:'Education', val: p.edu || '-'},
-      {label:'Religion', val: p.religion || '-'},
-      {label:'Children', val: p.children || '-'},
-      {label:'Based in', val: p.loc ? p.loc.split(',')[0] : '-'},
-    ];
-    infoEl.innerHTML = items.map(item => `
-      <div class="prof-modal-info-item">
-        <div class="prof-modal-info-label">${item.label}</div>
-        <div class="prof-modal-info-val">${item.val}</div>
-      </div>`).join('');
-  }
-
-  // Set photo placeholder with SVG
-  const photoEl = document.getElementById('pvm-photo-main');
-  if(photoEl && p.skin) {
-    const isWoman = p.gender === 'woman';
-    photoEl.style.background = p.bg || '#111';
-    photoEl.innerHTML = `<svg viewBox="0 0 300 420" style="width:100%;height:100%;" preserveAspectRatio="xMidYMax meet">
-      <ellipse cx="150" cy="390" rx="110" ry="80" fill="${p.outfit || '#1a5c30'}"/>
-      <rect x="133" y="215" width="34" height="45" fill="${p.skin}"/>
-      <circle cx="150" cy="190" r="62" fill="${p.skin}"/>
-      <ellipse cx="150" cy="155" rx="65" ry="38" fill="${p.hair || '#1a0a00'}"/>
-      ${isWoman ? `<ellipse cx="88" cy="190" rx="22" ry="50" fill="${p.hair || '#1a0a00'}"/>
-      <ellipse cx="212" cy="190" rx="22" ry="50" fill="${p.hair || '#1a0a00'}"/>` : ''}
-      <ellipse cx="128" cy="184" rx="9" ry="7" fill="#2a1a0a"/>
-      <ellipse cx="172" cy="184" rx="9" ry="7" fill="#2a1a0a"/>
-      <ellipse cx="128" cy="184" rx="4" ry="4" fill="#080303"/>
-      <ellipse cx="172" cy="184" rx="4" ry="4" fill="#080303"/>
-      <ellipse cx="126" cy="182" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/>
-      <ellipse cx="170" cy="182" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/>
-      <path d="M 128 208 Q 150 224 172 208" stroke="#7a3010" stroke-width="3" fill="none" stroke-linecap="round"/>
-    </svg>`;
-  }
-
-  // Show modal
-  modal.classList.add('show');
-  document.body.style.overflow = 'hidden';
 }
 
-function closeProfModal() {
-  const modal = document.getElementById('prof-view-modal');
-  if(modal) modal.classList.remove('show');
-  document.body.style.overflow = '';
-}
 
-// ══════════════════════════════════
-// REAL-TIME MESSAGING
-// ══════════════════════════════════
-let _activeConvId = null;
-let _activeListener = null;
-let _typingTimeout = null;
-
-// Open a chat with a specific user
 async function openChat(partnerUid, partnerName, partnerPlan) {
   const auth = window._fbAuth;
   if (!auth || !auth.currentUser) { go('login-screen'); return; }
@@ -2919,5 +2916,3 @@ onAuthStateChanged(auth, async (user) => {
     </div>
   </div>
 </div>
-
-
