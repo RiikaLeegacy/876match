@@ -1,0 +1,8 @@
+{
+  "name": "876match",
+  "version": "1.0.0",
+  "description": "876Match - Jamaican Dating App",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
