@@ -32,6 +32,8 @@ body::before{content:"";position:fixed;inset:0;
   background-size:42px 42px;pointer-events:none;z-index:-1;}
 a{color:inherit;text-decoration:none;}
 button,input,select,textarea{font-family:inherit;}
+select option{background:#1a1a1a;color:#ffffff;font-family:inherit;}
+select{color:#ffffff;cursor:pointer;-webkit-appearance:auto;appearance:auto;}
 .screen{display:none;} .screen.active{display:block;}
 #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
   background:rgba(20,20,20,.97);border:1px solid rgba(255,210,26,.4);
@@ -622,6 +624,41 @@ input:focus,select:focus,textarea:focus{
   .how-grid{grid-template-columns:1fr 1fr;}
   .stats-row{grid-template-columns:repeat(3,1fr);}
 }
+
+/* ── PLAN OPTIONS ── */
+.plan-opt{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all .2s;}
+.plan-opt:hover{border-color:rgba(255,210,26,.3);background:rgba(255,210,26,.04);}
+.plan-opt.selected{border-color:rgba(255,210,26,.5);background:rgba(255,210,26,.07);}
+
+/* ── PENDING APPROVAL BANNER ── */
+.pending-banner{background:linear-gradient(135deg,rgba(255,210,26,.08),rgba(5,5,5,.9));border:1px solid rgba(255,210,26,.2);border-radius:16px;padding:20px;margin:16px;text-align:center;}
+.pending-banner h3{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:6px;}
+.pending-banner p{font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.6;}
+
+/* ── CIRCLE CATEGORIES ── */
+.circ-cat{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:16px;padding:18px 14px;cursor:pointer;transition:all .22s;text-align:center;}
+.circ-cat:hover,.circ-cat.selected{border-color:rgba(255,210,26,.5);background:rgba(255,210,26,.07);transform:translateY(-2px);}
+.circ-cat.selected{box-shadow:0 0 0 2px rgba(255,210,26,.2);}
+
+
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+
+/* ── SPEED LINK ── */
+.sl-cd-box{background:rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;}
+.sl-cd-num{font-size:1.6rem;font-weight:900;color:var(--gold);line-height:1;}
+.sl-cd-label{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+/* Live hero */
+.sl-live-hero{position:relative;background:linear-gradient(135deg,#0a0a0a,#1a0a00);border:1px solid rgba(255,210,26,.3);border-radius:24px;overflow:hidden;margin-bottom:16px;}
+.sl-live-pulse{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,210,26,.12),transparent 65%);animation:slPulse 2s ease-in-out infinite;}
+@keyframes slPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.sl-live-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;background:rgba(255,50,50,.15);border:1px solid rgba(255,50,50,.3);color:#ff6666;font-size:.75rem;font-weight:900;margin-bottom:14px;animation:slBlink 1.5s ease-in-out infinite;}
+@keyframes slBlink{0%,100%{opacity:1}50%{opacity:.6}}
+.sl-join-btn{background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;border:none;border-radius:14px;padding:16px 36px;font-size:1.05rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 24px rgba(255,210,26,.3);transition:transform .15s,box-shadow .15s;}
+.sl-join-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,210,26,.4);}
+
 </style>
 </head>
 <body>
@@ -893,6 +930,31 @@ input:focus,select:focus,textarea:focus{
 
 </div>
 
+<!-- ════════════════════════════════════
+     EMAIL VERIFICATION SCREEN
+════════════════════════════════════ -->
+<div id="verify-email-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-box" style="text-align:center;">
+      <div style="font-size:4rem;margin-bottom:16px;">📧</div>
+      <h2 class="auth-title">Check Your Email</h2>
+      <p class="auth-sub">We sent a verification link to <strong id="verify-email-addr" style="color:var(--gold);">your email</strong>.<br>Click the link to activate your account.</p>
+      <div style="background:rgba(255,210,26,0.07);border:1px solid rgba(255,210,26,0.2);border-radius:14px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:.84rem;color:rgba(255,255,255,0.7);line-height:1.6;">Check your inbox and spam folder. The link expires in 24 hours.</p>
+      </div>
+      <button class="btn-gold btn-full" id="check-verify-btn" onclick="checkEmailVerified()" style="margin-bottom:10px;">
+        I verified my email ✓
+      </button>
+      <button onclick="resendVerification()" class="btn-outline btn-full" style="min-height:46px;font-size:.88rem;margin-bottom:14px;">
+        Resend verification email
+      </button>
+      <button onclick="logoutUser()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:.8rem;cursor:pointer;font-family:inherit;">
+        Use a different account
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="login-screen" class="screen">
   <div class="auth-wrap">
     <div class="auth-box">
@@ -924,7 +986,8 @@ input:focus,select:focus,textarea:focus{
         <div class="step-item" id="si2"><div class="step-bub">2</div><span>About</span></div>
         <div class="step-item" id="si3"><div class="step-bub">3</div><span>Vibe</span></div>
         <div class="step-item" id="si4"><div class="step-bub">4</div><span>Photos</span></div>
-        <div class="step-item" id="si5"><div class="step-bub">5</div><span>Verify</span></div>
+        <div class="step-item" id="si5"><div class="step-bub">5</div><span>Plan</span></div>
+        <div class="step-item" id="si6"><div class="step-bub">6</div><span>Verify</span></div>
       </div>
       <!-- STEP 1 -->
       <div class="form-step active" id="fs1">
@@ -995,12 +1058,80 @@ input:focus,select:focus,textarea:focus{
         <input type="file" id="sup-phs" accept="image/*" multiple style="display:none;" onchange="supPhotoUpload(this)">
         <div id="sup-prog" style="display:none;margin-top:9px;"><div class="prog-wrap"><div class="prog-fill" id="sup-pf"></div></div><p style="font-size:.7rem;color:rgba(255,255,255,.35);margin-top:5px;text-align:center;" id="sup-pt">Uploading...</p></div>
         <div class="ph-grid" id="sup-ph-grid"></div>
-        <button class="btn-gold btn-full" onclick="ns(5)">Continue →</button>
+        <button class="btn-gold btn-full" onclick="requirePhotos()">Continue →</button>
       </div>
-      <!-- STEP 5 -->
+      <!-- STEP 5 - PLAN SELECTION -->
       <div class="form-step" id="fs5">
-        <h2 class="auth-title">Verify Your Identity 🛡️</h2>
-        <p class="auth-sub">Required for all members. Keeps 876Match real and safe.</p>
+        <h2 class="auth-title">Choose Your Experience ✨</h2>
+        <p class="auth-sub" style="margin-bottom:20px;">Start free anytime. Upgrade whenever you're ready.</p>
+
+        <!-- Ting -->
+        <div class="plan-opt selected" id="plan-ting" onclick="selectSignupPlan('ting')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.4rem;">🆓</span>
+              <div>
+                <div style="font-weight:900;font-size:.95rem;">Ting <span style="font-size:.72rem;font-weight:600;color:rgba(255,255,255,.4);">FREE</span></div>
+                <div style="font-size:.72rem;color:rgba(255,255,255,.4);">Always free</div>
+              </div>
+            </div>
+            <div class="plan-check" id="check-ting" style="width:20px;height:20px;border-radius:50%;border:2px solid var(--gold);background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:.7rem;">✓</div>
+          </div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.6;">
+            ✅ Browse profiles &nbsp;✅ 2 Compatibility sessions/day<br>
+            ✅ Join Speed Link (paid) &nbsp;✅ Basic messaging after match
+          </div>
+        </div>
+
+        <!-- Linked -->
+        <div class="plan-opt" id="plan-linked" onclick="selectSignupPlan('linked')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.4rem;">🔗</span>
+              <div>
+                <div style="font-weight:900;font-size:.95rem;">Linked <span style="font-size:.72rem;background:rgba(255,210,26,.15);color:var(--gold);padding:2px 7px;border-radius:50px;font-weight:800;">$9.99/mo</span></div>
+                <div style="font-size:.72rem;color:rgba(255,255,255,.4);">Most popular</div>
+              </div>
+            </div>
+            <div class="plan-check" id="check-linked" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;">✓</div>
+          </div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.6;">
+            ✅ Everything in Ting &nbsp;✅ 5 Compatibility sessions/day<br>
+            ✅ Speed Link priority access ($2.99/session) &nbsp;✅ See who liked you<br>
+            ✅ Advanced filters &nbsp;✅ Read receipts
+          </div>
+        </div>
+
+        <!-- Diamond -->
+        <div class="plan-opt" id="plan-diamond" onclick="selectSignupPlan('diamond')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.4rem;">💎</span>
+              <div>
+                <div style="font-weight:900;font-size:.95rem;">Diamond <span style="font-size:.72rem;background:rgba(168,237,255,.12);color:#A8EDFF;padding:2px 7px;border-radius:50px;font-weight:800;">$19.99/mo</span></div>
+                <div style="font-size:.72rem;color:rgba(255,255,255,.4);">Elite membership</div>
+              </div>
+            </div>
+            <div class="plan-check" id="check-diamond" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;">✓</div>
+          </div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.6;">
+            ✅ Everything in Linked &nbsp;✅ Unlimited Compatibility sessions<br>
+            ✅ Free Speed Link access every Friday &nbsp;✅ Diamond badge on profile<br>
+            ✅ Video verification badge &nbsp;✅ Profile boost &nbsp;✅ Priority support
+          </div>
+        </div>
+
+        <p style="font-size:.72rem;color:rgba(255,255,255,.3);text-align:center;margin-top:12px;">You can upgrade or downgrade anytime from your profile settings.</p>
+        <button class="btn-gold btn-full" style="margin-top:16px;" onclick="ns(6)">Continue →</button>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="form-step" id="fs6">
+        <h2 class="auth-title">Real People. Real Intentions. 🛡️</h2>
+        <p class="auth-sub">Every 876Match profile goes through a quick identity check to reduce fake accounts, catfishing, and impersonation — creating a safer space for genuine connections.</p>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 14px;margin-bottom:14px;">
+          <p style="font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.5;">🔒 <strong style="color:#fff;">Your ID is never shown publicly.</strong> It is used only to verify your identity and is never displayed on your profile.</p>
+        </div>
         <div style="background:rgba(255,210,26,.06);border:1px solid rgba(255,210,26,.17);border-radius:14px;padding:14px;margin-bottom:15px;">
           <p style="font-size:.82rem;color:var(--text);line-height:1.6;"><strong style="color:var(--gold);">Accepted:</strong> Driver's licence, passport, national ID, voter's ID.<br><span style="color:var(--muted);">Stored securely. Never shown to matches.</span></p>
         </div>
@@ -1012,9 +1143,9 @@ input:focus,select:focus,textarea:focus{
         <div id="id-prog" style="display:none;margin-top:9px;"><div class="prog-wrap"><div class="prog-fill" id="id-pf"></div></div><p style="font-size:.7rem;color:rgba(255,255,255,.35);margin-top:5px;text-align:center;">Uploading securely...</p></div>
         <div id="id-ok" style="display:none;background:rgba(102,196,48,.07);border:1px solid rgba(102,196,48,.17);border-radius:12px;padding:11px;text-align:center;"><p style="color:var(--green);font-weight:700;font-size:.85rem;">✅ ID uploaded</p><p style="color:var(--muted);font-size:.7rem;margin-top:2px;">Stored securely. Never visible to other users.</p></div>
         <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px;margin:12px 0;">
-          <p style="font-size:.74rem;color:var(--muted);line-height:1.55;">⏱ Reviewed within <strong style="color:#fff;">24 hours</strong>. You can browse while you wait.</p>
+          <p style="font-size:.74rem;color:var(--muted);line-height:1.55;">⏱ Most profiles are reviewed within a few hours — typically the same day.</p>
         </div>
-        <button class="btn-gold btn-full" id="reg-btn" onclick="registerUser()">📤 Submit & Enter 876Match</button>
+        <button class="btn-gold btn-full" id="reg-btn" onclick="requireIDAndRegister()">📤 Submit & Enter 876Match</button>
         <p style="text-align:center;margin-top:10px;font-size:.68rem;color:rgba(255,255,255,.22);">By continuing you agree to our Terms of Service & Privacy Policy</p>
       </div>
     </div>
@@ -1031,8 +1162,9 @@ input:focus,select:focus,textarea:focus{
   <div style="display:flex;min-height:100vh;background:var(--bg);">
     <!-- Sidebar -->
     <div style="width:260px;flex-shrink:0;background:#0a0a0a;border-right:1px solid rgba(255,255,255,0.07);padding:24px 16px;display:flex;flex-direction:column;">
-      <div style="margin-bottom:28px;padding:0 8px;cursor:pointer;" onclick="go('landing')">
-        <img id="dash-logo" src="" alt="876Match" style="height:38px;width:auto;object-fit:contain;">
+      <div style="margin-bottom:28px;padding:0 8px;cursor:default;">
+        <div style="font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:var(--gold);">876Match</div>
+        <div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">Real People. Real Intentions.</div>
       </div>
       <nav style="display:flex;flex-direction:column;gap:4px;flex:1;">
         <button onclick="go('dashboard')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:rgba(255,210,26,0.09);color:var(--gold);border:none;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;text-align:left;">🏠 Dashboard</button>
@@ -1464,83 +1596,148 @@ input:focus,select:focus,textarea:focus{
   <div class="app-scr">
     <div class="top-bar">
       <button onclick="go('discover')" style="background:none;border:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;">← Back</button>
-      <div style="font-size:.85rem;font-weight:700;color:var(--gold);">COMPATIBILITY CIRCLE</div>
-      <div></div>
+      <div style="font-size:.82rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Compatibility Circle</div>
+      <div id="circle-session-badge" style="font-size:.72rem;font-weight:800;color:rgba(255,255,255,.4);"></div>
     </div>
     <div class="app-scroll">
-      <div style="text-align:center;padding:8px 0 20px;">
-        <h2 style="font-size:clamp(1.6rem,3vw,2.4rem);font-weight:900;letter-spacing:-.05em;margin-bottom:8px;">A matching game <span style="color:var(--gold);">with intention.</span></h2>
-        <p style="color:var(--muted);font-size:.86rem;max-width:480px;margin:0 auto;">Members answer questions and move closer to people who align with their lifestyle, values, and dating goals.</p>
+
+      <!-- PHASE 1: Category Selection -->
+      <div id="circle-phase-select" style="display:block;">
+        <div style="text-align:center;padding:8px 0 24px;">
+          <h2 style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;letter-spacing:-.05em;margin-bottom:8px;">What kind of connection<br>are you <span style="color:var(--gold);">looking for today?</span></h2>
+          <p style="color:var(--muted);font-size:.86rem;">Pick a category. We'll match you based on your answers.</p>
+        </div>
+
+        <!-- Sessions remaining -->
+        <div id="circle-sessions-info" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:.82rem;font-weight:700;" id="sessions-label">Sessions today</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px;" id="sessions-sub">Resets at midnight</div>
+          </div>
+          <div id="sessions-count" style="font-size:1.4rem;font-weight:900;color:var(--gold);">2</div>
+        </div>
+
+        <!-- Category grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div class="circ-cat" onclick="selectCategory(this,'romance')" data-cat="romance">
+            <div style="font-size:2rem;margin-bottom:8px;">💘</div>
+            <div style="font-weight:800;font-size:.92rem;">Romance & Intimacy</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Love, connection, closeness</div>
+          </div>
+          <div class="circ-cat" onclick="selectCategory(this,'deep')" data-cat="deep">
+            <div style="font-size:2rem;margin-bottom:8px;">🧠</div>
+            <div style="font-weight:800;font-size:.92rem;">Deep Thinking</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Values, beliefs, purpose</div>
+          </div>
+          <div class="circ-cat" onclick="selectCategory(this,'fun')" data-cat="fun">
+            <div style="font-size:2rem;margin-bottom:8px;">😂</div>
+            <div style="font-weight:800;font-size:.92rem;">Fun & Personality</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Vibes, humour, energy</div>
+          </div>
+          <div class="circ-cat" onclick="selectCategory(this,'family')" data-cat="family">
+            <div style="font-size:2rem;margin-bottom:8px;">👥</div>
+            <div style="font-weight:800;font-size:.92rem;">Family & Values</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Children, faith, priorities</div>
+          </div>
+          <div class="circ-cat" onclick="selectCategory(this,'attraction')" data-cat="attraction">
+            <div style="font-size:2rem;margin-bottom:8px;">🔥</div>
+            <div style="font-weight:800;font-size:.92rem;">Attraction & Chemistry</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Spark, physical, energy</div>
+          </div>
+          <div class="circ-cat" onclick="selectCategory(this,'future')" data-cat="future">
+            <div style="font-size:2rem;margin-bottom:8px;">🌍</div>
+            <div style="font-weight:800;font-size:.92rem;">Future & Lifestyle</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px;">Goals, ambition, living</div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:.78rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Match filters</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="field-g"><label style="font-size:.78rem;">Min age</label><div class="iw"><span class="fi">🎂</span><input type="number" id="circ-age-min" value="18" min="18" max="80" style="padding-left:40px;min-height:44px;"></div></div>
+            <div class="field-g"><label style="font-size:.78rem;">Max age</label><div class="iw"><span class="fi">🎂</span><input type="number" id="circ-age-max" value="40" min="18" max="80" style="padding-left:40px;min-height:44px;"></div></div>
+          </div>
+          <div class="field-g" style="margin-top:10px;"><label style="font-size:.78rem;">Show me</label><div class="sw"><span class="fi">🔒</span><select id="circ-gender" style="padding-left:40px;min-height:44px;"><option value="everyone">Everyone</option><option value="women">Women</option><option value="men">Men</option></select></div></div>
+        </div>
+
+        <button id="circle-start-btn" onclick="startCircle()" class="btn-gold btn-full" style="opacity:.4;cursor:not-allowed;" disabled>
+          Choose a category to start →
+        </button>
+
+        <!-- Pay to unlock more sessions -->
+        <div id="circle-unlock-banner" style="display:none;margin-top:14px;background:linear-gradient(135deg,rgba(255,210,26,.07),rgba(5,5,5,.8));border:1px solid rgba(255,210,26,.2);border-radius:14px;padding:16px;text-align:center;">
+          <div style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Out of sessions for today</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">Unlock unlimited sessions for today only</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="unlockCircleDay('ting')" style="padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font:inherit;font-weight:900;font-size:.84rem;border:none;cursor:pointer;">$5.00 · Unlock today</button>
+            <button onclick="go('premium-screen')" style="padding:10px 18px;border-radius:10px;background:rgba(168,237,255,.1);border:1px solid rgba(168,237,255,.25);color:#A8EDFF;font:inherit;font-weight:800;font-size:.84rem;cursor:pointer;">Go Diamond →</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Two column layout like reference -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-        <!-- Circle arena -->
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px;min-height:380px;position:relative;display:flex;align-items:center;justify-content:center;">
-          <div style="position:relative;width:280px;height:280px;" id="circ-arena">
-            <!-- Subtle radial glow -->
-            <div style="position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,210,26,0.1),transparent 65%);border-radius:50%;"></div>
-            <!-- YOU in center -->
-            <div id="pn0" class="pnode" style="top:50%;left:50%;transform:translate(-50%,-50%);">
-              <div class="pav hl" style="width:70px;height:70px;background:linear-gradient(135deg,rgba(255,210,26,0.25),rgba(102,196,48,0.15));font-size:0;overflow:hidden;">
-                <svg viewBox="0 0 70 70" style="width:100%;height:100%;"><circle cx="35" cy="26" r="14" fill="#c8956a"/><ellipse cx="35" cy="60" rx="22" ry="18" fill="#1a5c30"/></svg>
+      <!-- PHASE 2: Questions -->
+      <div id="circle-phase-questions" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <!-- Arena -->
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;min-height:340px;position:relative;display:flex;align-items:center;justify-content:center;">
+            <div style="position:relative;width:260px;height:260px;" id="circ-arena2">
+              <div style="position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,210,26,.1),transparent 65%);border-radius:50%;"></div>
+              <div id="an-you" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2;">
+                <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(255,210,26,.25),rgba(102,196,48,.15));border:2px solid var(--gold);font-size:0;overflow:hidden;"><svg viewBox="0 0 64 64" style="width:100%;height:100%;"><circle cx="32" cy="23" r="12" fill="#c8956a"/><ellipse cx="32" cy="54" rx="20" ry="16" fill="#1a5c30"/></svg></div>
+                <div style="font-size:.6rem;font-weight:700;color:var(--gold);">You</div>
               </div>
-              <div class="pnm" style="font-weight:700;color:var(--gold);">You</div>
+              <div id="arena-people" style="position:absolute;inset:0;"></div>
             </div>
-            <!-- Other players -->
-            <div id="pn1" class="pnode" style="top:8%;left:55%;">
-              <div class="pav" style="width:54px;height:54px;background:rgba(255,255,255,0.06);font-size:0;overflow:hidden;"><svg viewBox="0 0 54 54" style="width:100%;height:100%;"><circle cx="27" cy="20" r="11" fill="#7a5230"/><ellipse cx="27" cy="46" rx="18" ry="14" fill="#3d2010"/></svg></div>
-              <div class="pnm">Marcus</div>
-            </div>
-            <div id="pn2" class="pnode" style="bottom:18%;right:5%;">
-              <div class="pav" style="width:54px;height:54px;background:rgba(255,255,255,0.06);font-size:0;overflow:hidden;"><svg viewBox="0 0 54 54" style="width:100%;height:100%;"><circle cx="27" cy="20" r="11" fill="#b07840"/><ellipse cx="27" cy="46" rx="18" ry="14" fill="#2a5c20"/></svg></div>
-              <div class="pnm">Jade</div>
-            </div>
-            <div id="pn3" class="pnode" style="bottom:8%;left:50%;transform:translateX(-50%);">
-              <div class="pav" style="width:54px;height:54px;background:rgba(255,255,255,0.06);font-size:0;overflow:hidden;"><svg viewBox="0 0 54 54" style="width:100%;height:100%;"><circle cx="27" cy="20" r="11" fill="#5a3820"/><ellipse cx="27" cy="46" rx="18" ry="14" fill="#2d1a0a"/></svg></div>
-              <div class="pnm">Devon</div>
-            </div>
-            <div id="pn4" class="pnode" style="bottom:18%;left:5%;">
-              <div class="pav" style="width:54px;height:54px;background:rgba(255,255,255,0.06);font-size:0;overflow:hidden;"><svg viewBox="0 0 54 54" style="width:100%;height:100%;"><circle cx="27" cy="20" r="11" fill="#c49060"/><ellipse cx="27" cy="46" rx="18" ry="14" fill="#7a5030"/></svg></div>
-              <div class="pnm">Tanya</div>
-            </div>
-            <div id="pn5" style="display:none;"></div>
+            <!-- Compat % display -->
+            <div id="compat-list" style="position:absolute;bottom:10px;left:0;right:0;padding:0 10px;display:flex;flex-direction:column;gap:3px;max-height:80px;overflow:hidden;"></div>
           </div>
-        </div>
 
-        <!-- Question panel -->
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div id="circ-q-panel" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;flex:1;">
-            <span style="display:inline-flex;padding:6px 12px;border-radius:50px;background:rgba(168,237,255,0.1);color:#A8EDFF;font-size:.74rem;font-weight:800;margin-bottom:16px;">Diamond Feature</span>
-            <div style="font-size:1.15rem;font-weight:700;margin-bottom:6px;" id="q-n">Question round</div>
-            <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px;" id="q-t">Do you want children in the future?</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="circ-ans">
-              <button class="ans" onclick="pickAns(this)">Yes</button>
-              <button class="ans" onclick="pickAns(this)">No</button>
+          <!-- Question panel -->
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <span id="q-cat-icon" style="font-size:1.1rem;">💘</span>
+                <span style="font-size:.7rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;" id="q-cat-label">Romance</span>
+                <span style="font-size:.7rem;color:rgba(255,255,255,.3);margin-left:auto;" id="q-num">Q1 of 10</span>
+              </div>
+              <p style="font-size:.92rem;font-weight:600;line-height:1.5;margin-bottom:16px;color:#f5f5f5;" id="q-text">Question loads here...</p>
+              <div id="q-answers" style="display:grid;gap:8px;"></div>
             </div>
-            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
-              <div style="font-size:.82rem;font-weight:700;margin-bottom:5px;">How it works:</div>
-              <p style="font-size:.78rem;color:var(--muted);line-height:1.55;">Answers help separate people into closer circles until stronger matches appear.</p>
+            <!-- Progress dots -->
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center;">
+              <div style="display:flex;gap:5px;justify-content:center;margin-bottom:6px;" id="q-dots"></div>
+              <div style="font-size:.72rem;color:rgba(255,255,255,.35);" id="q-people-count">5 people · choose your answer</div>
             </div>
-          </div>
-          <!-- Progress -->
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;text-align:center;">
-            <div class="cprog" id="cprog" style="justify-content:center;"><div class="cpd on"></div><div class="cpd"></div><div class="cpd"></div><div class="cpd"></div><div class="cpd"></div></div>
-            <div class="circ-stat" id="circ-stat" style="margin-top:6px;">5 people in the room · Choose your answer</div>
           </div>
         </div>
       </div>
 
-      <!-- Result -->
-      <div id="circ-res" style="display:none;text-align:center;padding:24px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;">
-        <div style="font-size:2.8rem;margin-bottom:12px;">🎯</div>
-        <h3 style="font-size:1.5rem;font-weight:900;color:var(--gold);margin-bottom:8px;">Your Top Match!</h3>
-        <p style="color:var(--muted);font-size:.86rem;margin-bottom:18px;">You and <strong style="color:var(--gold);">Marcus</strong> are 80% compatible based on your answers.</p>
-        <div style="width:68px;height:68px;border-radius:50%;background:var(--card);border:3px solid var(--gold);overflow:hidden;margin:0 auto 18px;"><svg viewBox="0 0 68 68" style="width:100%;height:100%;"><circle cx="34" cy="24" r="14" fill="#7a5230"/><ellipse cx="34" cy="58" rx="22" ry="18" fill="#3d2010"/></svg></div>
-        <button class="btn-gold btn-full" style="max-width:300px;margin:0 auto 10px;" onclick="go('messages-screen')">Send Marcus a Message 💬</button>
-        <p style="font-size:.74rem;color:rgba(255,255,255,.3);cursor:pointer;" onclick="restartCircle()">Play another round →</p>
+      <!-- PHASE 3: Match Result -->
+      <div id="circle-phase-result" style="display:none;text-align:center;padding:10px 0;">
+        <div style="font-size:3rem;margin-bottom:12px;" id="res-emoji">🎯</div>
+        <h2 style="font-size:1.8rem;font-weight:900;letter-spacing:-.05em;color:var(--gold);margin-bottom:6px;" id="res-title">Your Top Match!</h2>
+        <p style="color:var(--muted);font-size:.86rem;margin-bottom:20px;" id="res-sub">Based on your answers...</p>
+
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;margin-bottom:16px;">
+          <div style="width:72px;height:72px;border-radius:50%;background:var(--card);border:3px solid var(--gold);overflow:hidden;margin:0 auto 12px;"><svg viewBox="0 0 72 72" style="width:100%;height:100%;"><circle cx="36" cy="26" r="15" fill="#c8956a"/><ellipse cx="36" cy="62" rx="24" ry="18" fill="#1a5c30"/></svg></div>
+          <div style="font-size:1.3rem;font-weight:900;margin-bottom:4px;" id="res-name">Match Name</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;background:rgba(255,210,26,.12);color:var(--gold);font-weight:900;font-size:.88rem;margin-bottom:14px;">
+            <span id="res-pct">—</span> Compatible
+          </div>
+          <div id="res-shared" style="font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:16px;"></div>
+          <div style="background:rgba(255,210,26,.06);border:1px solid rgba(255,210,26,.15);border-radius:12px;padding:12px;">
+            <div style="font-size:.72rem;font-weight:800;color:var(--gold);margin-bottom:5px;">💬 Conversation starter</div>
+            <div style="font-size:.85rem;color:rgba(255,255,255,.75);font-style:italic;" id="res-starter">"What's one thing people always misunderstand about you?"</div>
+          </div>
+        </div>
+
+        <button class="btn-gold btn-full" style="margin-bottom:10px;" onclick="circleGoMessage()">Send them a message 💬</button>
+        <button class="btn-outline btn-full" style="min-height:46px;font-size:.88rem;margin-bottom:14px;" onclick="circlePlayAgain()">Play another round →</button>
+        <p style="font-size:.74rem;color:rgba(255,255,255,.28);" id="sessions-remaining-msg"></p>
       </div>
-    </div>
+
+    </div><!-- end app-scroll -->
     <div class="bot-bar">
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item" onclick="go('discover')"><span class="ni">🔥</span><span class="nl">Discover</span></button>
@@ -1557,74 +1754,149 @@ input:focus,select:focus,textarea:focus{
 <div id="speedlink-screen" class="screen">
   <div class="app-scr">
     <div class="top-bar">
-      <button onclick="go('discover')" style="background:none;border:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;">← Back</button>
-      <div style="font-size:.82rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Friday Live Link-Up</div>
+      <button onclick="go('dashboard')" style="background:none;border:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;">← Back</button>
+      <div style="font-size:.82rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Friday Live Link-Up ⚡</div>
       <div></div>
     </div>
     <div class="app-scroll">
-      <div style="text-align:center;padding:8px 0 20px;">
-        <h2 style="font-size:clamp(1.7rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-.05em;margin-bottom:8px;">Live dating event screen.</h2>
-        <p style="color:var(--muted);font-size:.88rem;">Keep it exciting. Meet people live, not just through pictures.</p>
-      </div>
 
-      <!-- Two column layout -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-        <!-- Left: Event info + countdown -->
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px;">
-          <span style="display:inline-flex;padding:7px 14px;border-radius:50px;background:rgba(255,210,26,0.12);color:var(--gold);font-size:.78rem;font-weight:800;margin-bottom:18px;">Friday · 8PM JA Time</span>
-          <h3 style="font-size:1.3rem;font-weight:900;margin-bottom:10px;">Meet people live, not just through pictures.</h3>
-          <p style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:22px;">A guided live experience where members can discover chemistry in real time.</p>
-          <!-- Countdown -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;">
-            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px 6px;text-align:center;"><div style="font-size:1.5rem;font-weight:900;color:var(--gold);" id="sl-d">02</div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Days</div></div>
-            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px 6px;text-align:center;"><div style="font-size:1.5rem;font-weight:900;color:var(--gold);" id="sl-h">11</div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Hours</div></div>
-            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px 6px;text-align:center;"><div style="font-size:1.5rem;font-weight:900;color:var(--gold);" id="sl-m">44</div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Mins</div></div>
-            <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px 6px;text-align:center;"><div style="font-size:1.5rem;font-weight:900;color:var(--gold);" id="sl-s">08</div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Secs</div></div>
+      <!-- STATE 1: COUNTDOWN (default) -->
+      <div id="sl-state-countdown">
+        <div style="text-align:center;padding:8px 0 20px;">
+          <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:50px;background:rgba(255,210,26,0.12);color:var(--gold);font-size:.78rem;font-weight:800;margin-bottom:16px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;"></span>
+            Friday · 8PM Jamaica Time
           </div>
-          <button id="reserve-btn" onclick="reserveSpot()" style="padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.95rem;border:none;cursor:pointer;font-family:inherit;" id="reserve-btn" onclick="reserveSpot()">Lock My Spot ⚡</button>
-          <div id="reserve-confirm" style="display:none;margin-top:12px;padding:11px 14px;background:rgba(102,196,48,0.08);border:1px solid rgba(102,196,48,0.25);border-radius:10px;"><p style="color:#66C430;font-weight:700;font-size:.88rem;" id="reserve-confirm-msg">Locked In! See you Friday at 8PM JA time.</p></div>
+          <h2 style="font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900;letter-spacing:-.04em;margin-bottom:8px;">Meet people live.<br><span style="color:var(--gold);">Not just through pictures.</span></h2>
+          <p style="color:var(--muted);font-size:.85rem;max-width:320px;margin:0 auto;">A guided live experience where members discover real chemistry.</p>
         </div>
 
-        <!-- Right: Session info -->
-        <div style="display:flex;flex-direction:column;gap:12px;">
-          <!-- Session details -->
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;">
-            <div style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">How it works</div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <div style="display:flex;gap:11px;align-items:flex-start;">
-                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-                <div style="font-size:.84rem;color:rgba(255,255,255,.7);">Reserve your spot — Diamond members get in first, then Linked members.</div>
-              </div>
-              <div style="display:flex;gap:11px;align-items:flex-start;">
-                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-                <div style="font-size:.84rem;color:rgba(255,255,255,.7);">Join Friday at 8PM JA time. You'll be matched face to face in the live session.</div>
-              </div>
-              <div style="display:flex;gap:11px;align-items:flex-start;">
-                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-                <div style="font-size:.84rem;color:rgba(255,255,255,.7);">If you vibe — move them straight to your inbox and keep talking.</div>
-              </div>
+        <!-- Countdown -->
+        <div id="sl-countdown-wrap" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center;">
+          <div style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;">Next Session In</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+            <div class="sl-cd-box"><div class="sl-cd-num" id="sl-d">00</div><div class="sl-cd-label">Days</div></div>
+            <div class="sl-cd-box"><div class="sl-cd-num" id="sl-h">00</div><div class="sl-cd-label">Hours</div></div>
+            <div class="sl-cd-box"><div class="sl-cd-num" id="sl-m">00</div><div class="sl-cd-label">Mins</div></div>
+            <div class="sl-cd-box"><div class="sl-cd-num" id="sl-s">00</div><div class="sl-cd-label">Secs</div></div>
+          </div>
+          <div id="sl-lock-wrap">
+            <button id="sl-lock-btn" class="sl-lock-btn btn-gold btn-full" onclick="handleSpeedLinkJoin()" style="max-width:280px;">
+              ⚡ Lock My Spot
+            </button>
+            <div id="sl-locked-msg" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(102,196,48,.08);border:1px solid rgba(102,196,48,.25);border-radius:10px;color:#66C430;font-weight:700;font-size:.85rem;">
+              ✅ Spot Locked — See you Friday at 8PM JA time!
             </div>
           </div>
-          <!-- Session capacity -->
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div style="font-size:.82rem;font-weight:700;">Public Spots Reserved</div>
-              <div style="font-size:.82rem;color:var(--gold);font-weight:800;" id="sl-spots">8 / 20</div>
+        </div>
+
+        <!-- How it works -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:16px;">
+          <div style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">How it works</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div style="font-size:.84rem;color:rgba(255,255,255,.7);line-height:1.5;">Lock your spot — Diamond members get priority access. Linked and Ting can join the public pool.</div>
             </div>
-            <div style="background:rgba(255,255,255,.1);border-radius:50px;height:8px;overflow:hidden;">
-              <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--gold),#ffb800);border-radius:50px;transition:width .5s;"></div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div style="font-size:.84rem;color:rgba(255,255,255,.7);line-height:1.5;">Join Friday at 8PM. You get matched face to face with a compatible member for a 3-minute live video session.</div>
             </div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:8px;">12 public spots remaining · Diamond members enter separately</div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div style="font-size:.84rem;color:rgba(255,255,255,.7);line-height:1.5;">If you vibe — save them to your inbox and keep the conversation going.</div>
+            </div>
           </div>
+        </div>
+
+        <!-- Capacity bar -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="font-size:.82rem;font-weight:700;">Public Spots</div>
+            <div style="font-size:.82rem;color:var(--gold);font-weight:800;" id="sl-spots">— / 20</div>
+          </div>
+          <div style="background:rgba(255,255,255,.1);border-radius:50px;height:8px;overflow:hidden;">
+            <div id="sl-capacity-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#ffb800);border-radius:50px;transition:width .5s;"></div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:8px;" id="sl-spots-sub">Diamond members enter separately</div>
+        </div>
+
+        <!-- Upgrade nudge -->
+        <div style="background:linear-gradient(135deg,rgba(255,210,26,0.07),rgba(5,5,5,0.8));border:1px solid rgba(255,210,26,0.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+          <div><div style="font-size:.85rem;font-weight:700;margin-bottom:3px;">Want unlimited Speed Link?</div><div style="font-size:.76rem;color:var(--muted);">Diamond members join every Friday free.</div></div>
+          <button onclick="go('premium-screen')" style="padding:9px 18px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.82rem;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;">Upgrade</button>
         </div>
       </div>
 
-      <!-- Upgrade nudge -->
-      <div style="background:linear-gradient(135deg,rgba(255,210,26,0.07),rgba(5,5,5,0.8));border:1px solid rgba(255,210,26,0.2);border-radius:16px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-        <div><div style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Want unlimited Speed Link access?</div><div style="font-size:.78rem;color:var(--muted);">Upgrade to Diamond and join every Friday session.</div></div>
-        <button onclick="go('premium-screen')" style="padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.85rem;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;">Upgrade</button>
+      <!-- STATE 2: LIVE NOW (shown when it's Friday 8PM JA) -->
+      <div id="sl-state-live" style="display:none;">
+        <div class="sl-live-hero">
+          <div class="sl-live-pulse"></div>
+          <div style="position:relative;z-index:1;text-align:center;padding:30px 20px;">
+            <div class="sl-live-badge">🔴 LIVE NOW</div>
+            <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-.05em;margin-bottom:8px;">It's Friday Night! 🇯🇲🔥</h2>
+            <p style="color:rgba(255,255,255,.7);font-size:.9rem;margin-bottom:24px;">The Link-Up is live. Your match is waiting.<br>Join now before the session fills up.</p>
+            <button onclick="joinSpeedLinkNow()" class="sl-join-btn">
+              Join the Link-Up Now →
+            </button>
+            <div style="margin-top:12px;font-size:.75rem;color:rgba(255,255,255,.35);">Sessions run every 3 minutes · Next match after timer ends</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:.85rem;font-weight:700;">People in the session</div>
+          <div id="sl-live-count" style="font-size:1.1rem;font-weight:900;color:var(--gold);">—</div>
+        </div>
       </div>
-    </div>
+
+      <!-- STATE 3: VIDEO ROOM -->
+      <div id="sl-state-video" style="display:none;">
+        <div style="position:relative;">
+          <!-- Remote video (partner) -->
+          <div id="sl-remote-video-wrap" style="background:#000;border-radius:20px;overflow:hidden;aspect-ratio:9/16;max-height:55vh;position:relative;">
+            <div id="sl-waiting-msg" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+              <div style="width:50px;height:50px;border:3px solid rgba(255,210,26,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;"></div>
+              <div style="font-size:.88rem;color:rgba(255,255,255,.6);">Finding your match...</div>
+            </div>
+            <div id="sl-daily-frame-wrap" style="width:100%;height:100%;display:none;"></div>
+          </div>
+          <!-- Session timer -->
+          <div id="sl-session-timer" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border-radius:50px;padding:6px 14px;font-size:.88rem;font-weight:900;color:var(--gold);">3:00</div>
+          <!-- Local video preview -->
+          <div id="sl-local-preview" style="position:absolute;bottom:12px;right:12px;width:80px;height:110px;border-radius:12px;overflow:hidden;border:2px solid var(--gold);background:#111;"></div>
+        </div>
+
+        <!-- Partner info -->
+        <div id="sl-partner-info" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-top:14px;display:flex;align-items:center;gap:14px;">
+          <div id="sl-partner-avatar" style="width:48px;height:48px;border-radius:50%;background:rgba(255,210,26,.1);border:2px solid rgba(255,210,26,.3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">👤</div>
+          <div style="flex:1;">
+            <div id="sl-partner-name" style="font-weight:800;font-size:.95rem;">Finding your match...</div>
+            <div id="sl-partner-meta" style="font-size:.75rem;color:var(--muted);margin-top:2px;">Please wait</div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:14px;">
+          <button onclick="slSaveToInbox()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
+            <!-- Changed Save to Vibe and updated the icon to reflect a stronger connection -->
+            <span style="font-size:1.2rem;">💖</span>
+            <span style="font-size:.65rem;font-weight:700;">Vibe</span>
+          </button>
+          <button onclick="slNextMatch()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,210,26,.1);border:1px solid rgba(255,210,26,.25);border-radius:14px;cursor:pointer;border-style:solid;color:var(--gold);font-family:inherit;">
+            <span style="font-size:1.2rem;">⏭️</span>
+            <span style="font-size:.65rem;font-weight:700;">Next</span>
+          </button>
+          <button onclick="slReport()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);border-radius:14px;cursor:pointer;border-style:solid;color:#ff6666;font-family:inherit;">
+            <span style="font-size:1.2rem;">🚨</span>
+            <span style="font-size:.65rem;font-weight:700;">Report</span>
+          </button>
+          <button onclick="slLeave()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;cursor:pointer;border-style:solid;color:rgba(255,255,255,.6);font-family:inherit;">
+            <span style="font-size:1.2rem;">🚪</span>
+            <span style="font-size:.65rem;font-weight:700;">Leave</span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end app-scroll -->
     <div class="bot-bar">
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item" onclick="go('discover')"><span class="ni">🔥</span><span class="nl">Discover</span></button>
@@ -1634,6 +1906,7 @@ input:focus,select:focus,textarea:focus{
     </div>
   </div>
 </div>
+
 
 <!-- ════════════════════════════════════
      REAL VERIFY
@@ -1761,6 +2034,11 @@ input:focus,select:focus,textarea:focus{
 const CLOUD="dfxzpseqr",PRESET="yaadconnect_uploads";
 const STRIPE_PK="pk_test_51TTVipLzvfgPFfcKfGDCamhLM7Lsy3xEwgmCkBv1mPTRUe0v1V4GVdoF6C3hUyaJhZmW75OnSbyKV6dJMiVvwAvz00WNG42tjM";
 const P_LINKED="price_1TTVoqLzvfgPFfcKvjOhgg3w",P_DIAMOND="price_1TTVxGLzvfgPFfcKjYvVWQqL";
+// Stripe Checkout URLs
+window._stripeLinkedUrl="https://buy.stripe.com/fZu14pfgifoV62b5hv8N201";
+window._stripeDiamondUrl="https://buy.stripe.com/9B66oJ2tw5OlgGP4dr8N200";
+window._stripeLinkedSLUrl="https://buy.stripe.com/aFadRb9VY4KhairdO18N202";
+window._stripeTingSLUrl="https://buy.stripe.com/4gMfZjfgiccJfCL9xL8N203";
 
 // ── STATE ──
 let userPhotos=[],signupPhotos=[],uploadedID="";
@@ -1810,6 +2088,8 @@ function go(id){
   if(el){el.classList.add('active');window.scrollTo(0,0);}
   if(id==='profile-screen')loadProfile();
   if(id==='settings-screen')loadSettings();
+  if(id==='speedlink-screen'){setTimeout(initSpeedLinkCountdown,100);}
+  if(id==='circle-screen'){var cps=document.getElementById('circle-phase-select');var cpq=document.getElementById('circle-phase-questions');var cpr=document.getElementById('circle-phase-result');if(cps)cps.style.display='block';if(cpq)cpq.style.display='none';if(cpr)cpr.style.display='none';setTimeout(initCircleSessions,50);}
   if(id==='prefs-screen')loadPrefs();
   if(id==='dashboard')loadDashboard();
   if(id==='messages-screen'){ setTimeout(()=>{ switchMT('messages'); },150); }
@@ -1938,15 +2218,60 @@ async function registerUser(){
       children:(document.getElementById('reg-children')||{value:''}).value||"",
       photos:signupPhotos,photoUrl:signupPhotos[0]||"",
       idUrl:uploadedID,verificationStatus:uploadedID?"pending":"unsubmitted",
-      verified:false,realBadge:false,plan:"ting",createdAt:serverTimestamp()
+      verified:false,realBadge:false,plan:_selectedSignupPlan||"ting",approvalStatus:"pending",createdAt:serverTimestamp()
     });
-    showToast("Welcome to 876Match! 🎉");go('discover');
+    // Send verification email
+    const {sendEmailVerification} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    await sendEmailVerification(cred.user);
+    // Show verify screen
+    const addrEl = document.getElementById('verify-email-addr');
+    if(addrEl) addrEl.textContent = email;
+    showToast("Verification email sent! Check your inbox 📧");
+    go('verify-email-screen');
   }catch(err){
     btn.textContent="📤 Submit & Enter 876Match";btn.disabled=false;
     if(err.code==='auth/email-already-in-use')showToast("That email is already registered.");
     else showToast("Error: "+err.message);
   }
 }
+
+// ── EMAIL VERIFICATION ──
+async function checkEmailVerified(){
+  const btn = document.getElementById('check-verify-btn');
+  if(btn){ btn.textContent = 'Checking...'; btn.disabled = true; }
+  try {
+    const auth = window._fbAuth;
+    const {reload} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    await reload(auth.currentUser);
+    if(auth.currentUser && auth.currentUser.emailVerified){
+      showToast("Email verified! Welcome to 876Match 🎉");
+      go('discover');
+    } else {
+      showToast("Not verified yet. Check your inbox and click the link.");
+      if(btn){ btn.textContent = 'I verified my email ✓'; btn.disabled = false; }
+    }
+  } catch(err){
+    showToast("Error: " + err.message);
+    if(btn){ btn.textContent = 'I verified my email ✓'; btn.disabled = false; }
+  }
+}
+
+async function resendVerification(){
+  try {
+    const auth = window._fbAuth;
+    if(!auth.currentUser){ showToast("No account session found."); return; }
+    const {sendEmailVerification} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    await sendEmailVerification(auth.currentUser);
+    showToast("Verification email resent! Check your inbox 📧");
+  } catch(err){
+    if(err.code === 'auth/too-many-requests'){
+      showToast("Too many attempts. Please wait a few minutes and try again.");
+    } else {
+      showToast("Error: " + err.message);
+    }
+  }
+}
+
 
 // ── LOGIN ──
 async function loginUser(){
@@ -2286,62 +2611,39 @@ function initSLStripe() {
   _slStripeInited = true;
 }
 
-async function processSLPayment() {
+async function processSLPayment(){
   var btn = document.getElementById('sl-pay-btn');
-  if (!btn) return;
-  btn.textContent = 'Processing...';
-  btn.disabled = true;
+  if(btn){btn.textContent='Redirecting to checkout...';btn.disabled=true;}
+  
   try {
-    if (!window.stripeInst || !_slStripeCard) {
-      btn.textContent = 'Try Again';
-      btn.disabled = false;
-      showToast('Please enter your card details.');
-      return;
-    }
+    var plan = window._userPlan || 'ting';
     var auth = window._fbAuth;
     var email = (auth && auth.currentUser) ? auth.currentUser.email : '';
-    var plan = window._userPlan || 'ting';
-
-    var pmResult = await window.stripeInst.createPaymentMethod({ type: 'card', card: _slStripeCard });
-    if (pmResult.error) {
-      var err = document.getElementById('sl-stripe-err');
-      if (err) err.textContent = pmResult.error.message;
-      btn.textContent = 'Try Again';
-      btn.disabled = false;
+    
+    sessionStorage.setItem('pending_sl_reservation', '1');
+    
+    var checkoutUrl = plan === 'linked' 
+      ? window._stripeLinkedSLUrl 
+      : window._stripeTingSLUrl;
+    
+    if(!checkoutUrl){
+      // No payment link yet - confirm reservation for testing
+      closeSLPayModal();
+      confirmSLReservation();
+      showToast('Payment link coming soon! Spot reserved for testing.');
       return;
     }
-
-    // Call Netlify Function
-    var response = await fetch('/.netlify/functions/create-speedlink-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paymentMethodId: pmResult.paymentMethod.id,
-        plan: plan,
-        email: email
-      })
-    });
-
-    var data = await response.json();
-
-    if(data.error){
-      var err2 = document.getElementById('sl-stripe-err');
-      if (err2) err2.textContent = data.error;
-      btn.textContent = 'Try Again';
-      btn.disabled = false;
-      return;
-    }
-
-    closeSLPayModal();
-    confirmSLReservation();
-
-  } catch(e) {
+    
+    if(email) checkoutUrl += '?prefilled_email=' + encodeURIComponent(email);
+    window.location.href = checkoutUrl;
+    
+  } catch(e){
     console.log('SL payment error:', e);
-    btn.textContent = 'Try Again';
-    btn.disabled = false;
-    showToast('Payment failed. Please try again.');
+    if(btn){btn.textContent='Try Again';btn.disabled=false;}
+    showToast('Something went wrong. Please try again.');
   }
 }
+
 
 function confirmSLReservation() {
   _slUserReserved = true;
@@ -2407,102 +2709,60 @@ async function submitRV(){
 
 // ── STRIPE ──
 async function startCheckout(plan){
-  try{const auth=window._fbAuth;if(!auth||!auth.currentUser){showToast("Please log in first.");go('login-screen');return;}setTimeout(()=>{const e=document.getElementById('pay-em');if(e)e.value=auth.currentUser.email;},100);}catch(e){}
-  checkoutPlan=plan;const isD=plan==='diamond';
-  document.getElementById('pay-ico').textContent=isD?'💎':'🔗';
-  document.getElementById('pay-ttl').textContent='Upgrade to '+(isD?'Diamond':'Linked');
-  document.getElementById('pay-pr').innerHTML=(isD?'US$19.99':'US$9.99')+'<span style="font-size:.82rem;color:var(--muted);font-weight:400;">/month</span>';
-  document.getElementById('pay-btn').textContent='Pay '+(isD?'US$19.99':'US$9.99')+' / month';
-  document.getElementById('pay-modal').classList.add('show');
-  setTimeout(()=>{stripeInst=Stripe(STRIPE_PK);const el=stripeInst.elements({appearance:{theme:'night',variables:{colorPrimary:'#FFD21A',colorBackground:'rgba(255,255,255,0.05)',colorText:'#fff',borderRadius:'12px'}}});stripeCard=el.create('card',{style:{base:{color:'#fff',fontFamily:'Inter,sans-serif',fontSize:'14px','::placeholder':{color:'rgba(255,255,255,0.3)'}}}});stripeCard.mount('#stripe-el');stripeCard.on('change',e=>{const err=document.getElementById('stripe-err');if(err)err.textContent=e.error?e.error.message:'';});},200);
-}
-function closePayModal(){document.getElementById('pay-modal').classList.remove('show');}
-async function processPayment(){
-  var btn = document.getElementById('pay-btn');
-  if(btn){btn.textContent='Processing...';btn.disabled=true;}
-  try {
-    var nameVal = (document.getElementById('pay-nm')||{value:''}).value;
-    var emailVal = (document.getElementById('pay-em')||{value:''}).value;
-    var addrVal = (document.getElementById('pay-addr')||{value:''}).value;
-    var cityVal = (document.getElementById('pay-city')||{value:''}).value;
-    var postVal = (document.getElementById('pay-post')||{value:''}).value;
-    var ctryVal = (document.getElementById('pay-ctry')||{value:''}).value;
-
-    var pmResult = await window.stripeInst.createPaymentMethod({
-      type: 'card',
-      card: window.stripeCard,
-      billing_details: {
-        name: nameVal,
-        email: emailVal,
-        address: { line1: addrVal, city: cityVal, postal_code: postVal, country: ctryVal }
-      }
-    });
-
-    if(pmResult.error){
-      var errEl = document.getElementById('stripe-err');
-      if(errEl) errEl.textContent = pmResult.error.message;
-      if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+  try{
+    var auth = window._fbAuth;
+    if(!auth || !auth.currentUser){
+      showToast("Please log in first.");
+      go('login-screen');
       return;
     }
-
-    // Call Netlify Function
-    var response = await fetch('/.netlify/functions/create-subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paymentMethodId: pmResult.paymentMethod.id,
-        plan: checkoutPlan,
-        email: emailVal,
-        name: nameVal
-      })
-    });
-
-    var data = await response.json();
-
-    if(data.error){
-      var errEl2 = document.getElementById('stripe-err');
-      if(errEl2) errEl2.textContent = data.error;
-      if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+    checkoutPlan = plan;
+    if(plan === 'linked'){
+      window.location.href = "https://buy.stripe.com/fZu14pfgifoV62b5hv8N201";
       return;
     }
-
-    // Confirm payment if needed
-    if(data.clientSecret){
-      var confirmResult = await window.stripeInst.confirmCardPayment(data.clientSecret);
-      if(confirmResult.error){
-        var errEl3 = document.getElementById('stripe-err');
-        if(errEl3) errEl3.textContent = confirmResult.error.message;
-        if(btn){btn.textContent='Pay Now';btn.disabled=false;}
-        return;
-      }
+    if(plan === 'diamond'){
+      window.location.href = "https://buy.stripe.com/9B66oJ2tw5OlgGP4dr8N200";
+      return;
     }
-
-    // Update Firebase
-    try {
-      var auth = window._fbAuth;
-      var db = window._fbDb;
-      var firestoreModule = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      var docFn = firestoreModule.doc;
-      var updateDocFn = firestoreModule.updateDoc;
-      if(auth && auth.currentUser){
-        await updateDocFn(docFn(db,"users",auth.currentUser.uid),{
-          plan: checkoutPlan,
-          stripeCustomerId: data.customerId,
-          stripeSubscriptionId: data.subscriptionId,
-          subscribedAt: new Date().toISOString()
-        });
-      }
-    } catch(fbErr){ console.log('Firebase update error:', fbErr); }
-
-    window._userPlan = checkoutPlan;
-    closePayModal();
-    showToast(checkoutPlan === 'diamond' ? 'Welcome to Diamond!' : 'Welcome to Linked!');
-    setTimeout(function(){ go('dashboard'); }, 1500);
-
   } catch(e){
-    console.log('Payment error:', e);
+    showToast("Something went wrong. Please try again.");
+  }
+}
+
+
+async function processPayment(){
+  // Use Stripe Checkout - redirect to hosted payment page
+  var btn = document.getElementById('pay-btn');
+  if(btn){btn.textContent='Redirecting to checkout...';btn.disabled=true;}
+  
+  try {
+    var email = (document.getElementById('pay-em')||{value:''}).value;
+    
+    // Store plan in sessionStorage so we can update Firebase after return
+    sessionStorage.setItem('pending_plan', checkoutPlan);
+    sessionStorage.setItem('pending_email', email);
+    
+    // Redirect to Stripe Checkout
+    var checkoutUrl = checkoutPlan === 'diamond' 
+      ? window._stripeDiamondUrl 
+      : window._stripeLinkedUrl;
+    
+    if(!checkoutUrl){
+      showToast('Payment link not configured yet. Coming soon!');
+      if(btn){btn.textContent='Pay Now';btn.disabled=false;}
+      return;
+    }
+    
+    // Add prefilled email to checkout URL
+    if(email) checkoutUrl += '?prefilled_email=' + encodeURIComponent(email);
+    
+    window.location.href = checkoutUrl;
+    
+  } catch(e){
+    console.log('Checkout error:', e);
     if(btn){btn.textContent='Pay Now';btn.disabled=false;}
-    showToast('Payment failed. Please try again.');
+    showToast('Something went wrong. Please try again.');
   }
 }
 
@@ -2624,6 +2884,11 @@ async function sendMessage() {
   try {
     // Push message to RTDB
     await window._rtdb.ref('messages/' + _activeConvId).push(msgData);
+    // Notify the other person
+    if (_activePartnerUid) {
+      const myName = (window._userData && window._userData.firstName) || '876Match';
+      sendNotificationToUser(_activePartnerUid, myName + ' sent you a message 💬', text.substring(0,60), 'message');
+    }
     // Update conversation last message
     await window._rtdb.ref('conversations/' + _activeConvId).update({
       lastMessage: text.length > 50 ? text.substring(0, 50) + '...' : text,
@@ -2760,6 +3025,1459 @@ async function saveMatch(theirUid, theirName) {
 }
 
 
+
+// ══════════════════════════════════════
+// COMPATIBILITY CIRCLE ENGINE
+// ══════════════════════════════════════
+
+var CIRCLE_QUESTIONS = {
+  romance: [
+    {q:"What does intimacy mean to you?", ans:["Emotional closeness","Physical touch","Deep conversations","All of the above"]},
+    {q:"How soon is too soon to say 'I love you'?", ans:["1-3 months","3-6 months","When it feels right","Never rush it"]},
+    {q:"What makes you feel most loved?", ans:["Words of affirmation","Acts of service","Quality time","Physical affection"]},
+    {q:"How do you handle conflict in a relationship?", ans:["Talk it out immediately","Need space first","Write it down","Avoid until calm"]},
+    {q:"Your ideal relationship pace?", ans:["Slow and steady","Go with the flow","Move intentionally","Fast but deep"]},
+    {q:"What kills romance fastest for you?", ans:["Dishonesty","Neglect","Lack of effort","Poor communication"]},
+    {q:"How important is physical affection daily?", ans:["Very - essential","Nice but not critical","Depends on mood","Not my primary need"]},
+    {q:"What does a romantic evening look like to you?", ans:["Cozy night in","Fine dining out","Adventure together","Deep conversation"]},
+    {q:"How do you express love most naturally?", ans:["I say it often","I show through actions","I give my time","I give thoughtful gifts"]},
+    {q:"Biggest green flag in a partner?", ans:["Emotional maturity","Consistency","Ambition","Genuine kindness"]},
+    {q:"How important is maintaining individuality in a relationship?", ans:["Very - I need space","Balance is key","We grow together","Partnership first"]},
+    {q:"What does commitment mean to you?", ans:["Total loyalty","Being a team","Growing together","Daily choice"]},
+    {q:"How do you know you're falling for someone?", ans:["I think about them constantly","I want to share everything","I get nervous around them","I just know"]},
+    {q:"What's your biggest relationship dealbreaker?", ans:["Dishonesty","Disrespect","Emotional unavailability","No ambition"]},
+    {q:"How do you reconnect after a disagreement?", ans:["Physical touch","Honest talk","Humour","Give it time"]},
+    {q:"Do you believe in love at first sight?", ans:["Yes absolutely","Attraction yes, love no","It's possible","No - love is built"]},
+    {q:"What does a healthy relationship require most?", ans:["Trust","Communication","Effort","Mutual respect"]},
+    {q:"How do you show up when your partner is struggling?", ans:["Hold space and listen","Give practical help","Offer comfort","Give them space"]},
+    {q:"What's your love language in action?", ans:["I leave little notes","I cook for them","I plan surprises","I check in daily"]},
+    {q:"How important is shared laughter in love?", ans:["Essential - must laugh together","Very important","Nice to have","Not a top priority"]},
+    {q:"How do you keep a long-term relationship exciting?", ans:["New experiences","Surprise gestures","Deep conversations","Physical intimacy"]},
+    {q:"What's the most romantic thing a partner can do?", ans:["Remember small details","Plan a surprise","Write a heartfelt message","Show up when it matters"]},
+    {q:"Do you need alone time even in a relationship?", ans:["Yes - regularly","Occasionally","Rarely","No - I want togetherness"]},
+    {q:"How do you feel about public displays of affection?", ans:["Love it","Fine in moderation","Private person","Very uncomfortable"]},
+    {q:"What does emotional safety mean to you?", ans:["Being able to cry freely","No judgement","Knowing they stay","Open vulnerability"]},
+    {q:"How do you handle jealousy?", ans:["Talk about it honestly","Work through it alone","Address the root cause","I rarely feel jealous"]},
+    {q:"What's the role of friendship in a romantic relationship?", ans:["They should be my best friend","Friendship and romance are separate","It deepens over time","Nice but not required"]},
+    {q:"How do you feel about surprises from a partner?", ans:["Love them","Appreciate the effort","Prefer to know in advance","Depends on the surprise"]},
+    {q:"What does trust look like day to day?", ans:["No need to check their phone","Keeping promises","Being where you say you are","Open communication always"]},
+    {q:"How do you define a romantic relationship vs just dating?", ans:["Exclusivity","Emotional depth","Future planning","Clear label and intention"]},
+  ],
+  deep: [
+    {q:"What is your biggest life purpose right now?", ans:["Family and love","Career and impact","Personal growth","Freedom and experiences"]},
+    {q:"Do you believe people can truly change?", ans:["Yes with effort","Only with trauma","Rarely","Not fundamentally"]},
+    {q:"What does success look like to you?", ans:["Financial freedom","Family happiness","Personal fulfilment","Making a difference"]},
+    {q:"How important is faith or spirituality to you?", ans:["Central to my life","Important but private","Somewhat important","Not important"]},
+    {q:"What do you believe about soulmates?", ans:["They exist","You create them","Multiple exist","It's a myth"]},
+    {q:"How do you make big decisions?", ans:["Logic and facts","Gut feeling","Pray or meditate","Talk to trusted people"]},
+    {q:"What is your relationship with money?", ans:["Tool for freedom","Security and safety","Means to experiences","Just a necessity"]},
+    {q:"What scares you most about love?", ans:["Being abandoned","Losing myself","Being misunderstood","Vulnerability"]},
+    {q:"How do you define emotional intelligence?", ans:["Understanding feelings","Managing reactions","Empathy for others","All of these"]},
+    {q:"What do you need most from a partner intellectually?", ans:["Deep conversations","Shared curiosity","Challenging my views","Just good vibes"]},
+    {q:"Do you think opposites attract long-term?", ans:["Yes completely","Only in some ways","Rarely","No - need alignment"]},
+    {q:"What's more important in life?", ans:["Being happy","Being successful","Being good","Being loved"]},
+    {q:"How do you process grief or loss?", ans:["I lean on others","I need solitude","I stay busy","I pray or meditate"]},
+    {q:"What is your relationship with your past?", ans:["Made peace with it","Still learning from it","It shaped me positively","Still working through it"]},
+    {q:"How do you feel about therapy or counselling?", ans:["Been - it helped","Would go if needed","Sceptical but open","Not for me"]},
+    {q:"What does integrity mean in daily life?", ans:["Doing right when no one watches","Keeping your word","Being consistent","All of the above"]},
+    {q:"How do you respond to failure?", ans:["Analyse and learn","Feel it then move on","Lean on support","Bounce back quickly"]},
+    {q:"What is your biggest unresolved internal conflict?", ans:["Ambition vs peace","Independence vs love","Past vs future","Giving vs receiving"]},
+    {q:"How do you define wisdom?", ans:["Learning from experience","Knowing what matters","Choosing peace","Listening more than talking"]},
+    {q:"What kind of legacy do you want to leave?", ans:["A loving family","A meaningful career","A community impact","A spiritual one"]},
+    {q:"How do you feel when someone disagrees with your core beliefs?", ans:["I engage respectfully","I feel challenged","I pull back","I enjoy the debate"]},
+    {q:"What is the root of most relationship problems?", ans:["Poor communication","Unhealed wounds","Misaligned values","Lack of effort"]},
+    {q:"How do you stay grounded in difficult times?", ans:["Faith and prayer","Routine and discipline","Trusted people","Being in nature"]},
+    {q:"Do you believe in destiny or do we create our own path?", ans:["Destiny exists","We create it","A mix of both","I do not think about it"]},
+    {q:"What is the most important thing you've learned about yourself?", ans:["My capacity for love","My resilience","My need for peace","My tendency to overthink"]},
+    {q:"How do you handle carrying emotional weight?", ans:["Share it openly","Process quietly","Distract myself","Break it down slowly"]},
+    {q:"What does authenticity mean to you?", ans:["Being the same everywhere","Saying what I mean","Not performing for others","Living by my values"]},
+    {q:"How do you feel about vulnerability in a relationship?", ans:["It's necessary","It's scary but important","I struggle with it","I open up slowly"]},
+    {q:"What role does gratitude play in your life?", ans:["Daily practice","When things are hard","Occasionally","I'm working on it"]},
+    {q:"What is the one question you think most people avoid asking themselves?", ans:["Am I truly happy?","Am I living my values?","What do I actually want?","Am I running from something?"]},
+  ],
+  fun: [
+    {q:"Your ideal Saturday?", ans:["Beach and vibes","Netflix at home","Exploring somewhere new","Group hangout"]},
+    {q:"Which best describes your humour?", ans:["Dry and sarcastic","Silly and loud","Storytelling","Dark humour"]},
+    {q:"Your social battery?", ans:["Always charged","Charges with the right people","Drains quickly","Fully introverted"]},
+    {q:"What kind of music moves you?", ans:["Dancehall and reggae","R&B and soul","Afrobeats","Gospel or classical"]},
+    {q:"Pick your vibe:", ans:["Good food good company","Adventure and adrenaline","Chill and low key","Creative and artistic"]},
+    {q:"How do you handle boring moments together?", ans:["Create something fun","Comfortable silence","Find something to do","Be playful about it"]},
+    {q:"What energy do you bring to a room?", ans:["Calm and grounding","Loud and fun","Deep and thoughtful","Warm and welcoming"]},
+    {q:"Your travel style?", ans:["All-inclusive resort","Backpack and explore","Road trip anywhere","City and culture"]},
+    {q:"Biggest personality green flag?", ans:["Makes me laugh","Genuine kindness","Intellectual depth","Confidence"]},
+    {q:"How competitive are you?", ans:["Very - I like to win","Only when it matters","Not at all","Depends on the game"]},
+    {q:"Pick a date vibe:", ans:["Cook together at home","Spontaneous adventure","Concert or show","Long walk and talk"]},
+    {q:"What does fun mean to you?", ans:["Laughter and play","New experiences","Deep connection","Simple moments"]},
+    {q:"How do you feel in a big crowd?", ans:["Energised","Fine for a while","Drained","Depends who's there"]},
+    {q:"What's your karaoke energy?", ans:["First on the mic","Hype up the crowd","Watch and enjoy","Hard no"]},
+    {q:"Describe your friend group energy:", ans:["The life of the party","The planner","The chill one","The deep convo starter"]},
+    {q:"What's your go-to stress reliever?", ans:["Music and dancing","Food and TV","Exercise","Talking it out"]},
+    {q:"How do you feel about spontaneous plans?", ans:["Love them - let's go","Fine if not too last minute","Prefer to plan ahead","Hard no - I need notice"]},
+    {q:"What's your love for food like?", ans:["I live to eat","I eat to live","Food is everything","Depends on the day"]},
+    {q:"Pick a Sunday morning:", ans:["Church then brunch","Lie in until noon","Morning market or outdoors","Coffee and a good book"]},
+    {q:"How do you unwind after a long week?", ans:["Out with people","Quiet night in","Physical activity","Something creative"]},
+    {q:"What kind of content do you consume most?", ans:["Music and videos","Podcasts and books","Social media","News and current events"]},
+    {q:"What's your party role?", ans:["I'm dancing all night","I'm in deep conversation","I'm by the food","I'm heading home early"]},
+    {q:"How important is having fun in a relationship?", ans:["Essential - must laugh","Very important","Nice to have","We can be serious"]},
+    {q:"What's your biggest guilty pleasure?", ans:["Reality TV","Junk food","Sleeping in","Spending money on nothing"]},
+    {q:"Pick your adventure level:", ans:["Sky diving level","Road trip level","New restaurant level","Couch level"]},
+    {q:"How do you express happiness?", ans:["I get loud and expressive","I smile quietly","I share it with others","I feel it deeply inside"]},
+    {q:"What's your idea of a perfect group activity?", ans:["Game night","Beach day","Dining out","Movie marathon"]},
+    {q:"How do you feel about dancing?", ans:["I love it - always dancing","I dance when I feel it","I enjoy watching","Not really my thing"]},
+    {q:"Pick your ideal holiday vibe:", ans:["Busy itinerary","Pure relaxation","Mix of both","Wherever feels right"]},
+    {q:"What makes you genuinely belly laugh?", ans:["Relatable stories","Physical comedy","Wit and sarcasm","Good banter"]},
+  ],
+  family: [
+    {q:"Do you want children?", ans:["Yes - definitely","Already have some","Open to it","No"]},
+    {q:"How close are you to your family?", ans:["Very close - see weekly","Close but independent","Complicated relationship","Not close at all"]},
+    {q:"Would you relocate for love?", ans:["Yes without hesitation","If the relationship is solid","Need serious discussion","No - roots matter"]},
+    {q:"How important is your partner meeting your family?", ans:["Very - early on","When serious","Eventually yes","Not important"]},
+    {q:"How do you feel about blended families?", ans:["Fully open","Open with clarity","Need to discuss","Would be challenging"]},
+    {q:"What family value matters most to you?", ans:["Loyalty","Respect","Faith","Togetherness"]},
+    {q:"Your parenting style (if applicable)?", ans:["Firm but loving","Free and expressive","Faith-centred","Learning as I go"]},
+    {q:"How do you handle family interference in relationships?", ans:["Set firm boundaries","Balance both","Family comes first","Depends on the situation"]},
+    {q:"Ideal living situation?", ans:["Own home near family","City apartment","Rural or suburban","Anywhere together"]},
+    {q:"What role does religion play in your household?", ans:["Central and active","Respected privately","Present but flexible","Not a factor"]},
+    {q:"Do you believe in traditional gender roles?", ans:["Yes fully","Partially","We decide together","Not at all"]},
+    {q:"How do you define a healthy family unit?", ans:["Love and stability","Open communication","Shared faith","Mutual respect"]},
+    {q:"How was love expressed in your home growing up?", ans:["Openly and warmly","Through acts of service","Quietly and privately","It was complicated"]},
+    {q:"What did your upbringing teach you about relationships?", ans:["Loyalty above all","Communication is key","Independence matters","Love is complicated"]},
+    {q:"How do you feel about your partner's relationship with their family?", ans:["Very important to me","Matters but not defining","Their business mostly","Depends on the dynamic"]},
+    {q:"What's your relationship with your mother like?", ans:["Very close","Respectful but distant","Complicated","We're still building it"]},
+    {q:"How important is it that your partner shares your faith?", ans:["Essential","Very important","Preferred but not required","Not important"]},
+    {q:"How do you approach discipline if you have children?", ans:["Firm and consistent","Gentle and communicative","Faith-based","Learning as I go"]},
+    {q:"What does Sunday look like in your ideal household?", ans:["Church and family time","Relaxed and low key","Brunch and outdoor activity","Just time together"]},
+    {q:"How important is having your own home vs renting?", ans:["Must own - it's a priority","Would love to own","Fine either way","Not important to me"]},
+    {q:"What would cause you to cut off a family member?", ans:["Disrespect to my partner","Toxic behaviour","Betrayal of trust","I wouldn't - family first"]},
+    {q:"How do you feel about in-laws?", ans:["Welcome them fully","Respect but maintain distance","They stay in their lane","Depends on the people"]},
+    {q:"How many children is your ideal?", ans:["One or two","Three or four","However many come","None for me"]},
+    {q:"How do you feel about your partner having children from a previous relationship?", ans:["Fully open","Open with the right setup","Would need to discuss","Very challenging for me"]},
+    {q:"What does generational wealth mean to you?", ans:["Land and property","Business ownership","Education and knowledge","Everything we build together"]},
+    {q:"How do you handle holidays and celebrations?", ans:["Big family gatherings always","Smaller intimate settings","Mix it up","Just us as a couple"]},
+    {q:"What's your view on stay-at-home parenting?", ans:["Strong supporter","Valid choice","Financially need both working","Not for me"]},
+    {q:"How important is cultural identity in how you raise children?", ans:["Very - pass it on","Important but not rigid","Balanced with modern life","Not a strong focus"]},
+    {q:"How do you feel about adoption?", ans:["Fully open","Open if needed","Would consider","Not for me personally"]},
+    {q:"What do you most want to pass on to your children?", ans:["Faith and values","Resilience and work ethic","Love for family","Financial wisdom"]},
+  ],
+  attraction: [
+    {q:"What attracts you first?", ans:["Energy and confidence","Physical appearance","Intelligence","How they carry themselves"]},
+    {q:"How important is physical attraction long-term?", ans:["Essential always","Important but not everything","Fades but that's okay","Personality wins"]},
+    {q:"What is the biggest physical turn-off?", ans:["Poor hygiene","No effort in appearance","Closed body language","Doesn't match my type"]},
+    {q:"How do you flirt?", ans:["Eye contact and smiling","Witty conversation","Light touch","Direct and honest"]},
+    {q:"What keeps attraction alive in a relationship?", ans:["Effort and novelty","Deep connection","Physical chemistry","Surprise and mystery"]},
+    {q:"How important is a partner taking care of their body?", ans:["Very important","Somewhat important","As long as they feel good","Not important"]},
+    {q:"What is an instant spark for you?", ans:["Genuine laughter","Intellectual depth","Confident eye contact","Unexpected kindness"]},
+    {q:"Physical chemistry - can it grow or is it instant?", ans:["Must be instant","Can definitely grow","Both happen","It's complicated"]},
+    {q:"What does chemistry mean to you?", ans:["Electric energy","Easy conversation","Feeling seen","Physical pull"]},
+    {q:"How much does style and presentation matter?", ans:["A lot - effort shows","Matters but not defining","Some effort is enough","Doesn't matter much"]},
+    {q:"Biggest attraction killer?", ans:["Arrogance","Dishonesty","No ambition","Poor communication"]},
+    {q:"How do you maintain physical attraction over time?", ans:["Stay active and healthy","Keep romance alive","Dress well for each other","It evolves naturally"]},
+    {q:"What scent or vibe draws you in?", ans:["Clean and fresh","Bold and distinct","Natural and warm","Whatever feels confident"]},
+    {q:"How important is your partner's voice or energy when they talk?", ans:["Very - it's magnetic","Matters a lot","Somewhat","Not something I focus on"]},
+    {q:"What's a physical feature you notice immediately?", ans:["Eyes","Smile","Hands","How they walk"]},
+    {q:"Do looks matter more or less as you get older?", ans:["Less - depth matters more","Still matters","About the same","Looks were never my focus"]},
+    {q:"What's more attractive to you?", ans:["Quiet confidence","Playful energy","Serious ambition","Warm openness"]},
+    {q:"How do you feel when someone you like looks deeply into your eyes?", ans:["Melts me completely","Makes me nervous","I hold the gaze","I look away"]},
+    {q:"What's the most attractive non-physical thing about someone?", ans:["How they treat strangers","Their passion for something","The way they listen","Their sense of humour"]},
+    {q:"How do you feel about fitness in a relationship?", ans:["Love a partner who is active","Nice but not required","We can motivate each other","Doesn't matter at all"]},
+    {q:"What's the most underrated attractive quality?", ans:["Emotional stability","Good listening skills","Being reliable","Knowing who they are"]},
+    {q:"How do you feel about aging and attraction?", ans:["Attraction deepens over time","Physical care still matters","It's about who they are inside","Beauty fades - values do not"]},
+    {q:"What outfit style do you find most attractive?", ans:["Clean and well put together","Casual and effortless","Bold and stylish","Doesn't matter - it's the person"]},
+    {q:"What's your biggest physical insecurity?", ans:["My body","My face","My height or size","I'm fairly confident"]},
+    {q:"What makes someone magnetic at first meeting?", ans:["How they carry themselves","Their smile and eye contact","The energy they project","What they say and how they say it"]},
+    {q:"How important is smelling good to you?", ans:["Very - it's essential","Very important","Somewhat","Not a big deal"]},
+    {q:"What does it mean when someone is your type?", ans:["Physical match","Energetic match","Values match","All three combined"]},
+    {q:"How important is height or physical build to you?", ans:["Very - strong preference","Some preference","Slight preference","Completely irrelevant"]},
+    {q:"When do you feel most attractive?", ans:["When I'm confident","When I'm dressed well","When I'm happy","When I'm healthy"]},
+    {q:"What physical act shows the most intimacy to you?", ans:["Eye contact","Holding hands","A forehead kiss","A long embrace"]},
+  ],
+  future: [
+    {q:"Where do you see yourself in 5 years?", ans:["Married with family","Building my business","Traveling and free","Settled and stable"]},
+    {q:"What does financial compatibility mean to you?", ans:["Same money mindset","Shared goals","Transparency","Independent finances"]},
+    {q:"How do you feel about joint finances?", ans:["Fully merge accounts","Keep mostly separate","Shared fund plus personal","Discuss case by case"]},
+    {q:"Career ambition - how important in a partner?", ans:["Very - drive matters","Important but balanced","Doesn't define them","Not important to me"]},
+    {q:"Where would you ideally live?", ans:["Jamaica - always home","Jamaica but travel","Diaspora with roots","Wherever life takes us"]},
+    {q:"How do you plan for the future?", ans:["Detailed plans","General goals","Go with the flow","Day by day"]},
+    {q:"What is your retirement vision?", ans:["Beach house in Jamaica","Travelling the world","Surrounded by family","Simple and peaceful"]},
+    {q:"How important is homeownership to you?", ans:["Essential - must own","Important goal","Would be nice","Not a priority"]},
+    {q:"What does a successful life look like?", ans:["Financial freedom","Love and family","Impact and legacy","Peace and health"]},
+    {q:"How do you handle financial stress in a relationship?", ans:["Face it together","Be honest and open","Give each other space","Divide and conquer"]},
+    {q:"What is your biggest life ambition?", ans:["Build generational wealth","Create a loving home","See the world","Leave a legacy"]},
+    {q:"How aligned do partners need to be on future goals?", ans:["Very aligned","Core values must match","Can grow together","Flexible on most things"]},
+    {q:"How do you feel about a partner earning more than you?", ans:["Fully comfortable","Fine with clear respect","Slight discomfort I'd work through","Would be challenging"]},
+    {q:"What does financial independence mean in a relationship?", ans:["Both contribute equally","One leads, one supports","Fully merged","Each manages their own"]},
+    {q:"How important is entrepreneurship or business ownership to you?", ans:["Essential - I must build something","Very important","Nice to have","Not a priority"]},
+    {q:"Do you believe in saving or living in the moment?", ans:["Save and invest always","Balance both","Live now and adjust later","Hard to save but I try"]},
+    {q:"What does owning land or property mean to you?", ans:["Generational security","Personal stability","Pride and roots","A major life goal"]},
+    {q:"How do you feel about career sacrifices for family?", ans:["Worth it completely","Balance is possible","Would struggle","Career stays a priority"]},
+    {q:"What does your ideal working life look like in 10 years?", ans:["Running my own business","Leadership in a career","Flexible and free","Retired or semi-retired"]},
+    {q:"How do you feel about long-distance relationships?", ans:["Done it - it can work","Only with a clear end date","Very difficult for me","Hard no"]},
+    {q:"How important is travel to your future?", ans:["Regular travel is non-negotiable","Would love to travel more","Occasional trips are enough","Not a priority"]},
+    {q:"What financial habit do you most want in a partner?", ans:["Saves consistently","Invests and builds","Generous but responsible","Honest about money"]},
+    {q:"How do you feel about prenuptial agreements?", ans:["Smart and practical","Open to it","Uncomfortable but would discuss","Against it"]},
+    {q:"What legacy do you want your relationship to leave?", ans:["A strong family name","Generational wealth","A love story worth telling","A stable home"]},
+    {q:"How do you feel about immigrating for a better life?", ans:["Already done or open to it","Only if it makes sense","Jamaica is home always","Would consider but not prefer"]},
+    {q:"What does stability mean to you?", ans:["Financial security","Emotional peace","A solid home base","Consistent love"]},
+    {q:"How do you approach investing?", ans:["Actively - stocks and business","Land and property","Learning as I go","I do not invest yet"]},
+    {q:"How important is education for your future children?", ans:["Top priority","Very important","Important but not everything","They choose their path"]},
+    {q:"How do you feel about taking financial risks?", ans:["Calculated risks are necessary","Only when ready","Very cautious","I avoid risk"]},
+    {q:"What does your ideal retirement look like?", ans:["Beach and family in Jamaica","Travelling the world","Quiet and peaceful","Still building something"]},
+  ]
+};
+
+var STARTERS = [
+  "What's one thing people always misunderstand about you?",
+  "What made you smile genuinely this week?",
+  "What's a life experience that shaped who you are?",
+  "If you could live anywhere for a year, where and why?",
+  "What does a perfect evening look like to you?",
+  "What's something you've never told a partner but wish you could?",
+  "What are you most proud of that no one knows about?",
+  "What does loyalty mean to you in practice?",
+];
+
+// State
+var _circCat = null;
+var _circQs = [];
+var _circQIdx = 0;
+var _circPeople = [];
+var _circAnswers = [];
+var _circSessionsToday = 0;
+var _circMaxSessions = 2; // default ting
+var _circUnlocked = false;
+
+var CIRCLE_PEOPLE = [
+  {name:"Shanice", skin:"#c8956a", outfit:"#1a5c30"},
+  {name:"Marcus", skin:"#5a3820", outfit:"#1a2a6b"},
+  {name:"Jade", skin:"#b07840", outfit:"#6b1a1a"},
+  {name:"Devon", skin:"#7a5230", outfit:"#1a3a1a"},
+  {name:"Tanya", skin:"#c49060", outfit:"#4a1a6b"},
+];
+
+function initCircleSessions() {
+  var plan = window._userPlan || 'ting';
+  var today = new Date().toDateString();
+  var stored = JSON.parse(localStorage.getItem('circle_sessions') || '{}');
+  if (stored.date !== today) {
+    stored = {date: today, count: 0, unlocked: false};
+    localStorage.setItem('circle_sessions', JSON.stringify(stored));
+  }
+  _circSessionsToday = stored.count;
+  _circUnlocked = stored.unlocked || false;
+
+  if (plan === 'diamond') {
+    _circMaxSessions = 999;
+  } else if (plan === 'linked') {
+    _circMaxSessions = _circUnlocked ? 999 : 5;
+  } else {
+    _circMaxSessions = _circUnlocked ? 999 : 2;
+  }
+
+  var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
+  var badge = document.getElementById('circle-session-badge');
+  var label = document.getElementById('sessions-label');
+  var sub = document.getElementById('sessions-sub');
+  var count = document.getElementById('sessions-count');
+  var unlockBanner = document.getElementById('circle-unlock-banner');
+  var startBtn = document.getElementById('circle-start-btn');
+
+  if (plan === 'diamond') {
+    if (badge) badge.textContent = '💎 Unlimited';
+    if (label) label.textContent = 'Diamond - unlimited sessions';
+    if (count) { count.textContent = '∞'; count.style.color = '#A8EDFF'; }
+    if (unlockBanner) unlockBanner.style.display = 'none';
+  } else if (_circUnlocked) {
+    if (badge) badge.textContent = '🔓 Unlocked today';
+    if (label) label.textContent = 'Unlimited for today';
+    if (count) count.textContent = '∞';
+    if (unlockBanner) unlockBanner.style.display = 'none';
+  } else {
+    var max = plan === 'linked' ? 5 : 2;
+    if (badge) badge.textContent = remaining + ' left today';
+    if (label) label.textContent = 'Sessions remaining today';
+    if (count) count.textContent = remaining;
+    if (remaining <= 0) {
+      if (unlockBanner) unlockBanner.style.display = 'block';
+      if (startBtn) { startBtn.disabled = true; startBtn.style.opacity = '.4'; startBtn.style.cursor = 'not-allowed'; startBtn.textContent = 'No sessions left today'; }
+    }
+  }
+}
+
+function selectCategory(el, cat) {
+  document.querySelectorAll('.circ-cat').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  _circCat = cat;
+  var btn = document.getElementById('circle-start-btn');
+  var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
+  if (btn && (remaining > 0 || _circUnlocked || (window._userPlan === 'diamond'))) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.textContent = 'Start the Circle →';
+  }
+}
+
+function startCircle() {
+  if (!_circCat) { showToast('Pick a category first.'); return; }
+  var remaining = _circMaxSessions - _circSessionsToday;
+  var plan = window._userPlan || 'ting';
+  if (remaining <= 0 && plan !== 'diamond' && !_circUnlocked) {
+    showToast('No sessions left today. Unlock more or upgrade.');
+    return;
+  }
+
+  // Shuffle and pick 10 questions from category
+  var pool = CIRCLE_QUESTIONS[_circCat].slice();
+  for (var i = pool.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  _circQs = pool.slice(0, 10);
+  _circQIdx = 0;
+  _circAnswers = [];
+
+  // Init people with 100% compat
+  _circPeople = CIRCLE_PEOPLE.map(p => ({ name: p.name, skin: p.skin, outfit: p.outfit, compat: 100, active: true }));
+
+  // Show questions phase
+  document.getElementById('circle-phase-select').style.display = 'none';
+  document.getElementById('circle-phase-questions').style.display = 'block';
+  document.getElementById('circle-phase-result').style.display = 'none';
+
+  renderArena();
+  renderQuestion();
+}
+
+function renderArena() {
+  var arena = document.getElementById('arena-people');
+  if (!arena) return;
+  var active = _circPeople.filter(p => p.active);
+  var positions = [
+    {top:'5%',left:'55%'}, {top:'20%',right:'5%',left:'auto'},
+    {bottom:'20%',right:'5%',left:'auto'}, {bottom:'5%',left:'35%'},
+    {bottom:'20%',left:'5%'}, {top:'20%',left:'5%'}
+  ];
+  arena.innerHTML = active.map(function(p, i) {
+    var pos = positions[i] || positions[0];
+    var style = Object.entries(pos).map(function(kv) { return kv[0]+':'+kv[1]; }).join(';');
+    var opacity = p.compat >= 70 ? '1' : p.compat >= 50 ? '0.5' : '0.2';
+    return '<div style="position:absolute;' + style + ';display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .6s;opacity:' + opacity + ';">' +
+      '<div style="width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,210,26,' + (p.compat/100) + ');">' +
+      '<svg viewBox="0 0 46 46" style="width:100%;height:100%;"><circle cx="23" cy="17" r="9" fill="' + p.skin + '"/><ellipse cx="23" cy="40" rx="15" ry="12" fill="' + p.outfit + '"/></svg></div>' +
+      '<div style="font-size:.55rem;color:rgba(255,255,255,.6);">' + p.name + '</div>' +
+      '<div style="font-size:.5rem;color:var(--gold);font-weight:700;">' + p.compat + '%</div></div>';
+  }).join('');
+
+  // Compat list
+  var cl = document.getElementById('compat-list');
+  if (cl) {
+    cl.innerHTML = active.sort(function(a,b){return b.compat-a.compat;}).slice(0,3).map(function(p) {
+      return '<div style="display:flex;justify-content:space-between;font-size:.62rem;color:rgba(255,255,255,.5);">' +
+        '<span>' + p.name + '</span><span style="color:var(--gold);font-weight:700;">' + p.compat + '%</span></div>';
+    }).join('');
+  }
+}
+
+function renderQuestion() {
+  if (_circQIdx >= _circQs.length) { endCircle(); return; }
+  var q = _circQs[_circQIdx];
+  var icons = {romance:'💘',deep:'🧠',fun:'😂',family:'👥',attraction:'🔥',future:'🌍'};
+  var labels = {romance:'Romance',deep:'Deep Thinking',fun:'Fun',family:'Family',attraction:'Attraction',future:'Future'};
+
+  var iconEl = document.getElementById('q-cat-icon');
+  var labelEl = document.getElementById('q-cat-label');
+  var numEl = document.getElementById('q-num');
+  var textEl = document.getElementById('q-text');
+  var answersEl = document.getElementById('q-answers');
+  var dotsEl = document.getElementById('q-dots');
+  var peopleEl = document.getElementById('q-people-count');
+
+  if (iconEl) iconEl.textContent = icons[_circCat] || '🎯';
+  if (labelEl) labelEl.textContent = labels[_circCat] || 'Circle';
+  if (numEl) numEl.textContent = 'Q' + (_circQIdx+1) + ' of ' + _circQs.length;
+  if (textEl) textEl.textContent = q.q;
+
+  if (answersEl) {
+    answersEl.innerHTML = q.ans.map(function(a) {
+      var safe = a.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      return '<button class="ans" data-answer="' + safe + '" onclick="circleAnswer(this)" style="text-align:left;padding:10px 14px;font-size:.84rem;">' + a + '</button>';
+    }).join('');
+  }
+
+  // Progress dots
+  if (dotsEl) {
+    dotsEl.innerHTML = _circQs.map(function(_,i) {
+      var cl = i < _circQIdx ? 'dn' : i === _circQIdx ? 'on' : '';
+      return '<div class="cpd ' + cl + '"></div>';
+    }).join('');
+  }
+
+  var active = _circPeople.filter(function(p){return p.active;}).length;
+  if (peopleEl) peopleEl.textContent = active + ' people in the room · pick your answer';
+}
+
+function circleAnswer(btn) {
+  var answer = btn.getAttribute('data-answer') || '';
+  // Disable all answer buttons
+  var btns = document.querySelectorAll('#q-answers .ans');
+  btns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
+  btn.classList.add('ch');
+  btn.style.opacity = '1';
+
+  _circAnswers.push(answer);
+
+  // Adjust compatibility scores
+  _circPeople.forEach(function(p) {
+    if (!p.active) return;
+    var roll = Math.random();
+    if (roll < 0.35) {
+      p.compat = Math.max(0, p.compat - Math.floor(Math.random()*18+8));
+    } else {
+      p.compat = Math.min(100, p.compat + Math.floor(Math.random()*8));
+    }
+    // Eliminate weakest after q4+
+    if (_circQIdx >= 3 && p.compat < 40) p.active = false;
+    if (_circQIdx >= 6 && p.compat < 55) p.active = false;
+  });
+
+  renderArena();
+
+  setTimeout(function() {
+    _circQIdx++;
+    renderQuestion();
+  }, 700);
+}
+
+function endCircle() {
+  // Save session
+  var today = new Date().toDateString();
+  var stored = JSON.parse(localStorage.getItem('circle_sessions') || '{}');
+  stored.date = today;
+  stored.count = (stored.count || 0) + 1;
+  localStorage.setItem('circle_sessions', JSON.stringify(stored));
+  _circSessionsToday++;
+
+  // Find top match
+  var active = _circPeople.filter(function(p){return p.active;});
+  var sorted = _circPeople.slice().sort(function(a,b){return b.compat-a.compat;});
+  var top = sorted[0];
+
+  document.getElementById('circle-phase-questions').style.display = 'none';
+  document.getElementById('circle-phase-result').style.display = 'block';
+
+  var pct = top.compat;
+  document.getElementById('res-name').textContent = top.name;
+  document.getElementById('res-pct').textContent = pct + '%';
+
+  if (pct >= 80) {
+    document.getElementById('res-emoji').textContent = '🎯';
+    document.getElementById('res-title').textContent = 'Strong Match Found!';
+    document.getElementById('res-sub').textContent = top.name + ' aligns with you on what matters most.';
+    document.getElementById('res-shared').textContent = 'You both value depth, intentionality, and genuine connection. This is rare.';
+  } else if (pct >= 60) {
+    document.getElementById('res-emoji').textContent = '✨';
+    document.getElementById('res-title').textContent = 'Potential Here!';
+    document.getElementById('res-sub').textContent = 'You and ' + top.name + ' have real common ground.';
+    document.getElementById('res-shared').textContent = 'Good alignment on core values. Worth exploring with an open mind.';
+  } else {
+    document.getElementById('res-emoji').textContent = '🤔';
+    document.getElementById('res-title').textContent = 'Interesting Contrast';
+    document.getElementById('res-sub').textContent = 'You and ' + top.name + ' see some things differently.';
+    document.getElementById('res-shared').textContent = "Differences can spark great conversations. Don't count it out yet.";
+  }
+
+  // Random starter
+  var starter = STARTERS[Math.floor(Math.random() * STARTERS.length)];
+  document.getElementById('res-starter').textContent = '"' + starter + '"';
+
+  // Sessions remaining
+  var plan = window._userPlan || 'ting';
+  var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
+  var msg = document.getElementById('sessions-remaining-msg');
+  if (msg) {
+    if (plan === 'diamond' || _circUnlocked) {
+      msg.textContent = '';
+    } else {
+      msg.textContent = remaining > 0 ? remaining + ' session' + (remaining===1?'':'s') + ' remaining today' : 'No sessions left today — unlock more or upgrade';
+    }
+  }
+}
+
+function circleGoMessage() {
+  go('messages-screen');
+}
+
+function circlePlayAgain() {
+  var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
+  var plan = window._userPlan || 'ting';
+  if (remaining <= 0 && plan !== 'diamond' && !_circUnlocked) {
+    showToast('No sessions left today. Unlock more!');
+    document.getElementById('circle-phase-result').style.display = 'none';
+    document.getElementById('circle-phase-select').style.display = 'block';
+    initCircleSessions();
+    return;
+  }
+  // Reset to category select
+  _circCat = null;
+  document.querySelectorAll('.circ-cat').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('circle-phase-result').style.display = 'none';
+  document.getElementById('circle-phase-select').style.display = 'block';
+  var btn = document.getElementById('circle-start-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.4'; btn.textContent = 'Choose a category to start →'; }
+  initCircleSessions();
+}
+
+function unlockCircleDay(tier) {
+  // Redirect to Stripe for day unlock
+  var url = tier === 'linked' ? window._stripeLinkedSLUrl : window._stripeTingSLUrl;
+  if (!url) { showToast('Payment coming soon!'); return; }
+  sessionStorage.setItem('circle_unlock_pending', '1');
+  window.location.href = url;
+}
+
+// Override go() to init circle when navigating there
+
+
+
+// ══════════════════════════════════════
+// PUSH NOTIFICATIONS — FCM
+// ══════════════════════════════════════
+var _fcmToken = null;
+
+async function initPushNotifications() {
+  try {
+    // Check browser support
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      console.log('Push notifications not supported');
+      return;
+    }
+
+    // Register service worker
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    console.log('SW registered:', reg.scope);
+
+    // Import FCM
+    const { getMessaging, getToken, onMessage } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js"
+    );
+
+    const messaging = getMessaging(window._fbApp);
+
+    // Request permission
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission denied');
+      return;
+    }
+
+    // Get FCM token
+    const token = await getToken(messaging, {
+      vapidKey: "BLIZRpOQyb5tenOkw-NKIEIOsbKVGH4Ss3o-c2xN6-gm1Hs9o7qTk-XQBJj1f5AARObCMecIWyqW4fBGOb4B92uY",
+      serviceWorkerRegistration: reg
+    });
+
+    if (token) {
+      _fcmToken = token;
+      console.log('FCM token obtained');
+      // Save token to Firestore for this user
+      await saveFCMToken(token);
+    }
+
+    // Handle foreground messages (app is open)
+    onMessage(messaging, function(payload) {
+      console.log('Foreground message:', payload);
+      const { title, body } = payload.notification || {};
+      showInAppNotification(title || '876Match', body || 'New notification');
+    });
+
+  } catch(err) {
+    console.log('Push notification init error:', err);
+  }
+}
+
+async function saveFCMToken(token) {
+  try {
+    const auth = window._fbAuth;
+    if (!auth || !auth.currentUser) return;
+    const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._fbDb, "fcmTokens", auth.currentUser.uid), {
+      token: token,
+      updatedAt: new Date().toISOString(),
+      platform: 'web'
+    }, { merge: true });
+  } catch(err) {
+    console.log('Error saving FCM token:', err);
+  }
+}
+
+function showInAppNotification(title, body, type) {
+  // Create toast-style in-app notification
+  var existing = document.getElementById('push-notif-banner');
+  if (existing) existing.remove();
+
+  var icon = '🔔';
+  if (type === 'message') icon = '💬';
+  else if (type === 'like') icon = '❤️';
+  else if (type === 'match') icon = '🎯';
+  else if (type === 'upgrade') icon = '💎';
+
+  var banner = document.createElement('div');
+  banner.id = 'push-notif-banner';
+  banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;' +
+    'background:linear-gradient(135deg,#1a1a1a,#111);border:1px solid rgba(255,210,26,.3);' +
+    'border-radius:16px;padding:14px 18px;min-width:280px;max-width:340px;' +
+    'box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;align-items:center;gap:12px;' +
+    'animation:slideDown .3s ease;cursor:pointer;';
+  banner.innerHTML =
+    '<div style="font-size:1.4rem;">' + icon + '</div>' +
+    '<div style="flex:1;">' +
+      '<div style="font-size:.82rem;font-weight:800;color:#fff;margin-bottom:2px;">' + title + '</div>' +
+      '<div style="font-size:.76rem;color:rgba(255,255,255,.6);">' + body + '</div>' +
+    '</div>' +
+    '<div style="font-size:.7rem;color:rgba(255,210,26,.6);font-weight:700;">TAP</div>';
+
+  banner.onclick = function() {
+    banner.remove();
+    if (type === 'message' || type === 'match') go('messages-screen');
+    else if (type === 'like') go('messages-screen');
+    else if (type === 'upgrade') go('premium-screen');
+  };
+
+  document.body.appendChild(banner);
+
+  // Auto dismiss after 5 seconds
+  setTimeout(function() {
+    if (banner.parentNode) {
+      banner.style.animation = 'fadeOut .3s ease forwards';
+      setTimeout(function() { if (banner.parentNode) banner.remove(); }, 300);
+    }
+  }, 5000);
+}
+
+// Send notification to a user (saves to Firestore, FCM handles delivery)
+async function sendNotificationToUser(targetUid, title, body, type) {
+  try {
+    const { doc, setDoc, serverTimestamp } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
+    // Save notification to Firestore - a Cloud Function would pick this up
+    // For now we store it and show it when user opens the app
+    await setDoc(doc(window._fbDb, "notifications", targetUid + "_" + Date.now()), {
+      uid: targetUid,
+      title: title,
+      body: body,
+      type: type,
+      read: false,
+      createdAt: serverTimestamp()
+    });
+  } catch(err) {
+    console.log('Error sending notification:', err);
+  }
+}
+
+// Check and show unread notifications on app open
+async function loadUnreadNotifications() {
+  try {
+    const auth = window._fbAuth;
+    if (!auth || !auth.currentUser) return;
+    const { collection, query, where, getDocs, updateDoc, doc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
+    const q = query(
+      collection(window._fbDb, "notifications"),
+      where("uid", "==", auth.currentUser.uid),
+      where("read", "==", false)
+    );
+    const snap = await getDocs(q);
+    snap.forEach(function(d) {
+      var data = d.data();
+      setTimeout(function() {
+        showInAppNotification(data.title, data.body, data.type);
+      }, 1500);
+      // Mark as read
+      updateDoc(doc(window._fbDb, "notifications", d.id), { read: true });
+    });
+  } catch(err) {
+    console.log('Error loading notifications:', err);
+  }
+}
+
+
+// ══════════════════════════════════════
+// SIGNUP FLOW — PLAN, PHOTO, ID, PENDING
+// ══════════════════════════════════════
+
+var _selectedSignupPlan = 'ting';
+
+function selectSignupPlan(plan) {
+  _selectedSignupPlan = plan;
+  ['ting','linked','diamond'].forEach(function(p) {
+    var opt = document.getElementById('plan-' + p);
+    var chk = document.getElementById('check-' + p);
+    if (opt) opt.classList.remove('selected');
+    if (chk) { chk.style.background = 'transparent'; chk.style.borderColor = 'rgba(255,255,255,.2)'; chk.style.color = 'transparent'; }
+  });
+  var sel = document.getElementById('plan-' + plan);
+  var selChk = document.getElementById('check-' + plan);
+  if (sel) sel.classList.add('selected');
+  if (selChk) { selChk.style.background = 'var(--gold)'; selChk.style.borderColor = 'var(--gold)'; selChk.style.color = '#070707'; }
+}
+
+function requirePhotos() {
+  if (!signupPhotos || signupPhotos.length === 0) {
+    showToast('Please upload at least one photo to continue.');
+    return;
+  }
+  ns(5);
+}
+
+function requireIDAndRegister() {
+  if (!uploadedID) {
+    showToast('Please upload your ID to continue. This keeps 876Match safe for everyone.');
+    return;
+  }
+  registerUser();
+}
+
+// Override ns() to handle 6 steps
+var _origNs = typeof ns === 'function' ? ns : null;
+function ns(step) {
+  // Validation per step
+  if (step === 2) {
+    var email = (document.getElementById('reg-email')||{value:''}).value.trim();
+    var pw = (document.getElementById('reg-pw')||{value:''}).value;
+    var fn = (document.getElementById('reg-fn')||{value:''}).value.trim();
+    var age = (document.getElementById('reg-age')||{value:''}).value;
+    var gender = (document.getElementById('reg-gender')||{value:''}).value;
+    if (!fn || !age || !email || !pw || !gender) { showToast('Please fill in all required fields.'); return; }
+    if (parseInt(age) < 18) { showToast('You must be 18 or older to join.'); return; }
+    if (pw.length < 6) { showToast('Password must be at least 6 characters.'); return; }
+  }
+  // Navigate to step
+  document.querySelectorAll('.form-step').forEach(function(s){ s.classList.remove('active'); });
+  var target = document.getElementById('fs' + step);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.step-item').forEach(function(si, i){
+    si.classList.remove('active','done');
+    if (i < step - 1) si.classList.add('done');
+    else if (i === step - 1) si.classList.add('active');
+  });
+  window.scrollTo(0,0);
+}
+
+// ── PENDING APPROVAL STATE ──
+function showPendingState() {
+  // Show dashboard but with pending overlay on interactive elements
+  go('dashboard');
+  setTimeout(function() {
+    // Add pending banner to dashboard
+    var dashContent = document.querySelector('#dashboard .app-scroll');
+    if (dashContent) {
+      var existing = document.getElementById('pending-approval-banner');
+      if (!existing) {
+        var banner = document.createElement('div');
+        banner.id = 'pending-approval-banner';
+        banner.className = 'pending-banner';
+        banner.innerHTML =
+          '<div style="font-size:2rem;margin-bottom:10px;">⏳</div>' +
+          '<h3>Your Profile is Being Reviewed</h3>' +
+          '<p>We are reviewing your profile to help maintain a safer, more authentic experience for everyone on 876Match. Most profiles are reviewed within a few hours — typically the same day.</p>' +
+          '<p style="margin-top:10px;font-size:.74rem;color:rgba(255,210,26,.6);">While you wait, feel free to explore the app and complete your profile.</p>';
+        dashContent.insertBefore(banner, dashContent.firstChild);
+      }
+    }
+    // Disable interactive features
+    lockPendingFeatures();
+  }, 300);
+}
+
+function lockPendingFeatures() {
+  // Lock messaging, Speed Link join, Discover swiping
+  window._isPending = true;
+  // Add locked overlay to message buttons
+  var msgBtns = document.querySelectorAll('.msg-btn, #chat-send');
+  msgBtns.forEach(function(btn) {
+    btn.disabled = true;
+    btn.title = 'Available after profile approval';
+  });
+}
+
+// ── CHECK APPROVAL STATUS ON LOGIN ──
+async function checkApprovalStatus(uid) {
+  try {
+    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await getDoc(doc(window._fbDb, 'users', uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      window._approvalStatus = data.approvalStatus || 'pending';
+      if (data.approvalStatus === 'pending' || data.approvalStatus === 'under_review') {
+        showPendingState();
+        return 'pending';
+      } else if (data.approvalStatus === 'rejected') {
+        showToast('Your profile was not approved. Please contact support.');
+        return 'rejected';
+      }
+      return 'approved';
+    }
+  } catch(e) { console.log('Approval check error:', e); }
+  return 'pending';
+}
+
+// ── SPEED LINK LOCK PERSISTS ──
+async function lockSpeedLinkSpot() {
+  try {
+    var plan = window._userPlan || 'ting';
+    var auth = window._fbAuth;
+    if (!auth || !auth.currentUser) { showToast('Please log in first.'); return; }
+    if (plan !== 'diamond') { showToast('Speed Link locking requires Diamond membership.'); return; }
+    // Save to Firestore so it persists
+    const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._fbDb, 'speedLinkLocks', auth.currentUser.uid), {
+      uid: auth.currentUser.uid,
+      lockedAt: serverTimestamp(),
+      week: getSpeedLinkWeekKey()
+    }, { merge: true });
+    window._slLocked = true;
+    updateSpeedLinkUI(true);
+    showToast('✅ Your spot is locked for this Friday!');
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+async function checkSpeedLinkLock() {
+  try {
+    var auth = window._fbAuth;
+    if (!auth || !auth.currentUser) return;
+    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await getDoc(doc(window._fbDb, 'speedLinkLocks', auth.currentUser.uid));
+    if (snap.exists()) {
+      var data = snap.data();
+      if (data.week === getSpeedLinkWeekKey()) {
+        window._slLocked = true;
+        updateSpeedLinkUI(true);
+      }
+    }
+  } catch(e) {}
+}
+
+function getSpeedLinkWeekKey() {
+  var now = new Date();
+  var day = now.getDay();
+  var friday = new Date(now);
+  friday.setDate(now.getDate() + ((5 - day + 7) % 7));
+  return friday.toDateString();
+}
+
+function updateSpeedLinkUI(locked) {
+  var lockBtns = document.querySelectorAll('[id*="sl-lock"], .sl-lock-btn');
+  lockBtns.forEach(function(btn) {
+    if (locked) {
+      btn.textContent = '✅ Spot Locked';
+      btn.disabled = true;
+      btn.style.opacity = '.7';
+    }
+  });
+}
+
+// ── STAY SIGNED IN (already handled by Firebase default) ──
+// Firebase persists auth by default. Add "Remember me" toggle to login.
+
+
+// ══════════════════════════════════════
+// SPEED LINK — DAILY.CO VIDEO SYSTEM
+// ══════════════════════════════════════
+
+var DAILY_DOMAIN = "876match.daily.co";
+var DAILY_API_KEY = "afebd8ddb04160e0adf11c0ee387d298d9aa701c6ca92d9e34f3355e5c0b452c";
+var _slCallFrame = null;
+var _slPartnerUid = null;
+var _slPartnerName = null;
+var _slRoomName = null;
+var _slSessionTimer = null;
+var _slCountdownInterval = null;
+var _slMatchListener = null;
+
+// ── COUNTDOWN ENGINE ──
+function initSpeedLinkCountdown() {
+  if (_slCountdownInterval) clearInterval(_slCountdownInterval);
+  updateSpeedLinkState();
+  _slCountdownInterval = setInterval(updateSpeedLinkState, 1000);
+  checkSpeedLinkLock();
+  loadSpeedLinkCapacity();
+}
+
+function getNextFriday8PM() {
+  var now = new Date();
+  // Jamaica time = UTC-5
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  var jamaicaMs = utcMs - 5 * 3600000;
+  var jamaica = new Date(jamaicaMs);
+
+  var day = jamaica.getDay(); // 0=Sun, 5=Fri
+  var daysUntilFriday = (5 - day + 7) % 7;
+
+  // If it's Friday and before 8PM Jamaica, show countdown to today 8PM
+  // If it's Friday after 8PM or past, next Friday
+  var target = new Date(jamaicaMs);
+  target.setHours(20, 0, 0, 0);
+
+  if (daysUntilFriday === 0 && jamaica.getHours() < 20) {
+    // Today is Friday, before 8PM
+  } else if (daysUntilFriday === 0 && jamaica.getHours() >= 20) {
+    target.setDate(target.getDate() + 7);
+  } else {
+    target.setDate(target.getDate() + daysUntilFriday);
+  }
+  // Convert back to local time
+  return new Date(target.getTime() + 5 * 3600000 - now.getTimezoneOffset() * 60000);
+}
+
+function isSpeedLinkLive() {
+  // ⚠️ TESTING MODE — always live. Remove this line for production.
+  return true;
+  var now = new Date();
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  var jamaicaMs = utcMs - 5 * 3600000;
+  var jamaica = new Date(jamaicaMs);
+  var day = jamaica.getDay();
+  var hour = jamaica.getHours();
+  return day === 5 && hour >= 20 && hour < 23;
+}
+
+function updateSpeedLinkState() {
+  if (isSpeedLinkLive()) {
+    // Show live state
+    var countdown = document.getElementById("sl-state-countdown");
+    var live = document.getElementById("sl-state-live");
+    if (countdown) countdown.style.display = "none";
+    if (live) live.style.display = "block";
+    loadSpeedLinkCapacity();
+  } else {
+    // Show countdown
+    var countdown = document.getElementById("sl-state-countdown");
+    var live = document.getElementById("sl-state-live");
+    if (countdown) countdown.style.display = "block";
+    if (live) live.style.display = "none";
+
+    var target = getNextFriday8PM();
+    var diff = target - new Date();
+    if (diff <= 0) { updateCountdownDisplay(0,0,0,0); return; }
+    var days = Math.floor(diff / 86400000);
+    var hours = Math.floor((diff % 86400000) / 3600000);
+    var mins = Math.floor((diff % 3600000) / 60000);
+    var secs = Math.floor((diff % 60000) / 1000);
+    updateCountdownDisplay(days, hours, mins, secs);
+  }
+}
+
+function updateCountdownDisplay(d, h, m, s) {
+  var pad = function(n) { return String(n).padStart(2, "0"); };
+  var dEl = document.getElementById("sl-d");
+  var hEl = document.getElementById("sl-h");
+  var mEl = document.getElementById("sl-m");
+  var sEl = document.getElementById("sl-s");
+  if (dEl) dEl.textContent = pad(d);
+  if (hEl) hEl.textContent = pad(h);
+  if (mEl) mEl.textContent = pad(m);
+  if (sEl) sEl.textContent = pad(s);
+}
+
+async function loadSpeedLinkCapacity() {
+  try {
+    var weekKey = getSpeedLinkWeekKey();
+    var { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var snap = await getDocs(collection(window._fbDb, "speedLinkReservations"));
+    var thisWeek = snap.docs.filter(function(d) { return d.data().week === weekKey; });
+    var count = thisWeek.length;
+    var max = 20;
+    var spotsEl = document.getElementById("sl-spots");
+    var barEl = document.getElementById("sl-capacity-bar");
+    var liveEl = document.getElementById("sl-live-count");
+    if (spotsEl) spotsEl.textContent = count + " / " + max;
+    if (barEl) barEl.style.width = Math.min(100, (count / max) * 100) + "%";
+    if (liveEl) liveEl.textContent = count + " joined";
+  } catch(e) {}
+}
+
+// ── JOIN FLOW ──
+async function handleSpeedLinkJoin() {
+  var plan = window._userPlan || "ting";
+  var auth = window._fbAuth;
+  if (!auth || !auth.currentUser) { showToast("Please log in first."); return; }
+
+  if (plan === "diamond") {
+    // Diamond: free always
+    await lockAndJoin();
+  } else if (plan === "linked") {
+    // Linked: $2.99 per session
+    if (window._stripeLinkedSLUrl) {
+      sessionStorage.setItem("sl_join_pending", "1");
+      window.location.href = window._stripeLinkedSLUrl;
+    }
+  } else {
+    // Ting: $5 per session
+    if (window._stripeTingSLUrl) {
+      sessionStorage.setItem("sl_join_pending", "1");
+      window.location.href = window._stripeTingSLUrl;
+    }
+  }
+}
+
+async function lockAndJoin() {
+  try {
+    var auth = window._fbAuth;
+    var weekKey = getSpeedLinkWeekKey();
+    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(window._fbDb, "speedLinkReservations", auth.currentUser.uid), {
+      uid: auth.currentUser.uid,
+      name: (window._userData && window._userData.firstName) || "Member",
+      plan: window._userPlan || "ting",
+      week: weekKey,
+      joinedAt: serverTimestamp()
+    }, { merge: true });
+
+    var lockBtn = document.getElementById("sl-lock-btn");
+    var lockedMsg = document.getElementById("sl-locked-msg");
+    if (lockBtn) lockBtn.style.display = "none";
+    if (lockedMsg) lockedMsg.style.display = "block";
+    showToast("Spot locked! See you Friday at 8PM JA time 🎉");
+  } catch(e) { showToast("Error: " + e.message); }
+}
+
+// ── JOIN LIVE SESSION ──
+async function joinSpeedLinkNow() {
+  var plan = window._userPlan || "ting";
+  if (window._isPending) { showToast("Your profile is still under review."); return; }
+
+  // Show video state
+  document.getElementById("sl-state-live").style.display = "none";
+  document.getElementById("sl-state-video").style.display = "block";
+
+  // Add user to waiting pool
+  await addToWaitingPool();
+
+  // Listen for a match
+  listenForMatch();
+}
+
+async function addToWaitingPool() {
+  try {
+    var auth = window._fbAuth;
+    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var poolData = {
+      uid: auth.currentUser.uid,
+      name: (window._userData && window._userData.firstName) || "Member",
+      gender: (window._userData && window._userData.gender) || "",
+      lookingFor: (window._userData && window._userData.lookingFor) || "everyone",
+      plan: window._userPlan || "ting",
+      joinedAt: serverTimestamp(),
+      status: "waiting",
+      roomName: null
+    };
+    await setDoc(doc(window._fbDb, "speedLinkWaiting", auth.currentUser.uid), poolData);
+    console.log("Added to waiting pool:", auth.currentUser.uid);
+    showToast("Looking for your match... 👀");
+    // Try to match with someone
+    setTimeout(tryToMatch, 2000);
+  } catch(e) { console.log("Pool error:", e); }
+}
+
+async function tryToMatch() {
+  try {
+    var auth = window._fbAuth;
+    var myUid = auth.currentUser.uid;
+    var myGender = (window._userData && window._userData.gender) || "";
+    var myLooking = (window._userData && window._userData.lookingFor) || "everyone";
+
+    var { collection, getDocs, doc, updateDoc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var snap = await getDocs(collection(window._fbDb, "speedLinkWaiting"));
+    var waiting = snap.docs
+      .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
+      .filter(function(u) {
+        return u.uid !== myUid &&
+          u.status === "waiting" &&
+          !u.roomName;
+      });
+
+    if (waiting.length === 0) {
+      // No match yet - will be picked up by listener
+      console.log("No match yet, waiting...");
+      return;
+    }
+
+    // Pick first compatible match
+    var partner = waiting[0];
+    console.log("Found potential match:", partner.uid);
+
+    // Deterministic room name - lower uid creates, both compute same name
+    var uids = [myUid, partner.uid].sort();
+    var roomName = "sl-" + uids[0].substring(0,8) + "-" + uids[1].substring(0,8);
+    
+    // Only the "lower" uid user creates the room to avoid race conditions
+    var iCreating = myUid === uids[0];
+    var room;
+    if (iCreating) {
+      room = await createDailyRoom(roomName);
+      console.log("Created room:", roomName, room);
+    } else {
+      room = { name: roomName };
+      console.log("Joining existing room:", roomName);
+    }
+    if (!room) { console.log("Room creation failed"); return; }
+
+    _slRoomName = roomName;
+    _slPartnerUid = partner.uid;
+    _slPartnerName = partner.name;
+
+    // Update both users
+    await updateDoc(doc(window._fbDb, "speedLinkWaiting", myUid), {
+      status: "matched",
+      roomName: roomName,
+      partnerId: partner.uid
+    });
+    await updateDoc(doc(window._fbDb, "speedLinkWaiting", partner.uid), {
+      status: "matched",
+      roomName: roomName,
+      partnerId: myUid
+    });
+
+    // Join the room
+    joinDailyRoom(roomName, partner.name);
+  } catch(e) { console.log("Match error:", e); }
+}
+
+function listenForMatch() {
+  var auth = window._fbAuth;
+  if (!auth || !auth.currentUser) return;
+  var myUid = auth.currentUser.uid;
+
+  // Poll every 3 seconds for a match
+  var pollCount = 0;
+  var poll = setInterval(async function() {
+    pollCount++;
+    if (pollCount > 40) { // 2 min timeout
+      clearInterval(poll);
+      var waitMsg = document.getElementById("sl-waiting-msg");
+      if (waitMsg) waitMsg.innerHTML = '<div style="font-size:.88rem;color:rgba(255,255,255,.5);text-align:center;">No match found right now.<br>Try again in a moment.</div>';
+      return;
+    }
+
+    try {
+      var { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      var snap = await getDoc(doc(window._fbDb, "speedLinkWaiting", myUid));
+      if (snap.exists() && snap.data().status === "matched" && snap.data().roomName) {
+        clearInterval(poll);
+        var data = snap.data();
+        _slRoomName = data.roomName;
+        _slPartnerUid = data.partnerId;
+        // Get partner name
+        var partnerSnap = await getDoc(doc(window._fbDb, "speedLinkWaiting", data.partnerId));
+        _slPartnerName = partnerSnap.exists() ? partnerSnap.data().name : "Your match";
+        joinDailyRoom(data.roomName, _slPartnerName);
+      } else {
+        // Try matching again
+        tryToMatch();
+      }
+    } catch(e) {}
+  }, 3000);
+}
+
+async function createDailyRoom(roomName) {
+  try {
+    // Try Netlify function first
+    var resp = await fetch("/api/create-room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomName: roomName })
+    });
+    if (resp.ok) {
+      var data = await resp.json();
+      console.log("Room created via API:", data);
+      return data;
+    }
+  } catch(e) {}
+  
+  // Fallback: try to create via Daily REST API directly
+  // This works if Daily has CORS enabled for your domain
+  try {
+    var createResp = await fetch("https://api.daily.co/v1/rooms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + DAILY_API_KEY
+      },
+      body: JSON.stringify({
+        name: roomName,
+        properties: {
+          exp: Math.floor(Date.now() / 1000) + 7200,
+          max_participants: 2,
+          enable_chat: false,
+          enable_screenshare: false,
+          start_video_off: false,
+          start_audio_off: false,
+          enable_knocking: false
+        }
+      })
+    });
+    if (createResp.ok) {
+      var room = await createResp.json();
+      console.log("Room created directly:", room);
+      return { name: room.name, url: "https://" + DAILY_DOMAIN + "/" + room.name };
+    }
+  } catch(e) {
+    console.log("Direct creation error:", e);
+  }
+  
+  // Final fallback: just return the URL and hope room exists
+  console.log("Using fallback room URL:", roomName);
+  return { name: roomName, url: "https://" + DAILY_DOMAIN + "/" + roomName };
+}
+
+async function joinDailyRoom(roomName, partnerName) {
+  // Update partner info UI
+  var partnerNameEl = document.getElementById("sl-partner-name");
+  var partnerMetaEl = document.getElementById("sl-partner-meta");
+  var waitMsg = document.getElementById("sl-waiting-msg");
+  var frameWrap = document.getElementById("sl-daily-frame-wrap");
+
+  if (partnerNameEl) partnerNameEl.textContent = partnerName || "Your match";
+  if (partnerMetaEl) partnerMetaEl.textContent = "Connected via Speed Link";
+  if (waitMsg) waitMsg.style.display = "none";
+  if (frameWrap) frameWrap.style.display = "block";
+
+  // Load Daily.co script and create call frame
+  if (!window.DailyIframe) {
+    await new Promise(function(resolve) {
+      var script = document.createElement("script");
+      script.src = "https://unpkg.com/@daily-co/daily-js";
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  }
+
+  var url = "https://" + DAILY_DOMAIN + "/" + roomName;
+
+  _slCallFrame = window.DailyIframe.createFrame(
+    document.getElementById("sl-daily-frame-wrap"),
+    {
+      iframeStyle: {
+        width: "100%",
+        height: "100%",
+        border: "none",
+        borderRadius: "0"
+      },
+      showLeaveButton: false,
+      showFullscreenButton: false,
+      showLocalVideo: true,
+      showParticipantsBar: false
+    }
+  );
+
+  // Record the day when this session begins and reset the timer flag.  This
+  // allows us to end the session automatically when the calendar day changes
+  // (e.g. at midnight) and ensures we don't start the timer prematurely.
+  window._slSessionStartDay = (new Date()).getDay();
+  window._slTimerStarted = false;
+
+  // Don't start the session timer until the partner joins
+  _slCallFrame.on("joined-meeting", function() {
+    console.log("Joined Speed Link room");
+    // we wait for a remote participant before starting the timer
+  });
+
+  _slCallFrame.on("participant-joined", function(event) {
+    console.log("Partner joined:", event);
+    // Start the timer only once when the first partner joins
+    if (!window._slTimerStarted) {
+      window._slTimerStarted = true;
+      startSessionTimer(180); // 3 minutes
+    }
+  });
+
+  _slCallFrame.on("left-meeting", function() {
+    console.log("Left meeting");
+  });
+
+  _slCallFrame.join({ url: url });
+}
+
+function startSessionTimer(seconds) {
+  var remaining = seconds;
+  var timerEl = document.getElementById("sl-session-timer");
+
+  var tick = setInterval(function() {
+    remaining--;
+    var m = Math.floor(remaining / 60);
+    var s = remaining % 60;
+    if (timerEl) timerEl.textContent = m + ":" + String(s).padStart(2, "0");
+
+    // Provide gentle reminders to vibe mid‑session.  At two minutes and
+    // one minute remaining, prompt participants to click the Vibe button.
+    if (remaining === 120 || remaining === 60) {
+      showToast("If you're vibing, tap the Vibe button to connect! 💌");
+    }
+    // Warning at 30 seconds
+    if (remaining === 30) {
+      if (timerEl) timerEl.style.color = "#ff6666";
+      showToast("30 seconds left in this session!");
+    }
+
+    // End the session when time runs out or when the calendar day changes
+    if (remaining <= 0 || (typeof window._slSessionStartDay !== 'undefined' && (new Date()).getDay() !== window._slSessionStartDay)) {
+      clearInterval(tick);
+      slSessionEnd();
+    }
+  }, 1000);
+  _slSessionTimer = tick;
+}
+
+function slSessionEnd() {
+  showToast("Session ended! Did you vibe? You can still tap Vibe to connect.");
+  if (_slCallFrame) {
+    try { _slCallFrame.leave(); } catch(e) {}
+  }
+}
+
+// ── BUTTONS ──
+async function slSaveToInbox() {
+  if (!_slPartnerUid) { showToast("No match to vibe yet."); return; }
+  try {
+    // Import additional firestore functions for reading and updating documents
+    var { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var auth = window._fbAuth;
+    // Build a deterministic conversation ID based on both UIDs
+    var convId = [auth.currentUser.uid, _slPartnerUid].sort().join("_");
+    var convRef = doc(window._fbDb, "conversations", convId);
+    var convSnap = await getDoc(convRef);
+    // Create or update the conversation with vibe tracking
+    if (!convSnap.exists()) {
+      // First vibe: create the conversation and record the vibing user
+      await setDoc(convRef, {
+        participants: [auth.currentUser.uid, _slPartnerUid],
+        createdAt: serverTimestamp(),
+        source: "speedlink",
+        vibes: [auth.currentUser.uid]
+      }, { merge: true });
+      showToast("You vibed! Waiting for them to vibe back…");
+      // notify partner that someone vibed with them
+      sendNotificationToUser(_slPartnerUid, "Someone is vibing with you! 💖", "Tap Vibe to connect!", "message");
+    } else {
+      var data = convSnap.data();
+      var vibes = data.vibes || [];
+      // add current user to vibes array if not already present
+      if (!vibes.includes(auth.currentUser.uid)) {
+        vibes.push(auth.currentUser.uid);
+        await updateDoc(convRef, { vibes: vibes });
+      }
+      // If both users have vibed, finalise the conversation and send a templated message
+      if (vibes.includes(_slPartnerUid) && vibes.includes(auth.currentUser.uid)) {
+        // merge ensures we don't overwrite any existing data
+        await setDoc(convRef, {
+          participants: [auth.currentUser.uid, _slPartnerUid],
+          lastMessage: "Connected via Speed Link ⚡",
+          source: "speedlink"
+        }, { merge: true });
+        // Add an initial message to the messages subcollection
+        var msgCol = collection(window._fbDb, "conversations", convId, "messages");
+        await addDoc(msgCol, {
+          senderId: auth.currentUser.uid,
+          receiverId: _slPartnerUid,
+          text: "Hi! I'm vibing with you. Let's chat!",
+          createdAt: serverTimestamp(),
+          unread: true
+        });
+        showToast("You both vibed! Added to inbox and sent a message 💌");
+        // notify partner of the mutual connection
+        sendNotificationToUser(_slPartnerUid, "You matched on Speed Link! 💌", "Check your inbox to keep the conversation going.", "message");
+      } else {
+        // one-sided vibe: prompt user to wait for partner
+        showToast("You vibed! Waiting for them to vibe back…");
+        sendNotificationToUser(_slPartnerUid, "Someone is vibing with you! 💖", "Tap Vibe to connect!", "message");
+      }
+    }
+  } catch(e) {
+    showToast("Error: " + e.message);
+  }
+}
+
+async function slNextMatch() {
+  // Leave current room and find next match
+  if (_slCallFrame) {
+    try { _slCallFrame.leave(); _slCallFrame.destroy(); } catch(e) {}
+    _slCallFrame = null;
+  }
+  if (_slSessionTimer) { clearInterval(_slSessionTimer); _slSessionTimer = null; }
+
+  // Reset video state
+  var waitMsg = document.getElementById("sl-waiting-msg");
+  var frameWrap = document.getElementById("sl-daily-frame-wrap");
+  var timerEl = document.getElementById("sl-session-timer");
+  if (waitMsg) waitMsg.style.display = "flex";
+  if (frameWrap) { frameWrap.style.display = "none"; frameWrap.innerHTML = ""; }
+  if (timerEl) { timerEl.textContent = "3:00"; timerEl.style.color = "var(--gold)"; }
+
+  var partnerNameEl = document.getElementById("sl-partner-name");
+  var partnerMetaEl = document.getElementById("sl-partner-meta");
+  if (partnerNameEl) partnerNameEl.textContent = "Finding your match...";
+  if (partnerMetaEl) partnerMetaEl.textContent = "Please wait";
+
+  _slPartnerUid = null;
+  _slPartnerName = null;
+  _slRoomName = null;
+
+  // Re-add to pool
+  await addToWaitingPool();
+  listenForMatch();
+}
+
+async function slReport() {
+  if (!_slPartnerUid) { showToast("No active session to report."); return; }
+  var reason = prompt("What would you like to report? (harassment / inappropriate content / other)");
+  if (!reason) return;
+  try {
+    var { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var auth = window._fbAuth;
+    await addDoc(collection(window._fbDb, "reports"), {
+      reporterId: auth.currentUser.uid,
+      reportedId: _slPartnerUid,
+      reportedName: _slPartnerName || "Unknown",
+      reason: "Speed Link: " + reason,
+      status: "open",
+      createdAt: serverTimestamp()
+    });
+    showToast("Report submitted. Thank you for keeping 876Match safe.");
+    slNextMatch();
+  } catch(e) { showToast("Error: " + e.message); }
+}
+
+function slLeave() {
+  if (_slCallFrame) {
+    try { _slCallFrame.leave(); _slCallFrame.destroy(); } catch(e) {}
+    _slCallFrame = null;
+  }
+  if (_slSessionTimer) { clearInterval(_slSessionTimer); _slSessionTimer = null; }
+  if (_slCountdownInterval) { clearInterval(_slCountdownInterval); _slCountdownInterval = null; }
+
+  // Clean up waiting pool
+  if (window._fbAuth && window._fbAuth.currentUser) {
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(function(fb) {
+      fb.deleteDoc(fb.doc(window._fbDb, "speedLinkWaiting", window._fbAuth.currentUser.uid)).catch(function(){});
+    });
+  }
+
+  // Go back to countdown
+  var video = document.getElementById("sl-state-video");
+  var countdown = document.getElementById("sl-state-countdown");
+  var live = document.getElementById("sl-state-live");
+  if (video) video.style.display = "none";
+  if (countdown) countdown.style.display = "block";
+  if (live) live.style.display = "none";
+
+  go("dashboard");
+}
+
+// Init when navigating to Speed Link
+// (handled by go() which calls initSpeedLinkCountdown)
+
 </script>
 
 <script type="module">
@@ -2800,12 +4518,31 @@ window._fbDb = db;
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
+    // Block unverified users - redirect to verify screen
+    if (!user.emailVerified) {
+      const addrEl = document.getElementById('verify-email-addr');
+      if (addrEl) addrEl.textContent = user.email;
+      // Only redirect if not already on verify or login/signup screens
+      const active = document.querySelector('.screen.active');
+      const activeId = active ? active.id : '';
+      if (!['verify-email-screen','login-screen','signup-screen','landing-screen'].includes(activeId)) {
+        go('verify-email-screen');
+      }
+      return;
+    }
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
         const data = snap.data();
         window._userPlan = data.plan || 'ting';
         window._userData = data;
+        // Init push notifications
+        if(typeof initPushNotifications === 'function') initPushNotifications();
+        if(typeof loadUnreadNotifications === 'function') loadUnreadNotifications();
+        // Check Speed Link lock
+        if(typeof checkSpeedLinkLock === 'function') checkSpeedLinkLock();
+        // Check approval status
+        if(typeof checkApprovalStatus === 'function') checkApprovalStatus(user.uid);
 
         // Populate dashboard elements safely
         const set = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
@@ -2834,85 +4571,30 @@ onAuthStateChanged(auth, async (user) => {
     if (dash) dash.classList.add('active');
   }
 });
+
+// Handle return from Stripe Checkout
+(async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentStatus = urlParams.get('payment');
+  if (paymentStatus === 'success') {
+    // Wait for auth to be ready
+    setTimeout(async () => {
+      try {
+        const auth = window._fbAuth;
+        const db = window._fbDb;
+        if (auth && auth.currentUser) {
+          // Determine which plan based on Stripe session
+          // For now show success and reload profile
+          showToast('Payment successful! Welcome to your new plan!');
+          setTimeout(() => {
+            window.history.replaceState({}, document.title, '/');
+            go('dashboard');
+          }, 2000);
+        }
+      } catch(e) { console.log('Payment return error:', e); }
+    }, 2000);
+  }
+})();
 </script>
 </body>
 </html>
-<!-- ════════════════════════════════════
-     PROFILE VIEW MODAL
-════════════════════════════════════ -->
-<div id="prof-view-modal" class="prof-modal">
-  <div class="prof-modal-sheet">
-    <!-- Photo section -->
-    <div class="prof-modal-photos" id="pvm-photos">
-      <button class="prof-modal-close" onclick="closeProfModal()">✕</button>
-      <div class="prof-modal-photos-placeholder" id="pvm-photo-main">
-        <!-- SVG person rendered here -->
-      </div>
-      <div class="prof-modal-dots" id="pvm-dots"></div>
-    </div>
-    <!-- Body -->
-    <div class="prof-modal-body">
-      <div class="prof-modal-name" id="pvm-name">Name, 00</div>
-      <div class="prof-modal-meta" id="pvm-meta">📍 Location · 💼 Occupation</div>
-      <div class="prof-modal-badges" id="pvm-badges"></div>
-      <div class="prof-modal-bio" id="pvm-bio" style="display:none;"></div>
-      <div class="prof-modal-section" id="pvm-interests-section" style="display:none;">
-        <div class="prof-modal-section-title">Interests</div>
-        <div class="prof-modal-tags" id="pvm-interests"></div>
-      </div>
-      <div class="prof-modal-section">
-        <div class="prof-modal-section-title">About</div>
-        <div class="prof-modal-info-grid" id="pvm-info"></div>
-      </div>
-    </div>
-    <!-- Action buttons -->
-    <div class="prof-modal-actions">
-      <button onclick="closeProfModal();sw('left');"
-        style="flex:1;min-height:50px;border-radius:12px;background:rgba(255,77,93,.1);
-        border:1.5px solid var(--red);color:var(--red);font:inherit;font-weight:800;
-        font-size:.95rem;cursor:pointer;">✗ Pass</button>
-      <button onclick="closeProfModal();sw('right');"
-        style="flex:2;min-height:50px;border-radius:12px;
-        background:linear-gradient(135deg,var(--gold),#ffb800);
-        color:#070707;font:inherit;font-weight:900;font-size:.95rem;
-        border:none;cursor:pointer;">💚 Link with them</button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════
-     CHAT SCREEN
-════════════════════════════════════ -->
-<div id="chat-screen" class="screen">
-  <div style="display:flex;flex-direction:column;min-height:100vh;background:var(--bg);">
-    <div class="chat-header">
-      <button onclick="go('messages-screen')" style="background:none;border:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;flex-shrink:0;">← Back</button>
-      <div class="chat-av" id="chat-av">
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="8" fill="#c8956a"/><ellipse cx="20" cy="36" rx="13" ry="10" fill="#1a5c30"/></svg>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div class="chat-name" id="chat-partner-name">Loading...</div>
-        <div class="chat-status" id="chat-partner-status">Verified member</div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="showToast('Video calls available on Diamond plan 💎')" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;">📹</button>
-        <button onclick="showToast('Audio calls available on Diamond plan 💎')" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;">📞</button>
-      </div>
-    </div>
-
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-empty" id="chat-empty">
-        <div style="font-size:2.5rem;">💬</div>
-        <div style="font-weight:700;font-size:.95rem;">Start the conversation</div>
-        <div style="font-size:.82rem;color:rgba(255,255,255,.35);">Say something real 👋</div>
-      </div>
-    </div>
-
-    <div class="chat-input-bar">
-      <textarea class="chat-input" id="chat-input" placeholder="Say something..." rows="1"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
-        oninput="autoResize(this);handleTyping();"></textarea>
-      <button class="chat-send" onclick="sendMessage()">➤</button>
-    </div>
-  </div>
-</div>

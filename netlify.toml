@@ -1,13 +1,43 @@
 [build]
-  publish = "."
   functions = "netlify/functions"
-  command = "npm install"
 
-[functions]
-  node_bundler = "esbuild"
-
-
+## Redirect API calls to Netlify Functions
+## This rule maps any path starting with /api/ to the corresponding
+## function in /.netlify/functions.  For example, /api/create-room
+## will proxy to /.netlify/functions/create-room.
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+  force = true
+
+# Firebase auth redirect
+[[redirects]]
+  from = "/__/auth/action"
+  to = "https://yaadconnect-884fa.firebaseapp.com/__/auth/action"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/__/firebase/*"
+  to = "https://yaadconnect-884fa.firebaseapp.com/__/firebase/:splat"
+  status = 302
+  force = true
+
+# SPA fallback - MUST come last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/firebase-messaging-sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
