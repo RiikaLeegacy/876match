@@ -231,6 +231,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="sb-item" onclick="showPage('calls')"><span class="icon">📞</span>Call Logs</div>
 
         <div class="sb-section">System</div>
+        <div class="sb-item" onclick="showPage('team')"><span class="icon">👥</span>Team Members</div>
         <div class="sb-item" onclick="showPage('audit')"><span class="icon">📋</span>Audit Log</div>
         <div class="sb-item" onclick="showPage('settings')"><span class="icon">⚙️</span>Settings</div>
       </div>
@@ -515,6 +516,37 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
 
 
+      <!-- TEAM MEMBERS -->
+      <div class="page" id="page-team">
+        <div class="top-bar">
+          <div><div class="page-title">Team Members</div><div class="page-sub">Invite moderators to help review verifications and reports</div></div>
+          <button class="btn-gold" onclick="document.getElementById('modal-invite').classList.add('open')" style="padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:800;border:none;cursor:pointer;font-family:inherit;">+ Invite Moderator</button>
+        </div>
+
+        <!-- Role explanation cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+          <div style="background:rgba(255,210,26,.05);border:1px solid rgba(255,210,26,.2);border-radius:16px;padding:20px;">
+            <div style="font-size:1rem;margin-bottom:8px;">👑</div>
+            <div style="font-size:.88rem;font-weight:800;color:var(--gold);margin-bottom:6px;">Super Admin (You)</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.6;">Full access to all sections including Settings, Billing, Broadcasts, and Audit Log. Only you have this role.</div>
+          </div>
+          <div style="background:rgba(102,196,48,.05);border:1px solid rgba(102,196,48,.2);border-radius:16px;padding:20px;">
+            <div style="font-size:1rem;margin-bottom:8px;">🛡️</div>
+            <div style="font-size:.88rem;font-weight:800;color:var(--green);margin-bottom:6px;">Moderator</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.6;">Can review ID verifications, action reports, and view users. Cannot access Settings, Billing, Broadcasts, or Audit Log.</div>
+          </div>
+        </div>
+
+        <!-- Active team members table -->
+        <div class="table-wrap">
+          <div class="table-head"><div class="table-title">Active Team Members</div></div>
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody id="team-list"><tr><td colspan="5" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- SETTINGS -->
       <div class="page" id="page-settings">
         <div class="top-bar"><div><div class="page-title">Settings</div><div class="page-sub">Platform configuration</div></div></div>
@@ -653,6 +685,33 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
+<!-- INVITE MODERATOR MODAL -->
+<div class="modal-overlay" id="modal-invite">
+  <div class="modal">
+    <div class="modal-title">👥 Invite a Moderator</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;">The person must already have a 876Match account with this email. Their role will be updated to Moderator and they will be able to log into the admin panel with limited access.</p>
+    <div class="modal-field">
+      <label>Their Email Address</label>
+      <input type="email" id="invite-email" placeholder="e.g. moderator@example.com">
+    </div>
+    <div class="modal-field">
+      <label>Their Name (for your reference)</label>
+      <input type="text" id="invite-name" placeholder="e.g. Sarah Brown">
+    </div>
+    <div class="modal-field">
+      <label>Access Level</label>
+      <select id="invite-role">
+        <option value="moderator">Moderator — Verifications, Reports, View Users</option>
+        <option value="senior_moderator">Senior Moderator — All of above + Change Plans</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sm btn-cancel" onclick="closeModal('modal-invite')">Cancel</button>
+      <button class="btn-sm btn-primary" onclick="inviteModerator()">Grant Access</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="admin-toast"></div>
 
@@ -764,11 +823,31 @@ window.adminLogout = async function() {
 };
 
 onAuthStateChanged(auth, async (user) => {
-  if (user && ADMIN_EMAILS.includes(user.email)) {
+  if (user && (ADMIN_EMAILS.includes(user.email) || user.email)) {
+    // Check role in Firestore
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    const userData = userSnap.exists() ? userSnap.data() : {};
+    const userRole = userData.role || 'user';
+
+    // Only allow admin, moderator, senior_moderator
+    const allowedRoles = ['admin', 'moderator', 'senior_moderator'];
+    if (!allowedRoles.includes(userRole) && !ADMIN_EMAILS.includes(user.email)) {
+      await signOut(auth);
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('admin-app').style.display = 'none';
+      document.getElementById('auth-err').textContent = 'Access denied. You do not have admin or moderator access.';
+      return;
+    }
+
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('admin-app').style.display = 'block';
     document.getElementById('sb-admin-email').textContent = user.email;
     document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+    // Apply role restrictions
+    const effectiveRole = ADMIN_EMAILS.includes(user.email) ? 'admin' : userRole;
+    if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(effectiveRole);
+
     loadDashboard();
     loadVerifications();
     loadReports();
@@ -786,6 +865,7 @@ window.showPage = function(page) {
   if(pg) pg.classList.add('active');
   if (typeof event !== 'undefined' && event.currentTarget) event.currentTarget.classList.add('active');
   if (page === 'users') loadUsers();
+  if (page === 'team') loadTeam();
   if (page === 'plans') loadPlans();
   if (page === 'audit') loadAudit();
   if (page === 'notifications') loadNotifHistory();
@@ -1434,6 +1514,132 @@ function statusBadge(u) {
   if (u.emailVerified === false) return '<span class="badge badge-pending">⏳ Unverified</span>';
   return '<span class="badge badge-active">Active</span>';
 }
+
+
+// ══════════════════════════════════════
+// TEAM MEMBERS + ROLE-BASED ACCESS
+// ══════════════════════════════════════
+
+var _currentUserRole = 'admin'; // default, updated on login
+
+// Moderator-only sections (hidden from moderators)
+var ADMIN_ONLY_PAGES = ['audit', 'settings', 'notifications', 'plans'];
+var SENIOR_MOD_PAGES = ['audit', 'settings', 'notifications'];
+
+function applyRoleRestrictions(role) {
+  _currentUserRole = role;
+  if (role === 'admin') return; // full access
+
+  var restrictedPages = role === 'senior_moderator' ? SENIOR_MOD_PAGES : ADMIN_ONLY_PAGES;
+
+  // Hide restricted sidebar items
+  document.querySelectorAll('.sb-item').forEach(function(item) {
+    var onclick = item.getAttribute('onclick') || '';
+    restrictedPages.forEach(function(page) {
+      if (onclick.includes("'" + page + "'")) {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Show moderator badge
+  var emailEl = document.getElementById('sb-admin-email');
+  if (emailEl) {
+    emailEl.innerHTML = emailEl.textContent + '<br><span style="font-size:.6rem;color:var(--green);font-weight:700;">🛡️ ' + (role === 'senior_moderator' ? 'Senior Moderator' : 'Moderator') + '</span>';
+  }
+}
+
+// Load team members
+async function loadTeam() {
+  try {
+    const snap = await getDocs(query(
+      collection(db, 'users'),
+      where('role', 'in', ['moderator', 'senior_moderator'])
+    ));
+    const tbody = document.getElementById('team-list');
+    if (!tbody) return;
+
+    if (snap.empty) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);">No moderators yet. Invite someone to get started.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      const roleLabel = u.role === 'senior_moderator'
+        ? '<span class="badge" style="background:rgba(102,196,48,.12);color:var(--green);">Senior Moderator</span>'
+        : '<span class="badge" style="background:rgba(168,237,255,.1);color:#A8EDFF;">Moderator</span>';
+      return '<tr>' +
+        '<td><strong>' + (u.firstName || '—') + ' ' + (u.lastName || '') + '</strong></td>' +
+        '<td style="color:var(--muted);font-size:.78rem;">' + (u.email || '—') + '</td>' +
+        '<td>' + roleLabel + '</td>' +
+        '<td style="color:var(--muted);font-size:.76rem;">' + (u.moderatorSince ? new Date(u.moderatorSince.seconds*1000).toLocaleDateString() : '—') + '</td>' +
+        '<td><div class="actions-cell">' +
+        '<button class="act-btn act-reject" onclick="removeModerator(\'' + d.id + '\', \'' + (u.firstName||'User') + '\')">Remove Access</button>' +
+        '</div></td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.log('Team load error:', e);
+  }
+}
+
+// Invite moderator
+window.inviteModerator = async function() {
+  const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const name = document.getElementById('invite-name').value.trim();
+  const role = document.getElementById('invite-role').value;
+
+  if (!email) { toast('Please enter an email address.'); return; }
+  if (!name) { toast('Please enter their name.'); return; }
+
+  try {
+    // Find user by email
+    const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
+
+    if (snap.empty) {
+      toast('No 876Match account found with that email. They must sign up first.');
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    const uid = userDoc.id;
+
+    // Check not trying to modify super admin
+    if (email === 'info@leegacysolutions.com') {
+      toast('Cannot modify the super admin account.');
+      return;
+    }
+
+    await updateDoc(doc(db, 'users', uid), {
+      role: role,
+      moderatorSince: serverTimestamp(),
+      moderatorName: name
+    });
+
+    await logAction('INVITE_MODERATOR', 'Granted ' + role + ' access to ' + name + ' (' + email + ')', uid);
+    toast('✅ ' + name + ' now has ' + role + ' access to the admin panel.');
+    closeModal('modal-invite');
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-name').value = '';
+    loadTeam();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+};
+
+// Remove moderator
+window.removeModerator = async function(uid, name) {
+  if (!confirm('Remove admin access from ' + name + '? They will no longer be able to log into the admin panel.')) return;
+  try {
+    await updateDoc(doc(db, 'users', uid), { role: 'user' });
+    await logAction('REMOVE_MODERATOR', 'Removed moderator access from ' + name, uid);
+    toast(name + ' has been removed from the team.');
+    loadTeam();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+};
 
 window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); };
 
