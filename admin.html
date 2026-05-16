@@ -189,7 +189,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="auth-sub">Admin Dashboard · Authorized Access Only</div>
     <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com"></div>
     <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
-    <button class="btn-gold" onclick="adminLogin()">Sign In</button>
+    <button class="btn-gold" id="admin-login-btn" type="button" onclick="adminLogin()">Sign In</button>
     <div class="err" id="auth-err"></div>
   </div>
 </div>
@@ -337,13 +337,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="stats-grid" style="grid-template-columns:repeat(6,minmax(130px,1fr));">
+        <div class="stats-grid" style="grid-template-columns:repeat(7,minmax(130px,1fr));">
           <div class="stat-card gold"><div class="stat-icon">⚡</div><div class="stat-val" id="sl-total">—</div><div class="stat-label">Total Reservations</div></div>
           <div class="stat-card"><div class="stat-icon">💎</div><div class="stat-val" id="sl-diamond">—</div><div class="stat-label">Diamond</div></div>
           <div class="stat-card"><div class="stat-icon">🔗</div><div class="stat-val" id="sl-linked">—</div><div class="stat-label">Linked</div></div>
           <div class="stat-card"><div class="stat-icon">🆓</div><div class="stat-val" id="sl-ting">—</div><div class="stat-label">Ting/Paid</div></div>
           <div class="stat-card green"><div class="stat-icon">🎥</div><div class="stat-val" id="sl-paired">—</div><div class="stat-label">Video Pairings</div></div>
           <div class="stat-card danger"><div class="stat-icon">⏳</div><div class="stat-val" id="sl-waiting">—</div><div class="stat-label">Waiting</div></div>
+          <div class="stat-card green"><div class="stat-icon">💖</div><div class="stat-val" id="sl-vibes">—</div><div class="stat-label">Vibes</div></div>
         </div>
 
         <div class="table-wrap table-scroll speed-section">
@@ -370,6 +371,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <table>
             <thead><tr><th>User</th><th>Partner</th><th>Response</th><th>Pairing</th><th>Date</th></tr></thead>
             <tbody id="speedlink-responses-list"><tr><td colspan="5" class="loading"><div class="spinner"></div>Loading responses...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="table-wrap table-scroll speed-section">
+          <div class="table-head"><div class="table-title">Speed Link Vibes</div></div>
+          <table>
+            <thead><tr><th>Vibe ID</th><th>Users Who Vibed</th><th>Count</th><th>Mutual?</th></tr></thead>
+            <tbody id="speedlink-vibes-list"><tr><td colspan="4" class="loading"><div class="spinner"></div>Loading vibes...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -671,30 +680,54 @@ window._adminAuth = auth;
 
 // ── AUTH ──
 window.adminLogin = async function() {
-  const email = document.getElementById('admin-email').value.trim();
-  const pw = document.getElementById('admin-pw').value;
+  const emailEl = document.getElementById('admin-email');
+  const pwEl = document.getElementById('admin-pw');
+  const btn = document.getElementById('admin-login-btn');
   const err = document.getElementById('auth-err');
-  err.textContent = '';
-  if (!email || !pw) { err.textContent = 'Please enter email and password.'; return; }
+  const email = emailEl ? emailEl.value.trim() : '';
+  const pw = pwEl ? pwEl.value : '';
+  if (err) err.textContent = '';
+  if (!email || !pw) { if (err) err.textContent = 'Please enter email and password.'; return; }
+
   try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing In...'; }
     const cred = await signInWithEmailAndPassword(auth, email, pw);
     if (!ADMIN_EMAILS.includes(cred.user.email)) {
       await signOut(auth);
-      err.textContent = 'Access denied. Not an admin account.';
+      if (err) err.textContent = 'Access denied. Not an admin account.';
       return;
     }
-    // Check Firestore role
-    const snap = await getDoc(doc(db, 'users', cred.user.uid));
-    if (snap.exists() && snap.data().role !== 'admin') {
-      // Set admin role if email matches
-      if (ADMIN_EMAILS.includes(cred.user.email)) {
-        await updateDoc(doc(db, 'users', cred.user.uid), { role: 'admin' });
+
+    // Ensure the admin role is present where rules allow it, but do not block login if this write fails.
+    try {
+      const userRef = doc(db, 'users', cred.user.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists() && snap.data().role !== 'admin') {
+        await updateDoc(userRef, { role: 'admin' });
       }
+    } catch(roleErr) {
+      console.log('Admin role check/update skipped:', roleErr);
     }
   } catch(e) {
-    err.textContent = e.message.includes('invalid') ? 'Invalid email or password.' : e.message;
+    if (err) err.textContent = e.message && e.message.includes('invalid') ? 'Invalid email or password.' : (e.message || 'Unable to sign in.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
   }
 };
+
+function bindAdminLoginButton(){
+  const btn = document.getElementById('admin-login-btn');
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function(e){ e.preventDefault(); window.adminLogin(); });
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindAdminLoginButton);
+} else {
+  bindAdminLoginButton();
+}
+setTimeout(bindAdminLoginButton, 250);
 
 window.adminLogout = async function() {
   await signOut(auth);
@@ -738,6 +771,26 @@ window.showPage = function(page) {
   if (page === 'speedlink') loadSpeedLinkAdmin();
   if (page === 'circle') loadCircleAdmin();
 };
+
+
+function renderSpeedLinkVibes(rows){
+  const tbody = document.getElementById('speedlink-vibes-list');
+  if(!tbody) return;
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted);">No Speed Link vibes yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r=>{
+    const users = Array.isArray(r.vibes) ? r.vibes : [];
+    const mutual = users.length >= 2 ? '✅ Mutual' : '⏳ Waiting';
+    return `<tr>
+      <td>${safeShortId(r.id)}</td>
+      <td>${escapeHtml(users.map(safeShortId).join(', ') || '—')}</td>
+      <td>${users.length}</td>
+      <td>${mutual}</td>
+    </tr>`;
+  }).join('');
+}
 
 
 function escapeHtml(str){ return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
@@ -1287,6 +1340,26 @@ window.resendBroadcast = async function(id){
 };
 
 
+function renderSpeedLinkVibes(rows){
+  const tbody = document.getElementById('speedlink-vibes-list');
+  if(!tbody) return;
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted);">No Speed Link vibes yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r=>{
+    const users = Array.isArray(r.vibes) ? r.vibes : [];
+    const mutual = users.length >= 2 ? '✅ Mutual' : '⏳ Waiting';
+    return `<tr>
+      <td>${safeShortId(r.id)}</td>
+      <td>${escapeHtml(users.map(safeShortId).join(', ') || '—')}</td>
+      <td>${users.length}</td>
+      <td>${mutual}</td>
+    </tr>`;
+  }).join('');
+}
+
+
 function escapeHtml(str){ return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 // ── AUDIT LOG ──
@@ -1360,6 +1433,7 @@ window.toast = function(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 };
+window.showToast = window.toast;
 
 // ── ENHANCED MODERATION / ADMIN TABLES ──
 function fmtDate(v){
@@ -1573,15 +1647,17 @@ function speedStatusBadge(status){
 
 async function loadSpeedLinkAdmin(){
   try{
-    const [resSnap, pairSnap, responseSnap] = await Promise.all([
+    const [resSnap, pairSnap, responseSnap, vibesSnap] = await Promise.all([
       getDocs(collection(db,'speedLinkReservations')).catch(()=>({docs:[],size:0})),
       getDocs(collection(db,'speedLinkPairings')).catch(()=>({docs:[],size:0})),
-      getDocs(collection(db,'speedLinkResponses')).catch(()=>({docs:[],size:0}))
+      getDocs(collection(db,'speedLinkResponses')).catch(()=>({docs:[],size:0})),
+      getDocs(collection(db,'speedLinkVibes')).catch(()=>({docs:[],size:0}))
     ]);
 
     const reservations = resSnap.docs.map(d=>({id:d.id,...d.data()}));
     const pairings = pairSnap.docs.map(d=>({id:d.id,...d.data()}));
     const responses = responseSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const vibes = vibesSnap.docs.map(d=>({id:d.id,...d.data()}));
 
     const diamond = reservations.filter(r=>String(r.plan||'').toLowerCase()==='diamond').length;
     const linked = reservations.filter(r=>String(r.plan||'').toLowerCase()==='linked').length;
@@ -1596,10 +1672,12 @@ async function loadSpeedLinkAdmin(){
     set('sl-public', linked + ting);
     set('sl-paired', pairings.length);
     set('sl-waiting', waiting);
+    set('sl-vibes', vibes.length);
 
     renderSpeedLinkReservations(reservations);
     renderSpeedLinkPairings(pairings);
     renderSpeedLinkResponses(responses);
+    renderSpeedLinkVibes(vibes);
   }catch(e){
     console.log('Speed Link admin load error:', e);
     const body = document.getElementById('speedlink-reservations-list');

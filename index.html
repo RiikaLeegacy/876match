@@ -1822,7 +1822,7 @@ input:focus,select:focus,textarea:focus{
         </div>
 
         <!-- Upgrade nudge -->
-        <div style="background:linear-gradient(135deg,rgba(255,210,26,0.07),rgba(5,5,5,0.8));border:1px solid rgba(255,210,26,0.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+        <div id="sl-upgrade-nudge" style="background:linear-gradient(135deg,rgba(255,210,26,0.07),rgba(5,5,5,0.8));border:1px solid rgba(255,210,26,0.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
           <div><div style="font-size:.85rem;font-weight:700;margin-bottom:3px;">Want unlimited Speed Link?</div><div style="font-size:.76rem;color:var(--muted);">Diamond members join every Friday free.</div></div>
           <button onclick="go('premium-screen')" style="padding:9px 18px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.82rem;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;">Upgrade</button>
         </div>
@@ -2644,9 +2644,28 @@ async function processSLPayment(){
 }
 
 
-function confirmSLReservation() {
+async function confirmSLReservation() {
   _slUserReserved = true;
   _slReservedSpots++;
+
+  // Persist the reservation so paid Linked/Ting users see the same locked
+  // state after refresh, logout/login, or returning from Stripe checkout.
+  try {
+    var auth = window._fbAuth;
+    if (auth && auth.currentUser) {
+      var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await setDoc(doc(window._fbDb, "speedLinkReservations", auth.currentUser.uid), {
+        uid: auth.currentUser.uid,
+        name: (window._userData && window._userData.firstName) || "Member",
+        plan: window._userPlan || "ting",
+        week: getSpeedLinkWeekKey(),
+        paid: true,
+        locked: true,
+        joinedAt: serverTimestamp()
+      }, { merge: true });
+    }
+  } catch(e) { console.log('Reservation save error:', e); }
+
   var btn = document.getElementById('reserve-btn');
   var confirmEl = document.getElementById('reserve-confirm');
   var confirmMsg = document.getElementById('reserve-confirm-msg');
@@ -2654,6 +2673,7 @@ function confirmSLReservation() {
   var nudge = document.getElementById('sl-upgrade-nudge');
   if (btn) {
     btn.textContent = 'Locked In!';
+    btn.disabled = true;
     btn.style.background = 'rgba(255,255,255,0.08)';
     btn.style.border = '1.5px solid #66C430';
     btn.style.color = '#66C430';
@@ -2665,9 +2685,13 @@ function confirmSLReservation() {
   var dashBtn = document.getElementById('dash-reserve-btn');
   if (dashBtn) {
     dashBtn.textContent = 'Locked In!';
+    dashBtn.disabled = true;
     dashBtn.style.background = 'rgba(255,255,255,0.08)';
     dashBtn.style.color = '#66C430';
   }
+
+  window._slLocked = true;
+  if (typeof updateSpeedLinkUI === 'function') updateSpeedLinkUI(true);
   showToast('Locked In! See you Friday at 8PM JA time.');
 }
 
@@ -3847,22 +3871,34 @@ async function checkSpeedLinkLock() {
     var auth = window._fbAuth;
     if (!auth || !auth.currentUser) return;
     const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const snap = await getDoc(doc(window._fbDb, 'speedLinkLocks', auth.currentUser.uid));
-    if (snap.exists()) {
-      var data = snap.data();
-      if (data.week === getSpeedLinkWeekKey()) {
-        window._slLocked = true;
-        updateSpeedLinkUI(true);
-      }
-    }
+    var uid = auth.currentUser.uid;
+    var weekKey = getSpeedLinkWeekKey();
+
+    // Older code checked speedLinkLocks, but the current booking flow writes to
+    // speedLinkReservations. Check both so Diamond, Linked, and Ting all show
+    // the correct locked state after reserving or paying.
+    const lockSnap = await getDoc(doc(window._fbDb, 'speedLinkLocks', uid));
+    const resSnap = await getDoc(doc(window._fbDb, 'speedLinkReservations', uid));
+
+    var locked = false;
+    if (lockSnap.exists() && lockSnap.data().week === weekKey) locked = true;
+    if (resSnap.exists() && resSnap.data().week === weekKey) locked = true;
+
+    window._slLocked = locked;
+    updateSpeedLinkUI(locked);
   } catch(e) {}
 }
 
 function getSpeedLinkWeekKey() {
+  // Use Jamaica time so Friday reservations do not drift based on browser timezone.
   var now = new Date();
-  var day = now.getDay();
-  var friday = new Date(now);
-  friday.setDate(now.getDate() + ((5 - day + 7) % 7));
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  var jamaicaMs = utcMs - 5 * 3600000;
+  var jamaica = new Date(jamaicaMs);
+  var day = jamaica.getDay();
+  var friday = new Date(jamaica);
+  friday.setDate(jamaica.getDate() + ((5 - day + 7) % 7));
+  friday.setHours(20, 0, 0, 0);
   return friday.toDateString();
 }
 
@@ -3873,8 +3909,24 @@ function updateSpeedLinkUI(locked) {
       btn.textContent = '✅ Spot Locked';
       btn.disabled = true;
       btn.style.opacity = '.7';
+      if (btn.id === 'sl-lock-btn') btn.style.display = 'none';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      if (btn.id === 'sl-lock-btn') btn.style.display = 'inline-flex';
     }
   });
+
+  var lockedMsg = document.getElementById('sl-locked-msg');
+  if (lockedMsg) lockedMsg.style.display = locked ? 'block' : 'none';
+
+  // Diamond members should never see an upgrade prompt. Non-Diamond members only
+  // see it if they are not already locked for the week.
+  var nudgeSL = document.getElementById('sl-upgrade-nudge');
+  if (nudgeSL) {
+    var plan = window._userPlan || 'ting';
+    nudgeSL.style.display = (plan === 'diamond' || locked) ? 'none' : 'flex';
+  }
 }
 
 // ── STAY SIGNED IN (already handled by Firebase default) ──
@@ -3902,6 +3954,14 @@ function initSpeedLinkCountdown() {
   _slCountdownInterval = setInterval(updateSpeedLinkState, 1000);
   checkSpeedLinkLock();
   loadSpeedLinkCapacity();
+
+  try {
+    var nudgeSL = document.getElementById('sl-upgrade-nudge');
+    if (nudgeSL) {
+      var plan = window._userPlan || 'ting';
+      nudgeSL.style.display = plan === 'diamond' ? 'none' : 'flex';
+    }
+  } catch(e) {}
 }
 
 function getNextFriday8PM() {
@@ -3931,16 +3991,13 @@ function getNextFriday8PM() {
 }
 
 function isSpeedLinkLive() {
-  // Determine if Friday Night Live is currently running.
-  // Convert current time to Jamaica (UTC‑5) and check for Friday evening.
+  // Friday Night Live runs from Friday 8:00 PM to just before midnight Jamaica time.
   var now = new Date();
   var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-  // Jamaica is UTC‑5.
   var jamaicaMs = utcMs - 5 * 3600000;
   var jamaica = new Date(jamaicaMs);
-  var day = jamaica.getDay();   // 0=Sun, 1=Mon, …, 5=Fri
+  var day = jamaica.getDay();
   var hour = jamaica.getHours();
-  // Live from 8 p.m. (20) on Friday until just before midnight (24).
   return day === 5 && hour >= 20 && hour < 24;
 }
 
@@ -4040,6 +4097,8 @@ async function lockAndJoin() {
     var lockedMsg = document.getElementById("sl-locked-msg");
     if (lockBtn) lockBtn.style.display = "none";
     if (lockedMsg) lockedMsg.style.display = "block";
+    window._slLocked = true;
+    if (typeof updateSpeedLinkUI === 'function') updateSpeedLinkUI(true);
     showToast("Spot locked! See you Friday at 8PM JA time 🎉");
   } catch(e) { showToast("Error: " + e.message); }
 }
@@ -4522,8 +4581,21 @@ onAuthStateChanged(auth, async (user) => {
         const auth = window._fbAuth;
         const db = window._fbDb;
         if (auth && auth.currentUser) {
-          // Determine which plan based on Stripe session
-          // For now show success and reload profile
+          // If this was a Speed Link checkout, lock the user's spot immediately
+          // so Linked and Ting members see the same confirmed state as Diamond.
+          if (sessionStorage.getItem('pending_sl_reservation') === '1' || sessionStorage.getItem('sl_join_pending') === '1') {
+            await confirmSLReservation();
+            sessionStorage.removeItem('pending_sl_reservation');
+            sessionStorage.removeItem('sl_join_pending');
+            showToast('Payment successful! Your Friday Night Live spot is locked.');
+            setTimeout(() => {
+              window.history.replaceState({}, document.title, '/');
+              go('speedlink-screen');
+              setTimeout(initSpeedLinkCountdown, 200);
+            }, 2000);
+            return;
+          }
+
           showToast('Payment successful! Welcome to your new plan!');
           setTimeout(() => {
             window.history.replaceState({}, document.title, '/');
