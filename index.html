@@ -4678,8 +4678,17 @@ onAuthStateChanged(auth, async (user) => {
       const verified = !!(window._userData && (window._userData.verified || window._userData.realBadge || window._userData.verificationStatus==='approved'));
       pb.className='cbdg bv'; pb.textContent = verified ? '✅ Verified' : '🪪 ID Pending';
     }
-    const circleLabels = Array.from(document.querySelectorAll('*')).filter(el=>/reset(s)? at midnight/i.test(el.textContent||''));
-    if(plan==='diamond') circleLabels.forEach(el=>{ if((el.textContent||'').toLowerCase().includes('unlimited')) el.textContent='Diamond unlimited sessions'; });
+    // Diamond Compatibility Circle label fix: never edit broad containers like body/html,
+    // because changing their textContent wipes the whole app from the screen.
+    const circleLabels = Array.from(document.querySelectorAll('p,span,small,div.badge,div.circ-stat,div[id*=circle],div[id*=session],div[class*=circle],div[class*=session]'))
+      .filter(el => el && el.children.length === 0 && /reset(s)? at midnight/i.test(el.textContent || ''));
+    if(plan==='diamond') {
+      circleLabels.forEach(el => {
+        if((el.textContent || '').toLowerCase().includes('unlimited')) {
+          el.textContent = 'Diamond unlimited sessions';
+        }
+      });
+    }
   };
 
   // Make Google auth never override chosen app name in the dashboard greeting.
