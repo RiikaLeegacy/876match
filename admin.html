@@ -184,14 +184,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
-  <div class="auth-box">
+  <form class="auth-box" id="admin-login-form">
     <div class="auth-logo">876Match</div>
     <div class="auth-sub">Admin Dashboard · Authorized Access Only</div>
-    <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com"></div>
-    <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
-    <button class="btn-gold" onclick="adminLogin()">Sign In</button>
+    <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com" autocomplete="username" required></div>
+    <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" autocomplete="current-password" required></div>
+    <button class="btn-gold" id="admin-login-btn" onclick="if(typeof window.adminLogin==='function')window.adminLogin();return false;">Sign In</button>
     <div class="err" id="auth-err"></div>
-  </div>
+  </form>
 </div>
 
 <!-- ADMIN APP -->
@@ -231,6 +231,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="sb-item" onclick="showPage('calls')"><span class="icon">📞</span>Call Logs</div>
 
         <div class="sb-section">System</div>
+        <div class="sb-item" onclick="showPage('team')"><span class="icon">👥</span>Team Members</div>
         <div class="sb-item" onclick="showPage('audit')"><span class="icon">📋</span>Audit Log</div>
         <div class="sb-item" onclick="showPage('settings')"><span class="icon">⚙️</span>Settings</div>
       </div>
@@ -337,13 +338,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="stats-grid" style="grid-template-columns:repeat(6,minmax(130px,1fr));">
+        <div class="stats-grid" style="grid-template-columns:repeat(7,minmax(130px,1fr));">
           <div class="stat-card gold"><div class="stat-icon">⚡</div><div class="stat-val" id="sl-total">—</div><div class="stat-label">Total Reservations</div></div>
           <div class="stat-card"><div class="stat-icon">💎</div><div class="stat-val" id="sl-diamond">—</div><div class="stat-label">Diamond</div></div>
           <div class="stat-card"><div class="stat-icon">🔗</div><div class="stat-val" id="sl-linked">—</div><div class="stat-label">Linked</div></div>
           <div class="stat-card"><div class="stat-icon">🆓</div><div class="stat-val" id="sl-ting">—</div><div class="stat-label">Ting/Paid</div></div>
           <div class="stat-card green"><div class="stat-icon">🎥</div><div class="stat-val" id="sl-paired">—</div><div class="stat-label">Video Pairings</div></div>
           <div class="stat-card danger"><div class="stat-icon">⏳</div><div class="stat-val" id="sl-waiting">—</div><div class="stat-label">Waiting</div></div>
+          <div class="stat-card green"><div class="stat-icon">💖</div><div class="stat-val" id="sl-vibes">—</div><div class="stat-label">Vibes</div></div>
         </div>
 
         <div class="table-wrap table-scroll speed-section">
@@ -370,6 +372,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <table>
             <thead><tr><th>User</th><th>Partner</th><th>Response</th><th>Pairing</th><th>Date</th></tr></thead>
             <tbody id="speedlink-responses-list"><tr><td colspan="5" class="loading"><div class="spinner"></div>Loading responses...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="table-wrap table-scroll speed-section">
+          <div class="table-head"><div class="table-title">Speed Link Vibes</div></div>
+          <table>
+            <thead><tr><th>Vibe ID</th><th>Users Who Vibed</th><th>Count</th><th>Mutual?</th></tr></thead>
+            <tbody id="speedlink-vibes-list"><tr><td colspan="4" class="loading"><div class="spinner"></div>Loading vibes...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -505,6 +515,37 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
       </div>
 
+
+      <!-- TEAM MEMBERS -->
+      <div class="page" id="page-team">
+        <div class="top-bar">
+          <div><div class="page-title">Team Members</div><div class="page-sub">Invite moderators to help review verifications and reports</div></div>
+          <button class="btn-gold" onclick="document.getElementById('modal-invite').classList.add('open')" style="padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:800;border:none;cursor:pointer;font-family:inherit;">+ Invite Moderator</button>
+        </div>
+
+        <!-- Role explanation cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+          <div style="background:rgba(255,210,26,.05);border:1px solid rgba(255,210,26,.2);border-radius:16px;padding:20px;">
+            <div style="font-size:1rem;margin-bottom:8px;">👑</div>
+            <div style="font-size:.88rem;font-weight:800;color:var(--gold);margin-bottom:6px;">Super Admin (You)</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.6;">Full access to all sections including Settings, Billing, Broadcasts, and Audit Log. Only you have this role.</div>
+          </div>
+          <div style="background:rgba(102,196,48,.05);border:1px solid rgba(102,196,48,.2);border-radius:16px;padding:20px;">
+            <div style="font-size:1rem;margin-bottom:8px;">🛡️</div>
+            <div style="font-size:.88rem;font-weight:800;color:var(--green);margin-bottom:6px;">Moderator</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.6;">Can review ID verifications, action reports, and view users. Cannot access Settings, Billing, Broadcasts, or Audit Log.</div>
+          </div>
+        </div>
+
+        <!-- Active team members table -->
+        <div class="table-wrap">
+          <div class="table-head"><div class="table-title">Active Team Members</div></div>
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody id="team-list"><tr><td colspan="5" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- SETTINGS -->
       <div class="page" id="page-settings">
@@ -644,8 +685,40 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
+<!-- INVITE MODERATOR MODAL -->
+<div class="modal-overlay" id="modal-invite">
+  <div class="modal">
+    <div class="modal-title">👥 Invite a Moderator</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;">The person must already have a 876Match account with this email. Their role will be updated to Moderator and they will be able to log into the admin panel with limited access.</p>
+    <div class="modal-field">
+      <label>Their Email Address</label>
+      <input type="email" id="invite-email" placeholder="e.g. moderator@example.com">
+    </div>
+    <div class="modal-field">
+      <label>Their Name (for your reference)</label>
+      <input type="text" id="invite-name" placeholder="e.g. Sarah Brown">
+    </div>
+    <div class="modal-field">
+      <label>Access Level</label>
+      <select id="invite-role">
+        <option value="moderator">Moderator — Verifications, Reports, View Users</option>
+        <option value="senior_moderator">Senior Moderator — All of above + Change Plans</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sm btn-cancel" onclick="closeModal('modal-invite')">Cancel</button>
+      <button class="btn-sm btn-primary" onclick="inviteModerator()">Grant Access</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="admin-toast"></div>
+
+
+
+
+
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -671,41 +744,110 @@ window._adminAuth = auth;
 
 // ── AUTH ──
 window.adminLogin = async function() {
-  const email = document.getElementById('admin-email').value.trim();
-  const pw = document.getElementById('admin-pw').value;
+  const emailEl = document.getElementById('admin-email');
+  const pwEl = document.getElementById('admin-pw');
+  const btn = document.getElementById('admin-login-btn');
   const err = document.getElementById('auth-err');
-  err.textContent = '';
-  if (!email || !pw) { err.textContent = 'Please enter email and password.'; return; }
+  const email = emailEl ? emailEl.value.trim() : '';
+  const pw = pwEl ? pwEl.value : '';
+  if (err) err.textContent = '';
+  if (!email || !pw) { if (err) err.textContent = 'Please enter email and password.'; return; }
+
   try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing In...'; }
     const cred = await signInWithEmailAndPassword(auth, email, pw);
     if (!ADMIN_EMAILS.includes(cred.user.email)) {
       await signOut(auth);
-      err.textContent = 'Access denied. Not an admin account.';
+      if (err) err.textContent = 'Access denied. Not an admin account.';
       return;
     }
-    // Check Firestore role
-    const snap = await getDoc(doc(db, 'users', cred.user.uid));
-    if (snap.exists() && snap.data().role !== 'admin') {
-      // Set admin role if email matches
-      if (ADMIN_EMAILS.includes(cred.user.email)) {
-        await updateDoc(doc(db, 'users', cred.user.uid), { role: 'admin' });
+
+    // Ensure the admin role is present where rules allow it, but do not block login if this write fails.
+    try {
+      const userRef = doc(db, 'users', cred.user.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists() && snap.data().role !== 'admin') {
+        await updateDoc(userRef, { role: 'admin' });
       }
+    } catch(roleErr) {
+      console.log('Admin role check/update skipped:', roleErr);
     }
   } catch(e) {
-    err.textContent = e.message.includes('invalid') ? 'Invalid email or password.' : e.message;
+    if (err) err.textContent = e.message && e.message.includes('invalid') ? 'Invalid email or password.' : (e.message || 'Unable to sign in.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
   }
 };
+
+function bindAdminLoginButton(){
+  const form = document.getElementById('admin-login-form');
+  const btn = document.getElementById('admin-login-btn');
+  const err = document.getElementById('auth-err');
+
+  if (form && !form.dataset.bound) {
+    form.dataset.bound = '1';
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.adminLogin === 'function') {
+        window.adminLogin();
+      } else if (err) {
+        err.textContent = 'Login is still loading. Refresh the page and try again.';
+      }
+    });
+  }
+
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.adminLogin === 'function') {
+        window.adminLogin();
+      } else if (err) {
+        err.textContent = 'Login is still loading. Refresh the page and try again.';
+      }
+    });
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindAdminLoginButton);
+} else {
+  bindAdminLoginButton();
+}
+setTimeout(bindAdminLoginButton, 250);
+setTimeout(bindAdminLoginButton, 1000);
 
 window.adminLogout = async function() {
   await signOut(auth);
 };
 
 onAuthStateChanged(auth, async (user) => {
-  if (user && ADMIN_EMAILS.includes(user.email)) {
+  if (user && (ADMIN_EMAILS.includes(user.email) || user.email)) {
+    // Check role in Firestore
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    const userData = userSnap.exists() ? userSnap.data() : {};
+    const userRole = userData.role || 'user';
+
+    // Only allow admin, moderator, senior_moderator
+    const allowedRoles = ['admin', 'moderator', 'senior_moderator'];
+    if (!allowedRoles.includes(userRole) && !ADMIN_EMAILS.includes(user.email)) {
+      await signOut(auth);
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('admin-app').style.display = 'none';
+      document.getElementById('auth-err').textContent = 'Access denied. You do not have admin or moderator access.';
+      return;
+    }
+
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('admin-app').style.display = 'block';
     document.getElementById('sb-admin-email').textContent = user.email;
     document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+    // Apply role restrictions
+    const effectiveRole = ADMIN_EMAILS.includes(user.email) ? 'admin' : userRole;
+    if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(effectiveRole);
+
     loadDashboard();
     loadVerifications();
     loadReports();
@@ -723,6 +865,7 @@ window.showPage = function(page) {
   if(pg) pg.classList.add('active');
   if (typeof event !== 'undefined' && event.currentTarget) event.currentTarget.classList.add('active');
   if (page === 'users') loadUsers();
+  if (page === 'team') loadTeam();
   if (page === 'plans') loadPlans();
   if (page === 'audit') loadAudit();
   if (page === 'notifications') loadNotifHistory();
@@ -738,6 +881,26 @@ window.showPage = function(page) {
   if (page === 'speedlink') loadSpeedLinkAdmin();
   if (page === 'circle') loadCircleAdmin();
 };
+
+
+function renderSpeedLinkVibes(rows){
+  const tbody = document.getElementById('speedlink-vibes-list');
+  if(!tbody) return;
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted);">No Speed Link vibes yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r=>{
+    const users = Array.isArray(r.vibes) ? r.vibes : [];
+    const mutual = users.length >= 2 ? '✅ Mutual' : '⏳ Waiting';
+    return `<tr>
+      <td>${safeShortId(r.id)}</td>
+      <td>${escapeHtml(users.map(safeShortId).join(', ') || '—')}</td>
+      <td>${users.length}</td>
+      <td>${mutual}</td>
+    </tr>`;
+  }).join('');
+}
 
 
 function escapeHtml(str){ return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
@@ -1287,7 +1450,6 @@ window.resendBroadcast = async function(id){
 };
 
 
-function escapeHtml(str){ return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 // ── AUDIT LOG ──
 async function loadAudit() {
@@ -1353,6 +1515,132 @@ function statusBadge(u) {
   return '<span class="badge badge-active">Active</span>';
 }
 
+
+// ══════════════════════════════════════
+// TEAM MEMBERS + ROLE-BASED ACCESS
+// ══════════════════════════════════════
+
+var _currentUserRole = 'admin'; // default, updated on login
+
+// Moderator-only sections (hidden from moderators)
+var ADMIN_ONLY_PAGES = ['audit', 'settings', 'notifications', 'plans'];
+var SENIOR_MOD_PAGES = ['audit', 'settings', 'notifications'];
+
+function applyRoleRestrictions(role) {
+  _currentUserRole = role;
+  if (role === 'admin') return; // full access
+
+  var restrictedPages = role === 'senior_moderator' ? SENIOR_MOD_PAGES : ADMIN_ONLY_PAGES;
+
+  // Hide restricted sidebar items
+  document.querySelectorAll('.sb-item').forEach(function(item) {
+    var onclick = item.getAttribute('onclick') || '';
+    restrictedPages.forEach(function(page) {
+      if (onclick.includes("'" + page + "'")) {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Show moderator badge
+  var emailEl = document.getElementById('sb-admin-email');
+  if (emailEl) {
+    emailEl.innerHTML = emailEl.textContent + '<br><span style="font-size:.6rem;color:var(--green);font-weight:700;">🛡️ ' + (role === 'senior_moderator' ? 'Senior Moderator' : 'Moderator') + '</span>';
+  }
+}
+
+// Load team members
+async function loadTeam() {
+  try {
+    const snap = await getDocs(query(
+      collection(db, 'users'),
+      where('role', 'in', ['moderator', 'senior_moderator'])
+    ));
+    const tbody = document.getElementById('team-list');
+    if (!tbody) return;
+
+    if (snap.empty) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);">No moderators yet. Invite someone to get started.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      const roleLabel = u.role === 'senior_moderator'
+        ? '<span class="badge" style="background:rgba(102,196,48,.12);color:var(--green);">Senior Moderator</span>'
+        : '<span class="badge" style="background:rgba(168,237,255,.1);color:#A8EDFF;">Moderator</span>';
+      return '<tr>' +
+        '<td><strong>' + (u.firstName || '—') + ' ' + (u.lastName || '') + '</strong></td>' +
+        '<td style="color:var(--muted);font-size:.78rem;">' + (u.email || '—') + '</td>' +
+        '<td>' + roleLabel + '</td>' +
+        '<td style="color:var(--muted);font-size:.76rem;">' + (u.moderatorSince ? new Date(u.moderatorSince.seconds*1000).toLocaleDateString() : '—') + '</td>' +
+        '<td><div class="actions-cell">' +
+        '<button class="act-btn act-reject" onclick="removeModerator(\'' + d.id + '\', \'' + (u.firstName||'User') + '\')">Remove Access</button>' +
+        '</div></td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.log('Team load error:', e);
+  }
+}
+
+// Invite moderator
+window.inviteModerator = async function() {
+  const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const name = document.getElementById('invite-name').value.trim();
+  const role = document.getElementById('invite-role').value;
+
+  if (!email) { toast('Please enter an email address.'); return; }
+  if (!name) { toast('Please enter their name.'); return; }
+
+  try {
+    // Find user by email
+    const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
+
+    if (snap.empty) {
+      toast('No 876Match account found with that email. They must sign up first.');
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    const uid = userDoc.id;
+
+    // Check not trying to modify super admin
+    if (email === 'info@leegacysolutions.com') {
+      toast('Cannot modify the super admin account.');
+      return;
+    }
+
+    await updateDoc(doc(db, 'users', uid), {
+      role: role,
+      moderatorSince: serverTimestamp(),
+      moderatorName: name
+    });
+
+    await logAction('INVITE_MODERATOR', 'Granted ' + role + ' access to ' + name + ' (' + email + ')', uid);
+    toast('✅ ' + name + ' now has ' + role + ' access to the admin panel.');
+    closeModal('modal-invite');
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-name').value = '';
+    loadTeam();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+};
+
+// Remove moderator
+window.removeModerator = async function(uid, name) {
+  if (!confirm('Remove admin access from ' + name + '? They will no longer be able to log into the admin panel.')) return;
+  try {
+    await updateDoc(doc(db, 'users', uid), { role: 'user' });
+    await logAction('REMOVE_MODERATOR', 'Removed moderator access from ' + name, uid);
+    toast(name + ' has been removed from the team.');
+    loadTeam();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+};
+
 window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); };
 
 window.toast = function(msg) {
@@ -1360,6 +1648,7 @@ window.toast = function(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 };
+window.showToast = window.toast;
 
 // ── ENHANCED MODERATION / ADMIN TABLES ──
 function fmtDate(v){
@@ -1573,15 +1862,17 @@ function speedStatusBadge(status){
 
 async function loadSpeedLinkAdmin(){
   try{
-    const [resSnap, pairSnap, responseSnap] = await Promise.all([
+    const [resSnap, pairSnap, responseSnap, vibesSnap] = await Promise.all([
       getDocs(collection(db,'speedLinkReservations')).catch(()=>({docs:[],size:0})),
       getDocs(collection(db,'speedLinkPairings')).catch(()=>({docs:[],size:0})),
-      getDocs(collection(db,'speedLinkResponses')).catch(()=>({docs:[],size:0}))
+      getDocs(collection(db,'speedLinkResponses')).catch(()=>({docs:[],size:0})),
+      getDocs(collection(db,'speedLinkVibes')).catch(()=>({docs:[],size:0}))
     ]);
 
     const reservations = resSnap.docs.map(d=>({id:d.id,...d.data()}));
     const pairings = pairSnap.docs.map(d=>({id:d.id,...d.data()}));
     const responses = responseSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const vibes = vibesSnap.docs.map(d=>({id:d.id,...d.data()}));
 
     const diamond = reservations.filter(r=>String(r.plan||'').toLowerCase()==='diamond').length;
     const linked = reservations.filter(r=>String(r.plan||'').toLowerCase()==='linked').length;
@@ -1596,10 +1887,12 @@ async function loadSpeedLinkAdmin(){
     set('sl-public', linked + ting);
     set('sl-paired', pairings.length);
     set('sl-waiting', waiting);
+    set('sl-vibes', vibes.length);
 
     renderSpeedLinkReservations(reservations);
     renderSpeedLinkPairings(pairings);
     renderSpeedLinkResponses(responses);
+    renderSpeedLinkVibes(vibes);
   }catch(e){
     console.log('Speed Link admin load error:', e);
     const body = document.getElementById('speedlink-reservations-list');
