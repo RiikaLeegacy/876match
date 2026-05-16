@@ -1370,27 +1370,6 @@ window.resendBroadcast = async function(id){
 };
 
 
-function renderSpeedLinkVibes(rows){
-  const tbody = document.getElementById('speedlink-vibes-list');
-  if(!tbody) return;
-  if(!rows.length){
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted);">No Speed Link vibes yet.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map(r=>{
-    const users = Array.isArray(r.vibes) ? r.vibes : [];
-    const mutual = users.length >= 2 ? '✅ Mutual' : '⏳ Waiting';
-    return `<tr>
-      <td>${safeShortId(r.id)}</td>
-      <td>${escapeHtml(users.map(safeShortId).join(', ') || '—')}</td>
-      <td>${users.length}</td>
-      <td>${mutual}</td>
-    </tr>`;
-  }).join('');
-}
-
-
-function escapeHtml(str){ return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 // ── AUDIT LOG ──
 async function loadAudit() {
