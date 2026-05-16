@@ -1876,9 +1876,9 @@ input:focus,select:focus,textarea:focus{
 
         <!-- Action buttons -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:14px;">
-          <button onclick="slSaveToInbox()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
-            <span style="font-size:1.2rem;">💬</span>
-            <span style="font-size:.65rem;font-weight:700;">Save</span>
+          <button id="sl-vibe-btn" onclick="slVibe()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
+            <span style="font-size:1.2rem;">✨</span>
+            <span style="font-size:.65rem;font-weight:700;">Vibe</span>
           </button>
           <button onclick="slNextMatch()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,210,26,.1);border:1px solid rgba(255,210,26,.25);border-radius:14px;cursor:pointer;border-style:solid;color:var(--gold);font-family:inherit;">
             <span style="font-size:1.2rem;">⏭️</span>
@@ -4332,13 +4332,23 @@ async function joinDailyRoom(roomName, partnerName) {
     }
   );
 
+  var _slTimerStarted = false;
+
   _slCallFrame.on("joined-meeting", function() {
-    console.log("Joined Speed Link room");
-    startSessionTimer(180); // 3 minutes
+    console.log("Joined Speed Link room - waiting for partner...");
   });
 
   _slCallFrame.on("participant-joined", function(event) {
     console.log("Partner joined:", event);
+    if (!_slTimerStarted) {
+      _slTimerStarted = true;
+      startSessionTimer(180);
+      showToast("Connected! 3 minutes on the clock ⚡");
+    }
+  });
+
+  _slCallFrame.on("participant-left", function() {
+    showToast("Your match left the session.");
   });
 
   _slCallFrame.on("left-meeting", function() {
@@ -4380,21 +4390,98 @@ function slSessionEnd() {
 }
 
 // ── BUTTONS ──
-async function slSaveToInbox() {
-  if (!_slPartnerUid) { showToast("No match to save yet."); return; }
+var _slVibed = false;
+
+async function slVibe() {
+  if (!_slPartnerUid) { showToast("No match yet — wait for connection."); return; }
+  if (_slVibed) { showToast("You already vibed! Waiting to see if they do too... ✨"); return; }
+  _slVibed = true;
+
+  var vibeBtn = document.getElementById("sl-vibe-btn");
+  if (vibeBtn) {
+    vibeBtn.style.background = "rgba(102,196,48,.3)";
+    vibeBtn.style.borderColor = "rgba(102,196,48,.6)";
+    var label = vibeBtn.querySelector("span:last-child");
+    if (label) label.textContent = "Vibed!";
+  }
+  showToast("You vibed! ✨ Waiting to see if they vibe back...");
+
   try {
-    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     var auth = window._fbAuth;
-    var convId = [auth.currentUser.uid, _slPartnerUid].sort().join("_");
+    var myUid = auth.currentUser.uid;
+    var { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+    var vibeDocId = [myUid, _slPartnerUid].sort().join("_");
+    var myIsFirst = myUid < _slPartnerUid;
+    var myField = myIsFirst ? "uid1Vibed" : "uid2Vibed";
+    var partnerField = myIsFirst ? "uid2Vibed" : "uid1Vibed";
+
+    var vibeRef = doc(window._fbDb, "speedLinkVibes", vibeDocId);
+    var existing = await getDoc(vibeRef);
+    var existingData = existing.exists() ? existing.data() : {};
+    var mutualMatch = existingData[partnerField] === true;
+
+    await setDoc(vibeRef, {
+      uid1: myIsFirst ? myUid : _slPartnerUid,
+      uid2: myIsFirst ? _slPartnerUid : myUid,
+      [myField]: true,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    if (mutualMatch) {
+      await createSpeedLinkMatch(myUid, _slPartnerUid);
+    } else {
+      // One-sided — send hidden interest, partner gets notification
+      await setDoc(doc(window._fbDb, "speedLinkInterest", vibeDocId), {
+        fromUid: myUid,
+        toUid: _slPartnerUid,
+        fromName: (window._userData && window._userData.firstName) || "Someone",
+        status: "pending",
+        createdAt: serverTimestamp()
+      }, { merge: true });
+      sendNotificationToUser(_slPartnerUid,
+        "Someone from Speed Link vibed with you ✨",
+        "Check your matches to see if you vibe back.",
+        "match"
+      );
+    }
+  } catch(e) { showToast("Error: " + e.message); }
+}
+
+async function createSpeedLinkMatch(myUid, partnerUid) {
+  try {
+    var { doc, setDoc, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var convId = [myUid, partnerUid].sort().join("_");
+    var myName = (window._userData && window._userData.firstName) || "Someone";
+    var partnerName = _slPartnerName || "Someone";
+
     await setDoc(doc(window._fbDb, "conversations", convId), {
-      participants: [auth.currentUser.uid, _slPartnerUid],
+      participants: [myUid, partnerUid],
       createdAt: serverTimestamp(),
       source: "speedlink",
-      lastMessage: "Connected via Speed Link ⚡"
+      lastMessage: "Connected via Friday Night Speed Link ⚡"
     }, { merge: true });
-    showToast("Saved to inbox! Start chatting 💬");
-    sendNotificationToUser(_slPartnerUid, "Someone saved you from Speed Link! 💬", "Check your inbox to keep the conversation going.", "message");
-  } catch(e) { showToast("Error: " + e.message); }
+
+    // Auto opening message
+    var rtdbConvId = [myUid, partnerUid].sort().join("_");
+    if (window._rtdb) {
+      window._rtdb.ref("messages/" + rtdbConvId).push({
+        uid: partnerUid,
+        text: "Hey! I vibed with you on Friday Night Speed Link. I think we have something worth exploring 😊",
+        ts: Date.now(),
+        read: false,
+        auto: true
+      });
+    }
+
+    showToast("It's a mutual vibe! You are in each other's inbox 🎉");
+    sendNotificationToUser(partnerUid, "It's a mutual vibe! 🎉", myName + " vibed back! Check your inbox.", "match");
+    sendNotificationToUser(myUid, "It's a mutual vibe! 🎉", partnerName + " vibed back! Check your inbox.", "match");
+  } catch(e) { console.log("Match error:", e); }
+}
+
+async function slSaveToInbox() {
+  return slVibe(); // Legacy alias
 }
 
 async function slNextMatch() {

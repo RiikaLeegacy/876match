@@ -189,7 +189,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="auth-sub">Admin Dashboard · Authorized Access Only</div>
     <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com" autocomplete="username" required></div>
     <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" autocomplete="current-password" required></div>
-    <button class="btn-gold" id="admin-login-btn" type="submit">Sign In</button>
+    <button class="btn-gold" id="admin-login-btn" onclick="if(typeof window.adminLogin==='function')window.adminLogin();return false;">Sign In</button>
     <div class="err" id="auth-err"></div>
   </form>
 </div>
@@ -657,71 +657,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
 <div id="admin-toast"></div>
 
 
-<script>
-// Immediate admin login placeholder.
-// This exists before Firebase finishes loading so the Sign In button always has a real function to call.
-(function(){
-  async function waitForAdminLogin(){
-    var err = document.getElementById('auth-err');
-    var btn = document.getElementById('admin-login-btn');
-    var originalText = btn ? btn.textContent : 'Sign In';
-    if (btn) { btn.disabled = true; btn.textContent = 'Loading Admin...'; }
-    if (err) err.textContent = 'Admin system is loading. One moment...';
 
-    var waited = 0;
-    while (window.adminLogin === waitForAdminLogin && !window._adminBootError && waited < 12000) {
-      await new Promise(function(resolve){ setTimeout(resolve, 250); });
-      waited += 250;
-    }
 
-    if (btn) { btn.disabled = false; btn.textContent = originalText || 'Sign In'; }
 
-    if (window._adminBootError) {
-      console.error('Admin Firebase boot error:', window._adminBootError);
-      if (err) err.textContent = 'Admin failed to load Firebase. Refresh once, then try again.';
-      return;
-    }
-
-    if (window.adminLogin !== waitForAdminLogin && typeof window.adminLogin === 'function') {
-      return window.adminLogin();
-    }
-
-    if (err) err.textContent = 'Admin login is still loading. Please refresh and try again.';
-  }
-  window.adminLogin = waitForAdminLogin;
-})();
-</script>
-
-<script>
-(function(){
-  function showAdminLoadingMessage(){
-    var err = document.getElementById('auth-err');
-    if (err && typeof window.adminLogin !== 'function') {
-      err.textContent = 'Admin login is loading. Please wait a moment, then click Sign In again.';
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var form = document.getElementById('admin-login-form');
-    var btn = document.getElementById('admin-login-btn');
-    if (form && !form.dataset.nativeBound) {
-      form.dataset.nativeBound = '1';
-      form.addEventListener('submit', function(e){
-        e.preventDefault();
-        if (typeof window.adminLogin === 'function') window.adminLogin();
-        else showAdminLoadingMessage();
-      });
-    }
-    if (btn && !btn.dataset.nativeBound) {
-      btn.dataset.nativeBound = '1';
-      btn.addEventListener('click', function(e){
-        e.preventDefault();
-        if (typeof window.adminLogin === 'function') window.adminLogin();
-        else showAdminLoadingMessage();
-      });
-    }
-  });
-})();
-</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
