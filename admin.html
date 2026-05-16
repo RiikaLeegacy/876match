@@ -184,14 +184,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
-  <div class="auth-box">
+  <form class="auth-box" id="admin-login-form">
     <div class="auth-logo">876Match</div>
     <div class="auth-sub">Admin Dashboard · Authorized Access Only</div>
-    <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com"></div>
-    <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
-    <button class="btn-gold" id="admin-login-btn" type="button" onclick="adminLogin()">Sign In</button>
+    <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com" autocomplete="username" required></div>
+    <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" autocomplete="current-password" required></div>
+    <button class="btn-gold" id="admin-login-btn" type="submit">Sign In</button>
     <div class="err" id="auth-err"></div>
-  </div>
+  </form>
 </div>
 
 <!-- ADMIN APP -->
@@ -656,6 +656,37 @@ tr:hover td{background:rgba(255,255,255,.02);}
 <!-- Toast -->
 <div id="admin-toast"></div>
 
+<script>
+(function(){
+  function showAdminLoadingMessage(){
+    var err = document.getElementById('auth-err');
+    if (err && typeof window.adminLogin !== 'function') {
+      err.textContent = 'Admin login is loading. Please wait a moment, then click Sign In again.';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var form = document.getElementById('admin-login-form');
+    var btn = document.getElementById('admin-login-btn');
+    if (form && !form.dataset.nativeBound) {
+      form.dataset.nativeBound = '1';
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if (typeof window.adminLogin === 'function') window.adminLogin();
+        else showAdminLoadingMessage();
+      });
+    }
+    if (btn && !btn.dataset.nativeBound) {
+      btn.dataset.nativeBound = '1';
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        if (typeof window.adminLogin === 'function') window.adminLogin();
+        else showAdminLoadingMessage();
+      });
+    }
+  });
+})();
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -716,10 +747,34 @@ window.adminLogin = async function() {
 };
 
 function bindAdminLoginButton(){
+  const form = document.getElementById('admin-login-form');
   const btn = document.getElementById('admin-login-btn');
+  const err = document.getElementById('auth-err');
+
+  if (form && !form.dataset.bound) {
+    form.dataset.bound = '1';
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.adminLogin === 'function') {
+        window.adminLogin();
+      } else if (err) {
+        err.textContent = 'Login is still loading. Refresh the page and try again.';
+      }
+    });
+  }
+
   if (btn && !btn.dataset.bound) {
     btn.dataset.bound = '1';
-    btn.addEventListener('click', function(e){ e.preventDefault(); window.adminLogin(); });
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.adminLogin === 'function') {
+        window.adminLogin();
+      } else if (err) {
+        err.textContent = 'Login is still loading. Refresh the page and try again.';
+      }
+    });
   }
 }
 if (document.readyState === 'loading') {
@@ -728,6 +783,7 @@ if (document.readyState === 'loading') {
   bindAdminLoginButton();
 }
 setTimeout(bindAdminLoginButton, 250);
+setTimeout(bindAdminLoginButton, 1000);
 
 window.adminLogout = async function() {
   await signOut(auth);
