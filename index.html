@@ -1877,9 +1877,8 @@ input:focus,select:focus,textarea:focus{
         <!-- Action buttons -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:14px;">
           <button onclick="slSaveToInbox()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
-            <!-- Changed Save to Vibe and updated the icon to reflect a stronger connection -->
-            <span style="font-size:1.2rem;">💖</span>
-            <span style="font-size:.65rem;font-weight:700;">Vibe</span>
+            <span style="font-size:1.2rem;">💬</span>
+            <span style="font-size:.65rem;font-weight:700;">Save</span>
           </button>
           <button onclick="slNextMatch()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,210,26,.1);border:1px solid rgba(255,210,26,.25);border-radius:14px;cursor:pointer;border-style:solid;color:var(--gold);font-family:inherit;">
             <span style="font-size:1.2rem;">⏭️</span>
@@ -3932,15 +3931,17 @@ function getNextFriday8PM() {
 }
 
 function isSpeedLinkLive() {
-  // ⚠️ TESTING MODE — always live. Remove this line for production.
-  return true;
+  // Determine if Friday Night Live is currently running.
+  // Convert current time to Jamaica (UTC‑5) and check for Friday evening.
   var now = new Date();
   var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  // Jamaica is UTC‑5.
   var jamaicaMs = utcMs - 5 * 3600000;
   var jamaica = new Date(jamaicaMs);
-  var day = jamaica.getDay();
+  var day = jamaica.getDay();   // 0=Sun, 1=Mon, …, 5=Fri
   var hour = jamaica.getHours();
-  return day === 5 && hour >= 20 && hour < 23;
+  // Live from 8 p.m. (20) on Friday until just before midnight (24).
+  return day === 5 && hour >= 20 && hour < 24;
 }
 
 function updateSpeedLinkState() {
@@ -4272,25 +4273,13 @@ async function joinDailyRoom(roomName, partnerName) {
     }
   );
 
-  // Record the day when this session begins and reset the timer flag.  This
-  // allows us to end the session automatically when the calendar day changes
-  // (e.g. at midnight) and ensures we don't start the timer prematurely.
-  window._slSessionStartDay = (new Date()).getDay();
-  window._slTimerStarted = false;
-
-  // Don't start the session timer until the partner joins
   _slCallFrame.on("joined-meeting", function() {
     console.log("Joined Speed Link room");
-    // we wait for a remote participant before starting the timer
+    startSessionTimer(180); // 3 minutes
   });
 
   _slCallFrame.on("participant-joined", function(event) {
     console.log("Partner joined:", event);
-    // Start the timer only once when the first partner joins
-    if (!window._slTimerStarted) {
-      window._slTimerStarted = true;
-      startSessionTimer(180); // 3 minutes
-    }
   });
 
   _slCallFrame.on("left-meeting", function() {
@@ -4310,19 +4299,13 @@ function startSessionTimer(seconds) {
     var s = remaining % 60;
     if (timerEl) timerEl.textContent = m + ":" + String(s).padStart(2, "0");
 
-    // Provide gentle reminders to vibe mid‑session.  At two minutes and
-    // one minute remaining, prompt participants to click the Vibe button.
-    if (remaining === 120 || remaining === 60) {
-      showToast("If you're vibing, tap the Vibe button to connect! 💌");
-    }
     // Warning at 30 seconds
     if (remaining === 30) {
       if (timerEl) timerEl.style.color = "#ff6666";
       showToast("30 seconds left in this session!");
     }
 
-    // End the session when time runs out or when the calendar day changes
-    if (remaining <= 0 || (typeof window._slSessionStartDay !== 'undefined' && (new Date()).getDay() !== window._slSessionStartDay)) {
+    if (remaining <= 0) {
       clearInterval(tick);
       slSessionEnd();
     }
@@ -4331,7 +4314,7 @@ function startSessionTimer(seconds) {
 }
 
 function slSessionEnd() {
-  showToast("Session ended! Did you vibe? You can still tap Vibe to connect.");
+  showToast("Session ended! Did you vibe? Save them to your inbox.");
   if (_slCallFrame) {
     try { _slCallFrame.leave(); } catch(e) {}
   }
@@ -4339,64 +4322,20 @@ function slSessionEnd() {
 
 // ── BUTTONS ──
 async function slSaveToInbox() {
-  if (!_slPartnerUid) { showToast("No match to vibe yet."); return; }
+  if (!_slPartnerUid) { showToast("No match to save yet."); return; }
   try {
-    // Import additional firestore functions for reading and updating documents
-    var { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     var auth = window._fbAuth;
-    // Build a deterministic conversation ID based on both UIDs
     var convId = [auth.currentUser.uid, _slPartnerUid].sort().join("_");
-    var convRef = doc(window._fbDb, "conversations", convId);
-    var convSnap = await getDoc(convRef);
-    // Create or update the conversation with vibe tracking
-    if (!convSnap.exists()) {
-      // First vibe: create the conversation and record the vibing user
-      await setDoc(convRef, {
-        participants: [auth.currentUser.uid, _slPartnerUid],
-        createdAt: serverTimestamp(),
-        source: "speedlink",
-        vibes: [auth.currentUser.uid]
-      }, { merge: true });
-      showToast("You vibed! Waiting for them to vibe back…");
-      // notify partner that someone vibed with them
-      sendNotificationToUser(_slPartnerUid, "Someone is vibing with you! 💖", "Tap Vibe to connect!", "message");
-    } else {
-      var data = convSnap.data();
-      var vibes = data.vibes || [];
-      // add current user to vibes array if not already present
-      if (!vibes.includes(auth.currentUser.uid)) {
-        vibes.push(auth.currentUser.uid);
-        await updateDoc(convRef, { vibes: vibes });
-      }
-      // If both users have vibed, finalise the conversation and send a templated message
-      if (vibes.includes(_slPartnerUid) && vibes.includes(auth.currentUser.uid)) {
-        // merge ensures we don't overwrite any existing data
-        await setDoc(convRef, {
-          participants: [auth.currentUser.uid, _slPartnerUid],
-          lastMessage: "Connected via Speed Link ⚡",
-          source: "speedlink"
-        }, { merge: true });
-        // Add an initial message to the messages subcollection
-        var msgCol = collection(window._fbDb, "conversations", convId, "messages");
-        await addDoc(msgCol, {
-          senderId: auth.currentUser.uid,
-          receiverId: _slPartnerUid,
-          text: "Hi! I'm vibing with you. Let's chat!",
-          createdAt: serverTimestamp(),
-          unread: true
-        });
-        showToast("You both vibed! Added to inbox and sent a message 💌");
-        // notify partner of the mutual connection
-        sendNotificationToUser(_slPartnerUid, "You matched on Speed Link! 💌", "Check your inbox to keep the conversation going.", "message");
-      } else {
-        // one-sided vibe: prompt user to wait for partner
-        showToast("You vibed! Waiting for them to vibe back…");
-        sendNotificationToUser(_slPartnerUid, "Someone is vibing with you! 💖", "Tap Vibe to connect!", "message");
-      }
-    }
-  } catch(e) {
-    showToast("Error: " + e.message);
-  }
+    await setDoc(doc(window._fbDb, "conversations", convId), {
+      participants: [auth.currentUser.uid, _slPartnerUid],
+      createdAt: serverTimestamp(),
+      source: "speedlink",
+      lastMessage: "Connected via Speed Link ⚡"
+    }, { merge: true });
+    showToast("Saved to inbox! Start chatting 💬");
+    sendNotificationToUser(_slPartnerUid, "Someone saved you from Speed Link! 💬", "Check your inbox to keep the conversation going.", "message");
+  } catch(e) { showToast("Error: " + e.message); }
 }
 
 async function slNextMatch() {
