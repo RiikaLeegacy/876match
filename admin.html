@@ -656,6 +656,42 @@ tr:hover td{background:rgba(255,255,255,.02);}
 <!-- Toast -->
 <div id="admin-toast"></div>
 
+
+<script>
+// Immediate admin login placeholder.
+// This exists before Firebase finishes loading so the Sign In button always has a real function to call.
+(function(){
+  async function waitForAdminLogin(){
+    var err = document.getElementById('auth-err');
+    var btn = document.getElementById('admin-login-btn');
+    var originalText = btn ? btn.textContent : 'Sign In';
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading Admin...'; }
+    if (err) err.textContent = 'Admin system is loading. One moment...';
+
+    var waited = 0;
+    while (window.adminLogin === waitForAdminLogin && !window._adminBootError && waited < 12000) {
+      await new Promise(function(resolve){ setTimeout(resolve, 250); });
+      waited += 250;
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = originalText || 'Sign In'; }
+
+    if (window._adminBootError) {
+      console.error('Admin Firebase boot error:', window._adminBootError);
+      if (err) err.textContent = 'Admin failed to load Firebase. Refresh once, then try again.';
+      return;
+    }
+
+    if (window.adminLogin !== waitForAdminLogin && typeof window.adminLogin === 'function') {
+      return window.adminLogin();
+    }
+
+    if (err) err.textContent = 'Admin login is still loading. Please refresh and try again.';
+  }
+  window.adminLogin = waitForAdminLogin;
+})();
+</script>
+
 <script>
 (function(){
   function showAdminLoadingMessage(){
