@@ -1117,7 +1117,7 @@ input:focus,select:focus,textarea:focus{
           <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.6;">
             ✅ Everything in Linked &nbsp;✅ Unlimited Compatibility sessions<br>
             ✅ Free Speed Link access every Friday &nbsp;✅ Diamond badge on profile<br>
-            ✅ Video verification badge &nbsp;✅ Profile boost &nbsp;✅ Priority support
+            ✅ Government ID verified &nbsp;✅ Profile boost &nbsp;✅ Priority support
           </div>
         </div>
 
@@ -1173,7 +1173,7 @@ input:focus,select:focus,textarea:focus{
         <button onclick="go('messages-screen');switchMT('messages');" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💬 Messages</button>
         <button onclick="go('speedlink-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">⚡ Speed Link</button>
         <button onclick="go('circle-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">🎯 Circle</button>
-        <button id="dash-upgrade-nav" onclick="go('premium-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:#A8EDFF;border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(168,237,255,0.05)'" onmouseout="this.style.background='transparent'">💎 Upgrade</button>
+        <button onclick="go('premium-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:#A8EDFF;border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(168,237,255,0.05)'" onmouseout="this.style.background='transparent'">💎 Upgrade</button>
       </nav>
       <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:16px;margin-top:16px;">
         <button onclick="go('profile-screen')" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:12px;background:transparent;border:none;font-family:inherit;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
@@ -1249,19 +1249,67 @@ input:focus,select:focus,textarea:focus{
     </div>
 
     <!-- Stories strip -->
-    <div class="stories-strip" id="stories-strip">
-      <input type="file" accept="image/*,video/*" id="story-upload-input" style="display:none;" onchange="uploadStoryFile(this)">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;" onclick="openStoryUpload()">
+    <div class="stories-strip">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;" onclick="showToast('Post stories — Linked & Diamond only!')">
         <div class="add-st">＋</div><span class="st-nm">Your Story</span>
       </div>
-      <div id="stories-list" style="display:flex;gap:10px;"></div>
+      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#2d1a0a,#1a0d05);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#c8956a"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#8b5c2a"/></svg></div></div><span class="st-nm">Shanice</span></div>
+      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#0a1a2d,#05101a);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#7a5230"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#3d2010"/></svg></div></div><span class="st-nm">Marcus</span></div>
+      <div class="sw-wrap"><div class="st-ring seen"><div class="st-in" style="background:linear-gradient(135deg,#1a2d1a,#0d1a0d);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#b07840"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#6b4520"/></svg></div></div><span class="st-nm">Kezia</span></div>
+      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#1a0a2d,#100519);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#5a3820"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#2d1a0a"/></svg></div></div><span class="st-nm">Devon</span></div>
+      <div class="sw-wrap"><div class="st-ring seen"><div class="st-in" style="background:linear-gradient(135deg,#2d1a2d,#1a0d1a);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#c49060"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#7a5030"/></svg></div></div><span class="st-nm">Natasha</span></div>
     </div>
 
     <div class="disc-area">
       <div class="card-stack" id="cstk">
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:11px;padding:18px;text-align:center;">
-          <div style="font-size:2.5rem;">🎯</div>
-          <p style="color:var(--muted);text-align:center;font-size:.85rem;">No live profiles loaded yet.<br><span style="color:var(--gold);">Real users will appear here after they are approved.</span></p>
+        <!-- Back cards -->
+        <div class="pcard">
+          <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a2a4a,#0d1530);display:flex;align-items:center;justify-content:center;position:relative;">
+            <svg viewBox="0 0 200 280" style="width:60%;opacity:0.9"><circle cx="100" cy="90" r="42" fill="#7a5230"/><ellipse cx="100" cy="210" rx="65" ry="75" fill="#3d2010"/><circle cx="100" cy="90" r="42" fill="none" stroke="rgba(255,210,26,0.2)" stroke-width="2"/></svg>
+          </div>
+          <div class="card-gr"></div>
+          <div class="card-body"><div class="cn-row"><span class="cn">Marcus</span><span class="ca">29</span><span class="cbdg bv">✅ Verified</span></div><div class="cloc">📍 London, UK 🇬🇧</div><div class="ctags"><span class="ctag">✈️ Travel</span><span class="ctag">🎵 Music</span></div></div>
+        </div>
+        <div class="pcard">
+          <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a3a2a,#0a1a12);display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 200 280" style="width:60%;opacity:0.9"><circle cx="100" cy="90" r="42" fill="#b07840"/><ellipse cx="100" cy="210" rx="65" ry="75" fill="#6b4520"/></svg>
+          </div>
+          <div class="card-gr"></div>
+          <div class="card-body"><div class="cn-row"><span class="cn">Kezia</span><span class="ca">24</span></div><div class="cloc">📍 Montego Bay, St. James</div></div>
+        </div>
+        <!-- Top card -->
+        <div class="pcard top" id="top-card" onclick="openProfModal(currentProfile)">
+          <div class="stamp-l" id="stamp-l">SKIP ✗</div>
+          <div class="stamp-r" id="stamp-r">LINK 💚</div>
+          <div class="card-dots" id="cdots"><div class="cdot on"></div><div class="cdot off"></div><div class="cdot off"></div></div>
+          <div class="card-tl" onclick="event.stopPropagation();prevPh()"></div>
+          <div class="card-tr" onclick="event.stopPropagation();nextPh()"></div>
+          <div id="card-ph" style="width:100%;height:100%;background:linear-gradient(160deg,#2a1a0a,#1a0d05);position:relative;overflow:hidden;">
+            <svg viewBox="0 0 300 480" style="width:100%;height:100%;position:absolute;bottom:0;" preserveAspectRatio="xMidYMax meet">
+              <defs><radialGradient id="glow0" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="rgba(255,150,50,0.3)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
+              <ellipse cx="150" cy="440" rx="110" ry="90" fill="#1a5c30"/>
+              <rect x="132" y="230" width="36" height="50" fill="#c8956a"/>
+              <circle cx="150" cy="200" r="62" fill="#c8956a"/>
+              <ellipse cx="150" cy="162" rx="65" ry="40" fill="#1a0a00"/>
+              <ellipse cx="88" cy="200" rx="22" ry="52" fill="#1a0a00"/>
+              <ellipse cx="212" cy="200" rx="22" ry="52" fill="#1a0a00"/>
+              <ellipse cx="128" cy="194" rx="9" ry="7" fill="#2a1a0a"/><ellipse cx="172" cy="194" rx="9" ry="7" fill="#2a1a0a"/>
+              <ellipse cx="128" cy="194" rx="4" ry="4" fill="#080303"/><ellipse cx="172" cy="194" rx="4" ry="4" fill="#080303"/>
+              <ellipse cx="126" cy="192" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/><ellipse cx="170" cy="192" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/>
+              <path d="M 128 218 Q 150 234 172 218" stroke="#7a3010" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M 128 260 Q 150 272 172 260" stroke="rgba(255,210,26,0.6)" stroke-width="1.5" fill="none"/>
+              <ellipse cx="150" cy="460" rx="140" ry="70" fill="url(#glow0)"/>
+            </svg>
+          </div>
+          <div class="card-gr"></div>
+          <!-- Tap to view hint -->
+          <div style="position:absolute;top:14px;left:14px;z-index:5;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:50px;font-size:.66rem;color:rgba(255,255,255,.7);pointer-events:none;">Tap to view profile</div>
+          <div class="card-body">
+            <div class="cn-row"><span class="cn">Shanice</span><span class="ca">26</span><span class="cbdg br">⭐ Real</span></div>
+            <div class="cloc">📍 Kingston · 5'6" · Nurse</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.65);margin-bottom:7px;font-style:italic;">"Foodie at heart, beach lover, always chasing good vibes."</div>
+            <div class="ctags"><span class="ctag">🍽 Foodie</span><span class="ctag">🏖 Beach</span><span class="ctag">💪 Fitness</span><span class="ctag">🎵 Music</span></div>
+          </div>
         </div>
       </div>
       <div class="act-row">
@@ -1278,7 +1326,7 @@ input:focus,select:focus,textarea:focus{
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item active"><span class="ni">🔥</span><span class="nl">Discover</span></button>
       <button class="nav-item" onclick="go('circle-screen')"><span class="ni">🎯</span><span class="nl">Circle</span></button>
-      <button class="nav-item" onclick="go('messages-screen')"><span class="ni">❤️</span><span class="nl">Matches</span></button>
+      <button class="nav-item" onclick="go('messages-screen');setTimeout(()=>switchMT('matches'),80)"><span class="ni">❤️</span><span class="nl">Matches</span></button>
       <button class="nav-item" onclick="go('profile-screen')"><span class="ni">😊</span><span class="nl">Profile</span></button>
     </div>
 
@@ -1286,7 +1334,7 @@ input:focus,select:focus,textarea:focus{
       <div class="match-con">
         <div style="font-size:3.5rem;margin-bottom:11px;">🎉</div>
         <h2 style="font-size:1.9rem;font-weight:900;letter-spacing:-.05em;color:var(--gold);margin-bottom:6px;">It's a Match!</h2>
-        <p style="color:var(--muted);font-size:.86rem;">You and your match both want to link.</p>
+        <p style="color:var(--muted);font-size:.86rem;">You and Shanice both want to link.</p>
         <div class="match-avs"><div class="match-av">😊</div><div style="font-size:1.3rem;align-self:center;">💛</div><div class="match-av" style="font-size:0;overflow:hidden;"><svg viewBox="0 0 80 80" style="width:100%;height:100%;"><circle cx="40" cy="28" r="16" fill="#c8956a"/><ellipse cx="40" cy="68" rx="26" ry="22" fill="#1a5c30"/></svg></div></div>
         <button class="btn-gold btn-full" style="margin-bottom:9px;" onclick="closeMatch()">Send a Message 💬</button>
         <button class="btn-outline btn-full" onclick="closeMatch()">Keep Swiping</button>
@@ -1419,7 +1467,7 @@ input:focus,select:focus,textarea:focus{
             <div id="id-st" style="font-size:.7rem;color:rgba(255,255,255,.28);">Pending review</div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:11px;background:rgba(255,210,26,.04);border:1px solid rgba(255,210,26,.12);border-radius:12px;cursor:pointer;" onclick="handleRealClick()">
-            <div><div style="font-weight:700;font-size:.84rem;color:var(--gold);" id="real-badge-title">⭐ Real Badge</div><div id="real-d" style="font-size:.7rem;color:var(--muted);margin-top:2px;">Record your selfie video to earn it</div></div>
+            <div><div style="font-weight:700;font-size:.84rem;color:var(--gold);" id="real-badge-title">⭐ Real Badge</div><div id="real-d" style="font-size:.7rem;color:var(--muted);margin-top:2px;">Submit your government ID to earn it</div></div>
             <div id="real-a" style="font-size:.7rem;color:var(--gold);font-weight:700;">Get it →</div>
           </div>
         </div>
@@ -1438,7 +1486,7 @@ input:focus,select:focus,textarea:focus{
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item" onclick="go('discover')"><span class="ni">🔥</span><span class="nl">Discover</span></button>
       <button class="nav-item" onclick="go('circle-screen')"><span class="ni">🎯</span><span class="nl">Circle</span></button>
-      <button class="nav-item" onclick="go('messages-screen')"><span class="ni">❤️</span><span class="nl">Matches</span></button>
+      <button class="nav-item" onclick="go('messages-screen');setTimeout(()=>switchMT('matches'),80)"><span class="ni">❤️</span><span class="nl">Matches</span></button>
       <button class="nav-item active"><span class="ni">😊</span><span class="nl">Profile</span></button>
     </div>
   </div>
@@ -1472,9 +1520,9 @@ input:focus,select:focus,textarea:focus{
       </div>
       <span class="sec-lbl">Support</span>
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;margin-bottom:12px;">
-        <div class="set-row" onclick="window.location.href='/terms.html'"><div class="set-l"><div class="set-ico">📋</div><div class="set-lbl">Terms of Service</div></div><span class="set-arr">→</span></div>
-        <div class="set-row" onclick="window.location.href='/privacy.html'"><div class="set-l"><div class="set-ico">🔒</div><div class="set-lbl">Privacy Policy</div></div><span class="set-arr">→</span></div>
-        <div class="set-row" onclick="openSupportMail()"><div class="set-l"><div class="set-ico">💬</div><div class="set-lbl">Contact Support</div></div><span class="set-arr">→</span></div>
+        <div class="set-row"><div class="set-l"><div class="set-ico">📋</div><div class="set-lbl">Terms of Service</div></div><span class="set-arr">→</span></div>
+        <div class="set-row"><div class="set-l"><div class="set-ico">🔒</div><div class="set-lbl">Privacy Policy</div></div><span class="set-arr">→</span></div>
+        <div class="set-row"><div class="set-l"><div class="set-ico">💬</div><div class="set-lbl">Contact Support</div></div><span class="set-arr">→</span></div>
       </div>
       <span class="sec-lbl">Account Actions</span>
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;margin-bottom:24px;">
@@ -1694,7 +1742,7 @@ input:focus,select:focus,textarea:focus{
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item" onclick="go('discover')"><span class="ni">🔥</span><span class="nl">Discover</span></button>
       <button class="nav-item active"><span class="ni">🎯</span><span class="nl">Circle</span></button>
-      <button class="nav-item" onclick="go('messages-screen')"><span class="ni">❤️</span><span class="nl">Matches</span></button>
+      <button class="nav-item" onclick="go('messages-screen');setTimeout(()=>switchMT('matches'),80)"><span class="ni">❤️</span><span class="nl">Matches</span></button>
       <button class="nav-item" onclick="go('profile-screen')"><span class="ni">😊</span><span class="nl">Profile</span></button>
     </div>
   </div>
@@ -1828,9 +1876,9 @@ input:focus,select:focus,textarea:focus{
 
         <!-- Action buttons -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:14px;">
-          <button id="sl-vibe-btn" onclick="slVibe()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
-            <span style="font-size:1.2rem;">✨</span>
-            <span style="font-size:.65rem;font-weight:700;">Vibe</span>
+          <button onclick="slSaveToInbox()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(102,196,48,.1);border:1px solid rgba(102,196,48,.25);border-radius:14px;cursor:pointer;border-style:solid;color:#66C430;font-family:inherit;">
+            <span style="font-size:1.2rem;">💬</span>
+            <span style="font-size:.65rem;font-weight:700;">Save</span>
           </button>
           <button onclick="slNextMatch()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;background:rgba(255,210,26,.1);border:1px solid rgba(255,210,26,.25);border-radius:14px;cursor:pointer;border-style:solid;color:var(--gold);font-family:inherit;">
             <span style="font-size:1.2rem;">⏭️</span>
@@ -1852,7 +1900,7 @@ input:focus,select:focus,textarea:focus{
       <button class="nav-item" onclick="go('dashboard')"><span class="ni">🏠</span><span class="nl">Home</span></button>
       <button class="nav-item" onclick="go('discover')"><span class="ni">🔥</span><span class="nl">Discover</span></button>
       <button class="nav-item active"><span class="ni">⚡</span><span class="nl">Speed Link</span></button>
-      <button class="nav-item" onclick="go('messages-screen')"><span class="ni">❤️</span><span class="nl">Matches</span></button>
+      <button class="nav-item" onclick="go('messages-screen');setTimeout(()=>switchMT('matches'),80)"><span class="ni">❤️</span><span class="nl">Matches</span></button>
       <button class="nav-item" onclick="go('profile-screen')"><span class="ni">😊</span><span class="nl">Profile</span></button>
     </div>
   </div>
@@ -1867,7 +1915,7 @@ input:focus,select:focus,textarea:focus{
     <div class="auth-box">
       <button class="auth-back" onclick="go('profile-screen')">← Back</button>
       <h2 class="auth-title">Get Your Badge 🎖️</h2>
-      <p class="auth-sub" id="rv-subtitle">Record a selfie video to earn your verification badge on 876Match.</p>
+      <p class="auth-sub" id="rv-subtitle">Upload your government ID so 876Match can verify your profile.</p>
       <div style="background:rgba(255,210,26,0.06);border:1px solid rgba(255,210,26,0.16);border-radius:14px;padding:14px;margin-bottom:15px;">
         <p style="font-size:.83rem;color:var(--text);line-height:1.6;">Record yourself clearly saying:<br><strong style="color:var(--gold);font-size:.98rem;">"876Match Real One"</strong><br><span style="font-size:.72rem;color:var(--muted);">Face clearly visible, good lighting.</span></p>
       </div>
@@ -1996,39 +2044,33 @@ let userPhotos=[],signupPhotos=[],uploadedID="";
 let stripeInst=null,stripeCard=null,checkoutPlan=null;
 let rvBlob=null,rvChunks=[],rvRec=null,rvStream=null;
 let qi=0,elim=[],cardCount=0;
-
-function normalizePlan(raw){
-  var v = String(raw || '').trim().toLowerCase();
-  if (!v) return 'ting';
-  if (v.includes('diamond') || v.includes('premium') || v.includes('vip')) return 'diamond';
-  if (v.includes('linked') || v.includes('link')) return 'linked';
-  return 'ting';
-}
-function currentPlan(){
-  var d = window._userData || {};
-  return normalizePlan(window._userPlan || d.plan || d.membershipPlan || d.subscriptionPlan || d.subscription || d.tier || d.accountType || d.memberType || 'ting');
-}
-function isDiamondPlan(){ return currentPlan() === 'diamond'; }
-function hasLinkedAccess(){
-  var p = currentPlan();
-  return p === 'linked' || p === 'diamond';
-}
-function refreshEntitlementUI(){
-  var plan = currentPlan();
-  // Diamond users should never see upgrade nudges inside the logged-in app.
-  ['dash-upgrade-nudge','sl-upgrade-nudge','dash-upgrade-nav','sl-upgrade-nudge'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.style.display = plan === 'diamond' ? 'none' : 'flex';
-  });
-  // Ensure dashboard plan labels match normalized plan values.
-  var pl=document.getElementById('dash-plan-lbl');
-  var pb=document.getElementById('dash-plan-badge');
-  if(pl) pl.textContent = plan === 'diamond' ? '💎 Diamond' : plan === 'linked' ? '🔗 Linked' : 'Free · Ting';
-  if(pb) pb.textContent = plan === 'diamond' ? 'Diamond Member' : plan === 'linked' ? 'Linked Member' : 'Free Member';
-  var upNav=document.getElementById('dash-upgrade-nav'); if(upNav) upNav.style.display = plan === 'diamond' ? 'none' : 'flex';
-}
-
-const profiles=[]; // Real profiles only: demo/staged Discover users removed.
+const profiles=[
+  {name:"Tiara",age:23,loc:"Spanish Town, St. Catherine",badge:"✅ Verified",bc:"bv",
+   tags:["🎵 Music","📚 Reading","🎨 Arts"],bg:"linear-gradient(135deg,#2a3d1a,#111e0d)",
+   bio:"Creative soul with a love for music and good books. Looking for someone who can match my energy and isn't afraid of deep conversations.",
+   height:"5ft 4in",job:"Graphic Designer",edu:"Bachelor's Degree",religion:"Christian",children:"Want some",
+   skin:"#b07840",outfit:"#2a3d1a",hair:"#0a0505",gender:"woman"},
+  {name:"Devon",age:31,loc:"New York, USA 🇺🇸",badge:"💎 Diamond",bc:"bd",
+   tags:["💪 Fitness","✈️ Travel","🍽 Foodie"],bg:"linear-gradient(135deg,#1a2a4a,#0d1530)",
+   bio:"Jamaican born, NY raised. Entrepreneur building something real. I travel often and live for authentic experiences - food, culture, and real connections.",
+   height:"6ft 1in",job:"Entrepreneur",edu:"Master's Degree",religion:"Spiritual",children:"Open to it",
+   skin:"#5a3820",outfit:"#1a2a4a",hair:"#050505",gender:"man"},
+  {name:"Natasha",age:27,loc:"Portmore, St. Catherine",badge:"⭐ Real",bc:"br",
+   tags:["🏖 Beach","🎭 Arts","🌿 Nature"],bg:"linear-gradient(135deg,#1a3040,#0d1820)",
+   bio:"Free spirit who loves beach sunsets, meaningful art, and laughing until it hurts. I want someone who's intentional, not just available.",
+   height:"5ft 6in",job:"Teacher",edu:"Bachelor's Degree",religion:"Rastafari",children:"Want some",
+   skin:"#c8956a",outfit:"#1a3040",hair:"#1a0a00",gender:"woman"},
+  {name:"Ruel",age:33,loc:"Toronto, Canada 🇨🇦",badge:"✅ Verified",bc:"bv",
+   tags:["⚽ Sports","🎵 Music","🙏 Faith"],bg:"linear-gradient(135deg,#2a1a3a,#140d1e)",
+   bio:"Football coach by day, music lover by night. Faith-driven and family-oriented. Done with situationships - I know what I want.",
+   height:"5ft 11in",job:"Sports Coach",edu:"Associate Degree",religion:"Christian",children:"Have some",
+   skin:"#7a5230",outfit:"#2a1a3a",hair:"#0a0505",gender:"man"},
+  {name:"Shanique",age:25,loc:"Kingston, Jamaica",badge:"⭐ Real",bc:"br",
+   tags:["🙏 Faith","🎤 Dancehall","💪 Fitness"],bg:"linear-gradient(135deg,#3a2010,#1a0e05)",
+   bio:"Dancehall queen who also loves Sunday church. I'm fun, grounded, and serious about where I'm going. Come correct or not at all.",
+   height:"5ft 3in",job:"Nurse",edu:"Bachelor's Degree",religion:"Christian",children:"Want some",
+   skin:"#8b5c2a",outfit:"#3a1a10",hair:"#050505",gender:"woman"},
+];
 let currentProfile = null;
 const qs=[
   {q:"How many children would you like to have?",ans:["None","1–2","3+","Not sure"]},
@@ -2044,7 +2086,6 @@ function go(id){
   const el=document.getElementById(id);
   if(el){el.classList.add('active');window.scrollTo(0,0);}
   if(id==='profile-screen')loadProfile();
-  if(id==='discover'){refreshEntitlementUI(); loadStories(); if(cardCount===0) loadCard();}
   if(id==='settings-screen')loadSettings();
   if(id==='speedlink-screen'){setTimeout(initSpeedLinkCountdown,100);}
   if(id==='circle-screen'){var cps=document.getElementById('circle-phase-select');var cpq=document.getElementById('circle-phase-questions');var cpr=document.getElementById('circle-phase-result');if(cps)cps.style.display='block';if(cpq)cpq.style.display='none';if(cpr)cpr.style.display='none';setTimeout(initCircleSessions,50);}
@@ -2064,12 +2105,10 @@ function loadDashboard(){
     if(av2&&u.displayName) av2.textContent=u.displayName.charAt(0).toUpperCase();
     const pl=document.getElementById('dash-plan-lbl');
     const pb=document.getElementById('dash-plan-badge');
-    var plan=currentPlan();
-    if(pl) pl.textContent=plan==='diamond'?'💎 Diamond':plan==='linked'?'🔗 Linked':'Free · Ting';
-    if(pb) pb.textContent=plan==='diamond'?'Diamond Member':plan==='linked'?'Linked Member':'Free Member';
+    if(pl) pl.textContent=window._userPlan==='diamond'?'💎 Diamond':window._userPlan==='linked'?'🔗 Linked':'Free · Ting';
+    if(pb) pb.textContent=window._userPlan==='diamond'?'Diamond Member':window._userPlan==='linked'?'Linked Member':'Free Member';
     const nudge=document.getElementById('dash-upgrade-nudge');
-    if(nudge) nudge.style.display=plan==='diamond'?'none':'flex';
-    refreshEntitlementUI();
+    if(nudge) nudge.style.display=window._userPlan==='diamond'?'none':'flex';
   }catch(e){}
 }
 
@@ -2260,83 +2299,6 @@ async function forgotPw(){
 function deactivate(){if(confirm("Pause your account? You won't appear to others."))showToast("Account paused.");}
 function deleteAcc(){if(confirm("Delete your account? This cannot be undone."))showToast("Contact support to confirm deletion.");}
 
-
-// ── STORIES (REAL USERS ONLY) ──
-function openStoryUpload(){
-  try{
-    if(!hasLinkedAccess()){
-      showToast('Stories are for Linked and Diamond members.');
-      return;
-    }
-    var inp=document.getElementById('story-upload-input');
-    if(inp) inp.click();
-  }catch(e){ showToast('Unable to open story upload.'); }
-}
-
-async function uploadStoryFile(inp){
-  try{
-    var file = inp && inp.files && inp.files[0];
-    if(!file) return;
-    if(!hasLinkedAccess()){
-      showToast('Stories are for Linked and Diamond members.');
-      inp.value='';
-      return;
-    }
-    showToast('Uploading story...');
-    var fd=new FormData();
-    fd.append('file',file);
-    fd.append('upload_preset',PRESET);
-    fd.append('folder','yaadconnect/stories');
-    var kind=file.type && file.type.startsWith('video/') ? 'video' : 'image';
-    var endpoint = kind === 'video' ? 'video' : 'image';
-    var r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${endpoint}/upload`,{method:'POST',body:fd});
-    var up=await r.json();
-    if(!up.secure_url) throw new Error(up.error && up.error.message ? up.error.message : 'Upload failed');
-    const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    var auth=window._fbAuth, db=window._fbDb;
-    if(!auth || !auth.currentUser) throw new Error('Please log in first.');
-    await addDoc(collection(db,'stories'),{
-      uid: auth.currentUser.uid,
-      name: (window._userData && window._userData.firstName) || auth.currentUser.displayName || 'Member',
-      photoUrl: (window._userData && window._userData.photoUrl) || '',
-      mediaUrl: up.secure_url,
-      type: kind,
-      createdAt: serverTimestamp(),
-      expiresAt: Date.now() + 24*60*60*1000
-    });
-    showToast('Story posted ✅');
-    loadStories();
-  }catch(e){
-    console.log('Story upload error:',e);
-    showToast('Story upload failed: '+(e.message||'try again'));
-  }finally{
-    if(inp) inp.value='';
-  }
-}
-
-async function loadStories(){
-  try{
-    const list=document.getElementById('stories-list');
-    if(!list) return;
-    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const snap=await getDocs(collection(window._fbDb,'stories'));
-    const now=Date.now();
-    const rows=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.expiresAt || r.expiresAt>now);
-    if(!rows.length){ list.innerHTML=''; return; }
-    list.innerHTML=rows.slice(0,20).map(r=>`<div class="sw-wrap" onclick="openStoryMedia('${String(r.mediaUrl||'').replace(/'/g,"\\'")}')"><div class="st-ring"><div class="st-in" style="background:rgba(255,255,255,.06);overflow:hidden;">${r.photoUrl?`<img src="${r.photoUrl}" style="width:100%;height:100%;object-fit:cover;">`:'👤'}</div></div><span class="st-nm">${(r.name||'Story').split(' ')[0]}</span></div>`).join('');
-  }catch(e){ console.log('Load stories error:',e); }
-}
-
-function openStoryMedia(url){
-  if(!url){ showToast('Story unavailable.'); return; }
-  openLB(url);
-}
-
-function openSupportMail(){
-  window.location.href='mailto:support@876match.com?subject=876Match%20Support%20Request';
-}
-
-
 // ── SWIPE ──
 function sw(dir){
   const top=document.getElementById('top-card');if(!top)return;
@@ -2446,8 +2408,7 @@ async function loadProfile(){
     const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const snap=await getDoc(doc(db,"users",auth.currentUser.uid));
     if(!snap.exists())return;
-    const d=snap.data();const plan=normalizePlan(d.plan || d.membershipPlan || d.subscriptionPlan || d.subscription || d.tier || d.accountType || d.memberType || 'ting');
-    window._userPlan = plan; window._userData = d;
+    const d=snap.data();const plan=d.plan||'ting';
     if(d.firstName)document.getElementById('prof-nm').textContent=d.firstName+(d.age?', '+d.age:'');
     const meta=[];
     if(d.parish||d.city)meta.push('📍 '+(d.parish||d.city||''));
@@ -2466,15 +2427,15 @@ async function loadProfile(){
     const rvs=document.getElementById('rv-subtitle');
     if(plan==='diamond'){
       if(rbt)rbt.textContent='💎 Diamond Badge';
-      if(rvs)rvs.textContent='Diamond members can earn the 💎 Diamond badge by recording a quick selfie video.';
+      if(rvs)rvs.textContent='Diamond members show their 💎 tier badge after joining. The green tick is for government ID verification.';
       if(d.realBadge){if(rd)rd.textContent='💎 Diamond badge active';if(ra){ra.textContent='✅';ra.style.color='var(--green)';}}
       else if(d.realVerifyStatus==='pending'){if(rd)rd.textContent='Under review - badge coming soon';if(ra){ra.textContent='⏳';ra.style.color='rgba(255,255,255,.28)';}}
-      else{if(rd)rd.textContent='Record your selfie video to earn it';if(ra)ra.textContent='Record now →';}
+      else{if(rd)rd.textContent='Submit your government ID to earn it';if(ra)ra.textContent='Record now →';}
     } else if(plan==='linked'){
       if(rbt)rbt.textContent='⭐ Real Badge';
       if(d.realBadge){if(rd)rd.textContent='⭐ Real badge active';if(ra){ra.textContent='✅';ra.style.color='var(--green)';}}
       else if(d.realVerifyStatus==='pending'){if(rd)rd.textContent='Under review';if(ra){ra.textContent='⏳';ra.style.color='rgba(255,255,255,.28)';}}
-      else{if(rd)rd.textContent='Record your selfie video to earn it';if(ra)ra.textContent='Record now →';}
+      else{if(rd)rd.textContent='Submit your government ID to earn it';if(ra)ra.textContent='Record now →';}
     } else {
       if(rd)rd.textContent='Requires Linked or Diamond plan';
       if(ra){ra.textContent='Upgrade →';ra.onclick=()=>go('premium-screen');}
@@ -2525,7 +2486,7 @@ async function loadSettings(){
   try{const auth=window._fbAuth;if(auth&&auth.currentUser){const el=document.getElementById('set-em');if(el)el.textContent=auth.currentUser.email;}}catch(e){}
 }
 async function handleRealClick(){
-  try{const plan=currentPlan();if(plan==='diamond'||plan==='linked'){go('real-verify');}else{showToast("⭐ Real badge requires Linked or Diamond.");setTimeout(()=>go('premium-screen'),1500);}}catch(e){go('real-verify');}
+  try{const plan=window._userPlan||'ting';if(plan==='diamond'||plan==='linked'){go('real-verify');}else{showToast("⭐ Real badge requires Linked or Diamond.");setTimeout(()=>go('premium-screen'),1500);}}catch(e){go('real-verify');}
 }
 
 // ── CIRCLE ──
@@ -2566,7 +2527,7 @@ var _slMaxPublic = 20;
 var _slUserReserved = false;
 
 function reserveSpot() {
-  var plan = currentPlan();
+  var plan = window._userPlan || 'ting';
   var btn = document.getElementById('reserve-btn');
   var confirmEl = document.getElementById('reserve-confirm');
   var confirmMsg = document.getElementById('reserve-confirm-msg');
@@ -2654,7 +2615,7 @@ async function processSLPayment(){
   if(btn){btn.textContent='Redirecting to checkout...';btn.disabled=true;}
   
   try {
-    var plan = currentPlan();
+    var plan = window._userPlan || 'ting';
     var auth = window._fbAuth;
     var email = (auth && auth.currentUser) ? auth.currentUser.email : '';
     
@@ -2741,7 +2702,7 @@ function dashReserve() {
 
 
 async function checkSpeedLink(){
-  try{const p=currentPlan();if(p==='diamond'){showToast("💎 Diamond - unlimited Speed Link included!");return;}if(p==='linked'){showToast("Speed Link — Linked members welcome!");return;}}catch(e){}
+  try{const p=window._userPlan||'ting';if(p==='diamond'){showToast("💎 Diamond - unlimited Speed Link included!");return;}if(p==='linked'){showToast("Speed Link — Linked members welcome!");return;}}catch(e){}
   showToast("Speed Link requires Linked or Diamond.");setTimeout(()=>go('premium-screen'),1500);
 }
 
@@ -3309,15 +3270,15 @@ var _circMaxSessions = 2; // default ting
 var _circUnlocked = false;
 
 var CIRCLE_PEOPLE = [
-  {name:"Member 1", skin:"#c8956a", outfit:"#1a5c30"},
-  {name:"Member 2", skin:"#5a3820", outfit:"#1a2a6b"},
-  {name:"Member 3", skin:"#b07840", outfit:"#6b1a1a"},
-  {name:"Member 4", skin:"#7a5230", outfit:"#1a3a1a"},
-  {name:"Member 5", skin:"#c49060", outfit:"#4a1a6b"},
+  {name:"Shanice", skin:"#c8956a", outfit:"#1a5c30"},
+  {name:"Marcus", skin:"#5a3820", outfit:"#1a2a6b"},
+  {name:"Jade", skin:"#b07840", outfit:"#6b1a1a"},
+  {name:"Devon", skin:"#7a5230", outfit:"#1a3a1a"},
+  {name:"Tanya", skin:"#c49060", outfit:"#4a1a6b"},
 ];
 
 function initCircleSessions() {
-  var plan = currentPlan();
+  var plan = window._userPlan || 'ting';
   var today = new Date().toDateString();
   var stored = JSON.parse(localStorage.getItem('circle_sessions') || '{}');
   if (stored.date !== today) {
@@ -3371,7 +3332,7 @@ function selectCategory(el, cat) {
   _circCat = cat;
   var btn = document.getElementById('circle-start-btn');
   var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
-  if (btn && (remaining > 0 || _circUnlocked || (currentPlan() === 'diamond'))) {
+  if (btn && (remaining > 0 || _circUnlocked || (window._userPlan === 'diamond'))) {
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
@@ -3382,7 +3343,7 @@ function selectCategory(el, cat) {
 function startCircle() {
   if (!_circCat) { showToast('Pick a category first.'); return; }
   var remaining = _circMaxSessions - _circSessionsToday;
-  var plan = currentPlan();
+  var plan = window._userPlan || 'ting';
   if (remaining <= 0 && plan !== 'diamond' && !_circUnlocked) {
     showToast('No sessions left today. Unlock more or upgrade.');
     return;
@@ -3553,7 +3514,7 @@ function endCircle() {
   document.getElementById('res-starter').textContent = '"' + starter + '"';
 
   // Sessions remaining
-  var plan = currentPlan();
+  var plan = window._userPlan || 'ting';
   var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
   var msg = document.getElementById('sessions-remaining-msg');
   if (msg) {
@@ -3571,7 +3532,7 @@ function circleGoMessage() {
 
 function circlePlayAgain() {
   var remaining = Math.max(0, _circMaxSessions - _circSessionsToday);
-  var plan = currentPlan();
+  var plan = window._userPlan || 'ting';
   if (remaining <= 0 && plan !== 'diamond' && !_circUnlocked) {
     showToast('No sessions left today. Unlock more!');
     document.getElementById('circle-phase-result').style.display = 'none';
@@ -3888,7 +3849,7 @@ async function checkApprovalStatus(uid) {
 // ── SPEED LINK LOCK PERSISTS ──
 async function lockSpeedLinkSpot() {
   try {
-    var plan = currentPlan();
+    var plan = window._userPlan || 'ting';
     var auth = window._fbAuth;
     if (!auth || !auth.currentUser) { showToast('Please log in first.'); return; }
     if (plan !== 'diamond') { showToast('Speed Link locking requires Diamond membership.'); return; }
@@ -3963,7 +3924,7 @@ function updateSpeedLinkUI(locked) {
   // see it if they are not already locked for the week.
   var nudgeSL = document.getElementById('sl-upgrade-nudge');
   if (nudgeSL) {
-    var plan = currentPlan();
+    var plan = window._userPlan || 'ting';
     nudgeSL.style.display = (plan === 'diamond' || locked) ? 'none' : 'flex';
   }
 }
@@ -3997,7 +3958,7 @@ function initSpeedLinkCountdown() {
   try {
     var nudgeSL = document.getElementById('sl-upgrade-nudge');
     if (nudgeSL) {
-      var plan = currentPlan();
+      var plan = window._userPlan || 'ting';
       nudgeSL.style.display = plan === 'diamond' ? 'none' : 'flex';
     }
   } catch(e) {}
@@ -4371,23 +4332,13 @@ async function joinDailyRoom(roomName, partnerName) {
     }
   );
 
-  var _slTimerStarted = false;
-
   _slCallFrame.on("joined-meeting", function() {
-    console.log("Joined Speed Link room - waiting for partner...");
+    console.log("Joined Speed Link room");
+    startSessionTimer(180); // 3 minutes
   });
 
   _slCallFrame.on("participant-joined", function(event) {
     console.log("Partner joined:", event);
-    if (!_slTimerStarted) {
-      _slTimerStarted = true;
-      startSessionTimer(180);
-      showToast("Connected! 3 minutes on the clock ⚡");
-    }
-  });
-
-  _slCallFrame.on("participant-left", function() {
-    showToast("Your match left the session.");
   });
 
   _slCallFrame.on("left-meeting", function() {
@@ -4429,98 +4380,21 @@ function slSessionEnd() {
 }
 
 // ── BUTTONS ──
-var _slVibed = false;
-
-async function slVibe() {
-  if (!_slPartnerUid) { showToast("No match yet — wait for connection."); return; }
-  if (_slVibed) { showToast("You already vibed! Waiting to see if they do too... ✨"); return; }
-  _slVibed = true;
-
-  var vibeBtn = document.getElementById("sl-vibe-btn");
-  if (vibeBtn) {
-    vibeBtn.style.background = "rgba(102,196,48,.3)";
-    vibeBtn.style.borderColor = "rgba(102,196,48,.6)";
-    var label = vibeBtn.querySelector("span:last-child");
-    if (label) label.textContent = "Vibed!";
-  }
-  showToast("You vibed! ✨ Waiting to see if they vibe back...");
-
+async function slSaveToInbox() {
+  if (!_slPartnerUid) { showToast("No match to save yet."); return; }
   try {
+    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     var auth = window._fbAuth;
-    var myUid = auth.currentUser.uid;
-    var { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-
-    var vibeDocId = [myUid, _slPartnerUid].sort().join("_");
-    var myIsFirst = myUid < _slPartnerUid;
-    var myField = myIsFirst ? "uid1Vibed" : "uid2Vibed";
-    var partnerField = myIsFirst ? "uid2Vibed" : "uid1Vibed";
-
-    var vibeRef = doc(window._fbDb, "speedLinkVibes", vibeDocId);
-    var existing = await getDoc(vibeRef);
-    var existingData = existing.exists() ? existing.data() : {};
-    var mutualMatch = existingData[partnerField] === true;
-
-    await setDoc(vibeRef, {
-      uid1: myIsFirst ? myUid : _slPartnerUid,
-      uid2: myIsFirst ? _slPartnerUid : myUid,
-      [myField]: true,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-
-    if (mutualMatch) {
-      await createSpeedLinkMatch(myUid, _slPartnerUid);
-    } else {
-      // One-sided — send hidden interest, partner gets notification
-      await setDoc(doc(window._fbDb, "speedLinkInterest", vibeDocId), {
-        fromUid: myUid,
-        toUid: _slPartnerUid,
-        fromName: (window._userData && window._userData.firstName) || "Someone",
-        status: "pending",
-        createdAt: serverTimestamp()
-      }, { merge: true });
-      sendNotificationToUser(_slPartnerUid,
-        "Someone from Speed Link vibed with you ✨",
-        "Check your matches to see if you vibe back.",
-        "match"
-      );
-    }
-  } catch(e) { showToast("Error: " + e.message); }
-}
-
-async function createSpeedLinkMatch(myUid, partnerUid) {
-  try {
-    var { doc, setDoc, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    var convId = [myUid, partnerUid].sort().join("_");
-    var myName = (window._userData && window._userData.firstName) || "Someone";
-    var partnerName = _slPartnerName || "Someone";
-
+    var convId = [auth.currentUser.uid, _slPartnerUid].sort().join("_");
     await setDoc(doc(window._fbDb, "conversations", convId), {
-      participants: [myUid, partnerUid],
+      participants: [auth.currentUser.uid, _slPartnerUid],
       createdAt: serverTimestamp(),
       source: "speedlink",
-      lastMessage: "Connected via Friday Night Speed Link ⚡"
+      lastMessage: "Connected via Speed Link ⚡"
     }, { merge: true });
-
-    // Auto opening message
-    var rtdbConvId = [myUid, partnerUid].sort().join("_");
-    if (window._rtdb) {
-      window._rtdb.ref("messages/" + rtdbConvId).push({
-        uid: partnerUid,
-        text: "Hey! I vibed with you on Friday Night Speed Link. I think we have something worth exploring 😊",
-        ts: Date.now(),
-        read: false,
-        auto: true
-      });
-    }
-
-    showToast("It's a mutual vibe! You are in each other's inbox 🎉");
-    sendNotificationToUser(partnerUid, "It's a mutual vibe! 🎉", myName + " vibed back! Check your inbox.", "match");
-    sendNotificationToUser(myUid, "It's a mutual vibe! 🎉", partnerName + " vibed back! Check your inbox.", "match");
-  } catch(e) { console.log("Match error:", e); }
-}
-
-async function slSaveToInbox() {
-  return slVibe(); // Legacy alias
+    showToast("Saved to inbox! Start chatting 💬");
+    sendNotificationToUser(_slPartnerUid, "Someone saved you from Speed Link! 💬", "Check your inbox to keep the conversation going.", "message");
+  } catch(e) { showToast("Error: " + e.message); }
 }
 
 async function slNextMatch() {
@@ -4658,9 +4532,8 @@ onAuthStateChanged(auth, async (user) => {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
         const data = snap.data();
-        window._userPlan = normalizePlan(data.plan || data.membershipPlan || data.subscriptionPlan || data.subscription || data.tier || data.accountType || data.memberType || 'ting');
+        window._userPlan = data.plan || 'ting';
         window._userData = data;
-        refreshEntitlementUI();
         // Init push notifications
         if(typeof initPushNotifications === 'function') initPushNotifications();
         if(typeof loadUnreadNotifications === 'function') loadUnreadNotifications();
@@ -4678,16 +4551,14 @@ onAuthStateChanged(auth, async (user) => {
           const av2 = document.getElementById('dash-av2');
           if (av2) av2.textContent = firstName.charAt(0).toUpperCase();
         }
-        const _planNow = currentPlan();
-        const planLabel = _planNow === 'diamond' ? '💎 Diamond' : _planNow === 'linked' ? '🔗 Linked' : 'Free · Ting';
-        const planBadge = _planNow === 'diamond' ? 'Diamond Member' : _planNow === 'linked' ? 'Linked Member' : 'Free Member';
+        const planLabel = window._userPlan === 'diamond' ? '💎 Diamond' : window._userPlan === 'linked' ? '🔗 Linked' : 'Free · Ting';
+        const planBadge = window._userPlan === 'diamond' ? 'Diamond Member' : window._userPlan === 'linked' ? 'Linked Member' : 'Free Member';
         set('dash-plan-lbl', planLabel);
         set('dash-plan-badge', planBadge);
         const nudge = document.getElementById('dash-upgrade-nudge');
-        if (nudge) nudge.style.display = _planNow === 'diamond' ? 'none' : 'flex';
+        if (nudge) nudge.style.display = window._userPlan === 'diamond' ? 'none' : 'flex';
         const nudgeSL = document.getElementById('sl-upgrade-nudge');
-        if (nudgeSL) nudgeSL.style.display = _planNow === 'diamond' ? 'none' : 'flex';
-        refreshEntitlementUI();
+        if (nudgeSL) nudgeSL.style.display = window._userPlan === 'diamond' ? 'none' : 'flex';
       }
     } catch(e) {
       console.log('Profile load error:', e);
@@ -4736,5 +4607,182 @@ onAuthStateChanged(auth, async (user) => {
   }
 })();
 </script>
+
+
+<!-- 876MATCH PRODUCT RECOVERY PATCH: Stories, badges, plan access, settings flow, pause/delete UX -->
+<style>
+  body.is-diamond .diamond-hide, body.is-diamond [data-diamond-hide="1"]{display:none!important;}
+  .story-viewer-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column;padding:18px;color:#fff;}
+  .story-viewer-modal.open{display:flex;}
+  .story-shell{width:min(430px,96vw);background:#080808;border:1px solid rgba(255,210,26,.25);border-radius:20px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.75);}
+  .story-bar{height:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .story-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .1s linear;}
+  .story-media{height:65vh;max-height:640px;display:flex;align-items:center;justify-content:center;background:#000;}
+  .story-media img,.story-media video{max-width:100%;max-height:100%;object-fit:contain;}
+  .story-actions{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:12px;background:#0d0d0d;}
+  .story-actions button,.modal-mini button{border:none;border-radius:10px;padding:9px 12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .story-actions .gold,.modal-mini .gold{background:linear-gradient(135deg,var(--gold),#ffb800);color:#050505;}
+  .story-actions .dark,.modal-mini .dark{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12);}
+  .modal-mini{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-mini.open{display:flex;}
+  .modal-mini-card{width:min(420px,94vw);background:#111;border:1px solid rgba(255,210,26,.2);border-radius:20px;padding:22px;box-shadow:0 20px 80px rgba(0,0,0,.75);}
+  .modal-mini h3{font-size:1.1rem;margin-bottom:8px;color:var(--gold);}
+  .modal-mini p{font-size:.84rem;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+  .modal-mini textarea,.modal-mini select,.modal-mini input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;padding:12px;margin-bottom:12px;min-height:48px;}
+  .policy-screen{position:fixed;inset:0;background:var(--bg);z-index:9997;display:none;color:#fff;overflow:auto;}
+  .policy-screen.open{display:block;}
+  .policy-inner{max-width:880px;margin:0 auto;padding:18px 18px 80px;}
+  .policy-card{background:#111;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;margin:14px 0;line-height:1.65;}
+</style>
+<div id="story-viewer" class="story-viewer-modal" onclick="if(event.target.id==='story-viewer')closeStoryViewer()">
+  <div class="story-shell">
+    <div class="story-bar"><div id="story-progress" class="story-bar-fill"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#090909;"><strong id="story-owner">Story</strong><button class="dark" onclick="closeStoryViewer()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">×</button></div>
+    <div id="story-media" class="story-media"></div>
+    <div class="story-actions">
+      <button class="dark" onclick="reactToCurrentStory('❤️')">❤️ React</button>
+      <button class="dark" onclick="replyToCurrentStory()">💬 Message</button>
+      <button class="gold" onclick="showStoryViewers()">👀 Viewers</button>
+    </div>
+  </div>
+</div>
+<div id="modal-mini" class="modal-mini"><div class="modal-mini-card" id="modal-mini-card"></div></div>
+<div id="policy-screen" class="policy-screen"><div class="policy-inner"><button class="auth-back" onclick="closePolicyScreen()">← Back to Settings</button><div id="policy-content"></div></div></div>
+<input type="file" id="story-file-input" accept="image/*,video/*" style="display:none">
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const planRank = {ting:0, free:0, linked:1, link:1, diamond:2};
+  function normPlan(v){ v=String(v||'ting').toLowerCase(); if(v.includes('diamond'))return 'diamond'; if(v.includes('linked')||v==='link')return 'linked'; return 'ting'; }
+  window.getActivePlan = function(){
+    try{return normPlan((window._userData&&window._userData.plan)||window._userPlan||sessionStorage.getItem('plan')||'ting');}catch(e){return 'ting';}
+  };
+  window.hasPlan = function(min){return (planRank[getActivePlan()]||0) >= (planRank[min]||0);};
+  window.applyPlanUI = function(){
+    const plan = getActivePlan();
+    document.body.classList.toggle('is-diamond', plan==='diamond');
+    document.body.classList.toggle('is-linked', plan==='linked');
+    document.body.classList.toggle('is-ting', plan==='ting');
+    if(plan==='diamond'){
+      document.querySelectorAll('button,div,a').forEach(el=>{
+        const txt=(el.textContent||'').trim().toLowerCase();
+        if(txt==='💎 upgrade'||txt==='upgrade'||txt==='upgrade now'||txt.includes('upgrade to diamond')||txt.includes('upgrade to real')){
+          el.style.display='none'; el.setAttribute('data-diamond-hide','1');
+        }
+      });
+    }
+    const dl=$('dash-plan-lbl'); if(dl) dl.textContent = plan==='diamond'?'💎 Diamond':plan==='linked'?'🔗 Linked':'Free · Ting';
+    const db=$('dash-plan-badge'); if(db) db.textContent = plan==='diamond'?'Diamond Member':plan==='linked'?'Linked Member':'Free Member';
+    const pp=$('prof-plan'); if(pp){ pp.textContent = plan==='diamond'?'💎 Diamond':plan==='linked'?'🔗 Linked':'Free · Ting'; pp.style.color=plan==='diamond'?'#A8EDFF':plan==='linked'?'var(--gold)':'rgba(255,255,255,.45)'; }
+    const pb=$('prof-badge'); if(pb){
+      const verified = !!(window._userData && (window._userData.verified || window._userData.realBadge || window._userData.verificationStatus==='approved'));
+      pb.className='cbdg bv'; pb.textContent = verified ? '✅ Verified' : '🪪 ID Pending';
+    }
+    const circleLabels = Array.from(document.querySelectorAll('*')).filter(el=>/reset(s)? at midnight/i.test(el.textContent||''));
+    if(plan==='diamond') circleLabels.forEach(el=>{ if((el.textContent||'').toLowerCase().includes('unlimited')) el.textContent='Diamond unlimited sessions'; });
+  };
+
+  // Make Google auth never override chosen app name in the dashboard greeting.
+  window.fixDisplayNames = function(){
+    try{
+      const d=window._userData||{}; const name = d.username || d.displayName || d.firstName || '';
+      if(name){ const fn=$('dash-first-name'); if(fn) fn.textContent=name.split(' ')[0]; const dn=$('dash-name'); if(dn) dn.textContent=name; }
+    }catch(e){}
+  };
+
+  // Settings routes without throwing the user out of the app.
+  window.openPolicyScreen = function(type){
+    const title = type==='terms'?'Terms of Service':'Privacy Policy';
+    const body = type==='terms' ? `
+      <h1 style="color:var(--gold);margin-bottom:10px;">876Match Terms of Service</h1>
+      <div class="policy-card"><h2>Safety & Offline Interactions</h2><p>Users are responsible for exercising caution when communicating online or meeting offline. Do not share passwords, banking information, sensitive documents, home addresses, or other personal information with people you recently met online.</p><p>876Match encourages verified, respectful connections, but verification does not guarantee another person’s intentions, safety, honesty, or behavior.</p></div>
+      <div class="policy-card"><h2>Subscriptions & Billing</h2><p>Linked and Diamond subscriptions may renew automatically unless cancelled through the payment provider. Feature access may change when a user upgrades, downgrades, cancels, or payment fails.</p></div>
+      <div class="policy-card"><h2>Refunds & Disputes</h2><p>Refunds are reviewed case-by-case for duplicate billing or technical errors. Platform dissatisfaction or lack of matches does not guarantee a refund.</p></div>` : `
+      <h1 style="color:var(--gold);margin-bottom:10px;">876Match Privacy Policy</h1>
+      <div class="policy-card"><h2>Information We Collect</h2><p>876Match may collect profile details, public username, private legal name for verification, uploaded photos, ID verification content, messages, stories, subscription status, and usage data.</p></div>
+      <div class="policy-card"><h2>Story Visibility</h2><p>Stories are designed for matched users only. Viewers, reactions, and replies may be stored so users can see who interacted with their stories.</p></div>
+      <div class="policy-card"><h2>Verification</h2><p>Government ID information is used internally for safety and authenticity review. Your public profile should show your username/display name, not your private legal name.</p></div>`;
+    $('policy-content').innerHTML = body;
+    $('policy-screen').classList.add('open');
+  };
+  window.closePolicyScreen = function(){ $('policy-screen').classList.remove('open'); try{go('settings-screen');}catch(e){} };
+  window.contactSupport = function(){
+    showMiniModal('Contact Support','Tell us what you need help with.', `<textarea id="support-msg" placeholder="Write your message..."></textarea>`, async()=>{
+      const msg=($('support-msg')||{}).value||''; if(!msg.trim()){showToast('Please write a message first.');return;}
+      try{ const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:u.uid,email:u.email,message:msg,status:'open',createdAt:fb.serverTimestamp()}); showToast('Support request sent.'); closeMiniModal(); }catch(e){showToast('Unable to send support request.');}
+    });
+  };
+  window.showMiniModal=function(title,desc,html,onConfirm){
+    const card=$('modal-mini-card'); card.innerHTML=`<h3>${title}</h3><p>${desc}</p>${html||''}<div style="display:flex;gap:10px;justify-content:flex-end;"><button class="dark" onclick="closeMiniModal()">Cancel</button><button class="gold" id="mini-confirm">Continue</button></div>`;
+    $('modal-mini').classList.add('open'); $('mini-confirm').onclick=onConfirm||closeMiniModal;
+  };
+  window.closeMiniModal=function(){ $('modal-mini').classList.remove('open'); };
+  window.deactivate=function(){
+    showMiniModal('Pause your account','Need a break? Your profile will be hidden until your selected pause period ends.', `<select id="pause-length"><option value="7">1 week</option><option value="30">1 month</option><option value="60">2 months</option><option value="0">Indefinitely</option></select>`, async()=>{
+      try{const days=parseInt($('pause-length').value,10); const until=days?new Date(Date.now()+days*86400000):null; const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.updateDoc(fb.doc(window._fbDb,'users',window._fbAuth.currentUser.uid),{paused:true,pauseUntil:until?fb.Timestamp.fromDate(until):null}); closeMiniModal(); showToast(days?`Account paused for ${days} days.`:'Account paused indefinitely.');}catch(e){showToast('Could not pause account.');}
+    });
+  };
+  window.deleteAcc=function(){
+    showMiniModal('Delete account','Before deleting, please tell us why you are leaving.', `<select id="delete-reason"><option>Found someone</option><option>Taking a break</option><option>Did not like matches</option><option>Privacy concerns</option><option>Too expensive</option><option>Technical issue</option><option>Other</option></select><textarea id="delete-note" placeholder="Optional note..."></textarea>`, async()=>{
+      try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,topic:'Delete Account',reason:$('delete-reason').value,note:$('delete-note').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Deletion request submitted for review.');}catch(e){showToast('Could not submit deletion request.');}
+    });
+  };
+
+  // Story system: matched-only, autoplay, viewers, reactions, replies.
+  let storyList=[], storyIndex=0, storyTimer=null, storyStart=0, currentStory=null;
+  window.openStoryUpload=function(){
+    if(!hasPlan('linked')){ showToast('Stories are for Linked and Diamond members.'); return; }
+    const inp=$('story-file-input'); if(inp) inp.click();
+  };
+  $('story-file-input').addEventListener('change', async function(){
+    const file=this.files&&this.files[0]; if(!file)return;
+    showToast('Preparing story upload...');
+    try{
+      const u=window._fbAuth.currentUser; const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      // Store story as a local blob URL for immediate preview; permanent Cloudinary/Firebase Storage upload can be connected later.
+      const url=URL.createObjectURL(file);
+      await fb.addDoc(fb.collection(window._fbDb,'stories'),{uid:u.uid,ownerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',mediaUrl:url,mediaType:file.type.startsWith('video')?'video':'image',visibility:'matchesOnly',viewers:[],reactions:[],createdAt:fb.serverTimestamp(),expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))});
+      showToast('Story added for your matches.'); loadMatchedStories();
+    }catch(e){showToast('Story could not save yet. Check Firestore rules/storage setup.');}
+  });
+  window.loadMatchedStories=async function(){
+    const strip=document.querySelector('.stories-strip'); if(!strip)return;
+    strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Your Story</span></div>`;
+    try{
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
+      const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
+      storyList=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.uid!==u.uid && (s.visibility==='matchesOnly'||s.matchedOnly===true));
+      storyList.forEach((s,i)=>{ const el=document.createElement('div'); el.className='sw-wrap'; el.innerHTML=`<div class="st-ring"><div class="st-in">${s.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`; el.onclick=()=>openStoryViewer(i); strip.appendChild(el); });
+      if(storyList.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
+    }catch(e){}
+  };
+  window.openStoryViewer=function(i){storyIndex=i||0; currentStory=storyList[storyIndex]; if(!currentStory)return; renderStory(); $('story-viewer').classList.add('open'); markStoryViewed(); startStoryAuto();};
+  function renderStory(){
+    currentStory=storyList[storyIndex]; if(!currentStory)return; $('story-owner').textContent=currentStory.ownerName||'Story';
+    const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video' ? `<video src="${currentStory.mediaUrl}" autoplay playsinline></video>` : `<img src="${currentStory.mediaUrl}">`;
+  }
+  function startStoryAuto(){clearInterval(storyTimer); storyStart=Date.now(); storyTimer=setInterval(()=>{const pct=Math.min(100,((Date.now()-storyStart)/6000)*100); $('story-progress').style.width=pct+'%'; if(pct>=100){ nextStory();}},100);}
+  function nextStory(){ if(storyIndex+1<storyList.length){storyIndex++; renderStory(); markStoryViewed(); startStoryAuto();} else closeStoryViewer(); }
+  window.closeStoryViewer=function(){clearInterval(storyTimer); $('story-viewer').classList.remove('open'); $('story-progress').style.width='0%';};
+  async function markStoryViewed(){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.setDoc(fb.doc(window._fbDb,'storyViews',currentStory.id+'_'+u.uid),{storyId:currentStory.id,ownerUid:currentStory.uid,viewerUid:u.uid,viewerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',viewedAt:fb.serverTimestamp()},{merge:true});}catch(e){}}
+  window.reactToCurrentStory=async function(reaction){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'reaction',reaction,createdAt:fb.serverTimestamp()}); showToast('Reaction sent.');}catch(e){showToast('Could not send reaction.');}}
+  window.replyToCurrentStory=function(){showMiniModal('Reply to Story','Send a private story reply.',`<textarea id="story-reply-text" placeholder="Write your reply..."></textarea>`,async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'message',message:$('story-reply-text').value,createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Reply sent.');}catch(e){showToast('Could not send reply.');}})};
+  window.showStoryViewers=async function(){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const snap=await fb.getDocs(fb.collection(window._fbDb,'storyViews')); const viewers=snap.docs.map(d=>d.data()).filter(v=>v.storyId===currentStory.id).map(v=>v.viewerName||v.viewerUid); showMiniModal('Story Viewers', viewers.length?viewers.join('<br>'):'No viewers yet.','',closeMiniModal);}catch(e){showMiniModal('Story Viewers','No viewers available yet.','',closeMiniModal);}};
+
+  // Click handlers/settings fixes after DOM paints.
+  function wireRecovery(){
+    applyPlanUI(); fixDisplayNames(); loadMatchedStories();
+    document.querySelectorAll('.set-row').forEach(row=>{const txt=(row.textContent||'').toLowerCase(); if(txt.includes('terms of service'))row.onclick=()=>openPolicyScreen('terms'); if(txt.includes('privacy policy'))row.onclick=()=>openPolicyScreen('privacy'); if(txt.includes('contact support'))row.onclick=contactSupport; if(txt.includes('manage subscription'))row.onclick=()=>showSubscriptionManager();});
+    document.querySelectorAll('.nav-item').forEach(btn=>{ if((btn.textContent||'').toLowerCase().includes('matches')) btn.onclick=()=>{try{go('messages-screen'); setTimeout(()=>window.switchMT&&switchMT('matches'),100);}catch(e){}}; });
+  }
+  window.showSubscriptionManager=function(){
+    const plan=getActivePlan();
+    showMiniModal('Manage Subscription', `Current plan: ${plan==='diamond'?'Diamond':plan==='linked'?'Linked':'Ting / Free'}.`, `<select id="sub-action"><option value="upgrade">Upgrade / change plan</option><option value="downgrade">Request downgrade</option><option value="cancel">Cancel subscription</option></select><p style="font-size:.78rem;color:var(--muted);">Subscription changes should be confirmed through Stripe/payment settings so billing stays accurate.</p>`, async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.addDoc(fb.collection(window._fbDb,'billingDisputes'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,type:$('sub-action').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Subscription request submitted.');}catch(e){showToast('Unable to submit subscription request.');}});
+  };
+  document.addEventListener('DOMContentLoaded', wireRecovery);
+  setTimeout(wireRecovery,700); setInterval(wireRecovery,3500);
+})();
+</script>
+
 </body>
 </html>

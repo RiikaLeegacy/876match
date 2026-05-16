@@ -1,13 +1,20 @@
-876Match reconciled master build
+876Match Product Build
 
-Upload these files/folders to the ROOT of GitHub.
-Important names must be exact:
-- index.html
-- admin.html
-- netlify.toml
-- netlify/functions/create-room.js
-- firebase-messaging-sw.js
-- privacy.html
-- terms.html
+Upload the EXTRACTED contents of this folder to the ROOT of your GitHub repo.
+Do not upload the zip itself.
 
-This build uses index_master_fixed.html as the base, preserves newer Speed Link/Daily setup, keeps admin team members from admin(11).html, and patches the reverted Diamond/story/upgrade/demo issues.
+Important structure:
+- index.html must be at root
+- admin.html must be at root
+- netlify.toml must be at root
+- netlify/functions/create-room.js must stay inside netlify/functions/
+
+This build includes:
+- Product recovery patch for Diamond/Linked plan UI
+- Story upload/viewer/reactions/replies/viewers scaffold
+- Match tab route fix
+- Settings Terms/Privacy/Support in-app navigation
+- Pause account modal
+- Delete account questionnaire
+- Subscription request modal
+- ID-only verification language update
