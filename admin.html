@@ -189,7 +189,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="auth-sub">Admin Dashboard · Authorized Access Only</div>
     <div class="field"><label>Email</label><input type="email" id="admin-email" placeholder="admin@876match.com" autocomplete="username" required></div>
     <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="••••••••" autocomplete="current-password" required></div>
-    <button class="btn-gold" id="admin-login-btn" onclick="if(typeof window.adminLogin==='function')window.adminLogin();return false;">Sign In</button>
+    <button class="btn-gold" id="admin-login-btn" type="submit">Sign In</button>
     <div class="err" id="auth-err"></div>
   </form>
 </div>
@@ -720,6 +720,34 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 
 
+
+<script>
+(function(){
+  window.adminLogin = window.adminLogin || async function(){
+    var err=document.getElementById('auth-err');
+    var waited=0;
+    while(window.adminLogin && window.adminLogin.__waiting && waited<12000){
+      await new Promise(r=>setTimeout(r,250)); waited+=250;
+    }
+    if(window.adminLogin && !window.adminLogin.__waiting) return window.adminLogin();
+    if(err) err.textContent='Admin login is still loading. Refresh once and try again.';
+  };
+  window.adminLogin.__waiting = true;
+  function bind(){
+    var form=document.getElementById('admin-login-form');
+    var btn=document.getElementById('admin-login-btn');
+    if(form && !form.dataset.prebound){
+      form.dataset.prebound='1';
+      form.addEventListener('submit',function(e){e.preventDefault(); if(typeof window.adminLogin==='function') window.adminLogin();});
+    }
+    if(btn && !btn.dataset.prebound){
+      btn.dataset.prebound='1';
+      btn.addEventListener('click',function(e){e.preventDefault(); if(typeof window.adminLogin==='function') window.adminLogin();});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+})();
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -778,6 +806,7 @@ window.adminLogin = async function() {
     if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
   }
 };
+try{ window.adminLogin.__waiting = false; }catch(e){}
 
 function bindAdminLoginButton(){
   const form = document.getElementById('admin-login-form');
