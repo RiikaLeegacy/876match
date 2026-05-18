@@ -5001,6 +5001,18 @@ onAuthStateChanged(auth, async (user) => {
 
   // Story system: matched-only, autoplay, viewers, reactions, replies.
   let storyList=[], storyIndex=0, storyTimer=null, storyStart=0, currentStory=null;
+  function storyToDate(v){
+    try{
+      if(!v) return null;
+      if(typeof v.toDate === 'function') return v.toDate();
+      if(v.seconds) return new Date(v.seconds * 1000);
+      return new Date(v);
+    }catch(e){ return null; }
+  }
+  function isActiveStory(s, now){
+    const exp = storyToDate(s && s.expiresAt);
+    return !exp || exp > now;
+  }
 
   window.loadStoriesScreen = async function(){
     const list = document.getElementById('stories-screen-list');
@@ -5015,7 +5027,7 @@ onAuthStateChanged(auth, async (user) => {
       const all = snap.docs.map(d=>({id:d.id,...d.data()}));
 
       // My own active stories
-      const mine = all.filter(s=>s.uid===u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      const mine = all.filter(s=>s.uid===u.uid && isActiveStory(s, now));
       if(mine.length>0 && myPreview && myPreviewList){
         myPreview.style.display='block';
         myPreviewList.innerHTML = mine.map((s,i)=>`
@@ -5033,7 +5045,7 @@ onAuthStateChanged(auth, async (user) => {
       // Filter matched stories — show any non-expired story from other users
       const matched = all.filter(s=>{
         if(s.uid===u.uid) return false;
-        const exp=toDate(s.expiresAt); return !exp||exp>now;
+        return isActiveStory(s, now);
       });
       const byUser = {};
       matched.forEach(s=>{ if(!byUser[s.uid]) byUser[s.uid]=[]; byUser[s.uid].push(s); });
@@ -5139,12 +5151,18 @@ onAuthStateChanged(auth, async (user) => {
       const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
       const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const activeSig = allStories
+        .filter(s => isActiveStory(s, now))
+        .map(s => `${s.id || ''}:${s.uid || ''}:${(s.mediaUrl || '').slice(-18)}`)
+        .sort()
+        .join('|');
+      if(strip.dataset.storySig === activeSig){ return; }
+      strip.dataset.storySig = activeSig;
       // Debug: log story count
       console.log('Stories in DB:', allStories.length, 'mine:', allStories.filter(s=>s.uid===u.uid).length);
 
       // Show user's own active (non-expired) stories first
-      const toDate=v=>{ try{ return v&&(typeof v.toDate==='function'?v.toDate():new Date(v)); }catch(e){ return null; } };
-      const myStories=allStories.filter(s=>{ if(s.uid!==u.uid) return false; const exp=toDate(s.expiresAt); return !exp||exp>now; });
+      const myStories=allStories.filter(s=>{ if(s.uid!==u.uid) return false; return isActiveStory(s, now); });
       if(myStories.length>0){
         const myEl=document.createElement('div'); myEl.className='sw-wrap';
         const firstMyStory=myStories[0];
@@ -5154,7 +5172,7 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       // Show matched users' stories
-      const toDateS=v=>{try{return v&&(typeof v.toDate==='function'?v.toDate():new Date(v));}catch(e){return null;}}; storyList=allStories.filter(s=>{ if(s.uid===u.uid) return false; const exp=toDateS(s.expiresAt); return !exp||exp>now; });
+      storyList=allStories.filter(s=>{ if(s.uid===u.uid) return false; return isActiveStory(s, now); });
       storyList.forEach((s,i)=>{ const el=document.createElement('div'); el.className='sw-wrap'; el.innerHTML=`<div class="st-ring"><div class="st-in">${s.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`; el.onclick=()=>openStoryViewer(i); strip.appendChild(el); });
       if(storyList.length===0&&myStories.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
     }catch(e){}
