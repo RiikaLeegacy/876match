@@ -1384,7 +1384,7 @@ input:focus,select:focus,textarea:focus{
       <div id="conv-list" style="display:flex;flex-direction:column;gap:0;">
         <!-- Conversations loaded dynamically -->
       </div>
-      <div id="no-convs" style="text-align:center;padding:40px 20px;color:var(--muted);font-size:.86rem;">
+      <div id="no-convs" style="display:none;text-align:center;padding:40px 20px;color:var(--muted);font-size:.86rem;">
         <div style="font-size:2rem;margin-bottom:10px;">💬</div>
         Match with someone to start chatting!
       </div>
@@ -2439,20 +2439,26 @@ function showMatch(){
 }
 async function closeMatch(){
   document.getElementById('match-ol').classList.remove('show');
-  // Create a conversation for the match in Realtime DB
+  // Create a conversation in Firestore
   try{
     const auth=window._fbAuth;
     if(auth&&auth.currentUser&&window._currentMatchUid){
       const myUid=auth.currentUser.uid;
       const theirUid=window._currentMatchUid;
       const convId=[myUid,theirUid].sort().join('_');
-      const convRef=window._rtdb.ref('conversations/'+convId);
-      await convRef.set({
-        participants:{[myUid]:true,[theirUid]:true},
-        createdAt:Date.now(),
-        lastMessage:'',
+      const myName=window._userData&&(window._userData.username||window._userData.firstName)||'Member';
+      const theirName=window._currentMatchName||'Match';
+      const myPhoto=window._userData&&(window._userData.photoUrl||'')||'';
+      const theirPhoto=window._currentMatchPhoto||'';
+      const {setDoc,doc,serverTimestamp}=window._fb;
+      await setDoc(doc(window._fbDb,'conversations',convId),{
+        participants:[myUid,theirUid],
+        partnerNames:{[myUid]:myName,[theirUid]:theirName},
+        partnerPhotos:{[myUid]:myPhoto,[theirUid]:theirPhoto},
+        createdAt:serverTimestamp(),
+        lastMessage:'You matched! Say hello 👋',
         lastMessageTime:Date.now()
-      });
+      },{merge:true});
     }
   }catch(e){console.log('Match conv error:',e);}
   loadCard();
@@ -2494,8 +2500,12 @@ document.addEventListener('keydown',e=>{
 // ── MSG TABS ──
 function switchMT(tab){
   ['likes','matches','messages'].forEach(t=>{
-    const p=document.getElementById('mp-'+t);if(p)p.style.display=t===tab?'block':'none';
-    const b=document.getElementById('mt-'+t);if(b)b.classList.toggle('on',t===tab);
+    const p=document.getElementById('mp-'+t);
+    if(p) p.style.display=t===tab?'block':'none';
+    // Tab buttons: mt-likes, mt-matches, mt-msgs (note: msgs not messages)
+    const btnId = t==='messages' ? 'mt-msgs' : 'mt-'+t;
+    const b=document.getElementById(btnId);
+    if(b)b.classList.toggle('on',t===tab);
   });
   if(tab==='messages') loadConversations();
   if(tab==='matches') loadMatches();
@@ -3052,31 +3062,38 @@ function autoResize(el) {
 // Load conversations list on messages screen
 async function loadConversations() {
   const auth = window._fbAuth;
-  if (!auth && auth.currentUser) return;
+  if (!auth || !auth.currentUser) return;
   const myUid = auth.currentUser.uid;
-
   const convList = document.getElementById('conv-list');
   const noConvs = document.getElementById('no-convs');
   if (!convList) return;
-
-  // Listen for conversations involving this user
-  window._rtdb.ref('conversations').orderByChild('participants/' + myUid).equalTo(true).on('value', snap => {
-    const convs = snap.val();
-    if (!convs || Object.keys(convs).length === 0) {
+  convList.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Loading...</div>';
+  try {
+    const {getDocs, collection, query, where, orderBy} = window._fb;
+    const db = window._fbDb;
+    // Load conversations from Firestore where user is a participant
+    const snap = await getDocs(query(collection(db,'conversations'), where('participants','array-contains',myUid)));
+    const convs = snap.docs.map(d => ({id:d.id,...d.data()}));
+    if (!convs.length) {
       if (noConvs) noConvs.style.display = 'block';
       convList.innerHTML = '';
       return;
     }
     if (noConvs) noConvs.style.display = 'none';
-
-    const sorted = Object.entries(convs).sort((a, b) => (b[1].lastMessageTime || 0) - (a[1].lastMessageTime || 0));
-    convList.innerHTML = sorted.map(([convId, conv]) => {
-      const partnerUid = Object.keys(conv.participants).find(uid => uid !== myUid) || '';
-      const partnerName = conv.partnerNames && conv.partnerNames[partnerUid] || 'Match';
+    // Sort by last message time
+    convs.sort((a,b) => (b.lastMessageTime||0) - (a.lastMessageTime||0));
+    convList.innerHTML = convs.map(conv => {
+      const partnerUid = (conv.participants||[]).find(uid => uid !== myUid) || '';
+      const names = conv.partnerNames || {};
+      const partnerName = names[partnerUid] || conv.partnerName || 'Match';
+      const photo = (conv.partnerPhotos && conv.partnerPhotos[partnerUid]) || '';
       const lastMsg = conv.lastMessage || 'You matched! Say hello 👋';
       const timeAgo = formatTimeAgo(conv.lastMessageTime);
-      return `<div class="msg-item" onclick="openChat('${partnerUid}','${partnerName}','')">
-        <div class="msg-av" style="font-size:0;overflow:hidden;"><svg viewBox="0 0 48 48" style="width:100%;height:100%;"><circle cx="24" cy="18" r="10" fill="#c8956a"/><ellipse cx="24" cy="42" rx="18" ry="14" fill="#1a5c30"/></svg></div>
+      const avatarHtml = photo
+        ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+        : `<svg viewBox="0 0 48 48" style="width:100%;height:100%;"><circle cx="24" cy="18" r="10" fill="#c8956a"/><ellipse cx="24" cy="42" rx="18" ry="14" fill="#1a5c30"/></svg>`;
+      return `<div class="msg-item" onclick="openChat('${partnerUid}','${escHtml(partnerName)}','${photo}','${conv.id}')">
+        <div class="msg-av" style="font-size:0;overflow:hidden;">${avatarHtml}</div>
         <div style="flex:1;min-width:0;">
           <div class="msg-nm">${escHtml(partnerName)}</div>
           <div class="msg-pv">${escHtml(lastMsg)}</div>
@@ -3084,7 +3101,10 @@ async function loadConversations() {
         <div><div class="msg-t">${timeAgo}</div></div>
       </div>`;
     }).join('');
-  });
+  } catch(e) {
+    console.error('loadConversations error:', e);
+    convList.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Could not load messages.</div>';
+  }
 }
 
 // Load matches list
@@ -4758,9 +4778,12 @@ onAuthStateChanged(auth, async (user) => {
 </style>
 <div id="story-viewer" class="story-viewer-modal" onclick="if(event.target.id==='story-viewer')closeStoryViewer()">
   <div class="story-shell">
-    <div class="story-bar"><div id="story-progress" class="story-bar-fill"></div></div>
+    <div id="story-segments" style="display:flex;gap:3px;padding:10px 12px 4px;width:100%;box-sizing:border-box;"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#090909;"><strong id="story-owner">Story</strong><button class="dark" onclick="closeStoryViewer()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">×</button></div>
-    <div id="story-media" class="story-media"></div>
+    <div id="story-media" class="story-media" style="position:relative;">
+      <div onclick="prevStory()" style="position:absolute;left:0;top:0;width:35%;height:100%;z-index:10;cursor:pointer;"></div>
+      <div onclick="nextStory()" style="position:absolute;right:0;top:0;width:35%;height:100%;z-index:10;cursor:pointer;"></div>
+    </div>
     <div class="story-actions" id="story-actions">
       <!-- Populated dynamically based on whether it's your own story or someone else's -->
     </div>
@@ -5228,17 +5251,60 @@ onAuthStateChanged(auth, async (user) => {
     currentStory=storyList[storyIndex]; if(!currentStory)return; $('story-owner').textContent=currentStory.ownerName||'Story';
     const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video' ? `<video src="${currentStory.mediaUrl}" autoplay playsinline></video>` : `<img src="${currentStory.mediaUrl}">`;
   }
-  function startStoryAuto(){clearInterval(storyTimer); storyStart=Date.now(); storyTimer=setInterval(()=>{const pct=Math.min(100,((Date.now()-storyStart)/6000)*100); $('story-progress').style.width=pct+'%'; if(pct>=100){ nextStory();}},100);}
+  function buildStorySegments(total, current){
+    const seg=$('story-segments'); if(!seg)return;
+    seg.innerHTML='';
+    for(let i=0;i<total;i++){
+      const wrap=document.createElement('div');
+      wrap.style.cssText='flex:1;height:3px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden;';
+      const fill=document.createElement('div');
+      fill.style.cssText='height:100%;width:'+(i<current?'100':i===current?'0':'0')+'%;background:#fff;transition:none;';
+      fill.id='seg-fill-'+i;
+      wrap.appendChild(fill); seg.appendChild(wrap);
+    }
+  }
+  function startStoryAuto(){
+    clearInterval(storyTimer);
+    storyStart=Date.now();
+    // Determine total and current index
+    const isOwn=window._storyViewerMode==='mine';
+    const list=isOwn?(window._myStoryList||[]):storyList;
+    const cur=isOwn?(window._myStoryIndex||0):storyIndex;
+    buildStorySegments(list.length, cur);
+    storyTimer=setInterval(()=>{
+      const pct=Math.min(100,((Date.now()-storyStart)/6000)*100);
+      const fill=document.getElementById('seg-fill-'+cur);
+      if(fill) fill.style.width=pct+'%';
+      if(pct>=100){ nextStory(); }
+    },50);
+  }
   function nextStory(){
+    clearInterval(storyTimer);
     if(window._storyViewerMode==='mine'){
       const list=window._myStoryList||[];
-      if((window._myStoryIndex||0)+1<list.length){ window._myStoryIndex=(window._myStoryIndex||0)+1; openMyStoryViewer(); }
+      const next=(window._myStoryIndex||0)+1;
+      if(next<list.length){ window._myStoryIndex=next; openMyStoryViewer(); }
       else closeStoryViewer();
       return;
     }
-    if(storyIndex+1<storyList.length){storyIndex++; renderStory(); markStoryViewed(); startStoryAuto();} else closeStoryViewer();
+    if(storyIndex+1<storyList.length){ storyIndex++; renderStory(); markStoryViewed(); startStoryAuto(); }
+    else closeStoryViewer();
   }
-  window.closeStoryViewer=function(){clearInterval(storyTimer); window._storyViewerMode=null; $('story-viewer').classList.remove('open'); $('story-progress').style.width='0%';};
+  window.closeStoryViewer=function(){
+    clearInterval(storyTimer);
+    window._storyViewerMode=null;
+    $('story-viewer').classList.remove('open');
+    const seg=$('story-segments'); if(seg) seg.innerHTML='';
+  };
+  window.prevStory=function(){
+    const isOwn=window._storyViewerMode==='mine';
+    if(isOwn){
+      const idx=(window._myStoryIndex||0)-1;
+      if(idx>=0){ window._myStoryIndex=idx; openMyStoryViewer(); }
+    } else {
+      if(storyIndex>0){ storyIndex--; renderStory(); markStoryViewed(); startStoryAuto(); }
+    }
+  };
   window.pauseStory=function(){
     const btn=$('story-pause-btn');
     if(storyTimer){ clearInterval(storyTimer); storyTimer=null; if(btn) btn.textContent='▶ Resume'; }
