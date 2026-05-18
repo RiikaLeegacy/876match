@@ -3044,6 +3044,17 @@ function autoResize(el) {
 }
 
 // Load conversations list on messages screen
+// Global HTML escape utility
+function escHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n/g, '<br>');
+}
+
 async function loadConversations() {
   const auth = window._fbAuth;
   if (!auth || !auth.currentUser) return;
@@ -3113,7 +3124,7 @@ async function loadMatches() {
     }
     if (noMatches) noMatches.style.display = 'none';
     matchList.innerHTML = matches.map(m => `
-      <div class="msg-item" onclick="openChat('${m.uid}','${escHtml(m.name)}','${m.plan||''}')">
+      <div class="msg-item" onclick="openChat('${m.uid}','${escHtml(m.name)}','${m.photo||m.photoUrl||''}','')">
         <div class="msg-av" style="font-size:0;overflow:hidden;"><svg viewBox="0 0 48 48" style="width:100%;height:100%;"><circle cx="24" cy="18" r="10" fill="#c8956a"/><ellipse cx="24" cy="42" rx="18" ry="14" fill="#1a5c30"/></svg></div>
         <div style="flex:1;">
           <div class="msg-nm">${escHtml(m.name)}</div>
@@ -4802,7 +4813,7 @@ onAuthStateChanged(auth, async (user) => {
     // Hide upgrade buttons for diamond users
     if(plan==='diamond'){
       document.querySelectorAll('button,div,a').forEach(el=>{
-        const txt=(el.textContent||'').trim().toLowerCase().replace(/[\u2726\u{1F48E}\s]/gu,'');
+        const txt=(el.textContent||'').trim().toLowerCase().replace(/[✦💎\s]/g,'');
         if(txt==='upgrade'||txt==='upgradenow'||txt.includes('upgradetodiamond')||txt.includes('upgradetoreal')){
           el.style.display='none'; el.setAttribute('data-diamond-hide','1');
         }
@@ -5458,11 +5469,15 @@ onAuthStateChanged(auth, async (user) => {
     }catch(e){ console.error('Real discover load failed:', e); return false; }
   }
 
-  const originalLoadCard = loadCard;
-  loadCard = function(){
-    if(profiles && profiles[cardCount]){ renderProfileCard(profiles[cardCount++]); return; }
-    originalLoadCard();
-  };
+  // Defer loadCard override until loadCard is defined
+  setTimeout(function(){
+    if(typeof loadCard !== 'function') return;
+    const originalLoadCard = loadCard;
+    loadCard = function(){
+      if(profiles && profiles[cardCount]){ renderProfileCard(profiles[cardCount++]); return; }
+      originalLoadCard();
+    };
+  }, 100);
 
   function updateTopAvatar(){
     const av = document.getElementById('top-av'); if(!av) return;
@@ -5581,7 +5596,7 @@ onAuthStateChanged(auth, async (user) => {
   window.openLastMatchChat=function(){
     const p=window._lastMatchProfile;
     const ol=document.getElementById('match-ol'); if(ol) ol.classList.remove('show');
-    if(p && p.uid){ openChat(p.uid, safeName(p), p.plan||''); }
+    if(p && p.uid){ openChat(p.uid, safeName(p), p.photoUrl||'', ''); }
     else { go('messages-screen'); setTimeout(()=>switchMT('matches'),100); }
   };
   window.openMatchConversation=function(){
@@ -5638,7 +5653,7 @@ window.closeMatch=function(){ keepSwipingAfterMatch(); };
       }
       if(!matches.length){ matchList.innerHTML=''; if(noMatches) noMatches.style.display='block'; return; }
       if(noMatches) noMatches.style.display='none';
-      matchList.innerHTML=matches.map(m=>`<div class="msg-item" onclick="openChat('${m.uid}','${String(m.name||'Match').replace(/'/g,'&#39;')}','${m.plan||''}')"><div class="msg-av" style="font-size:0;overflow:hidden;">${avatarMarkup(m,'46px')}</div><div style="flex:1;"><div class="msg-nm">${escHtml(m.name||'Match')}</div><div class="msg-pv">You matched! Say hello 👋</div></div><div class="msg-dot"></div></div>`).join('');
+      matchList.innerHTML=matches.map(m=>`<div class="msg-item" onclick="openChat('${m.uid}','${String(m.name||'Match').replace(/'/g,'&#39;')}','${m.photo||m.photoUrl||''}','')"><div class="msg-av" style="font-size:0;overflow:hidden;">${avatarMarkup(m,'46px')}</div><div style="flex:1;"><div class="msg-nm">${escHtml(m.name||'Match')}</div><div class="msg-pv">You matched! Say hello 👋</div></div><div class="msg-dot"></div></div>`).join('');
     }catch(e){ console.error('loadMatches repair failed:',e); }
   };
 
