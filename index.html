@@ -2132,15 +2132,16 @@ function openProfModal(profile) {
   } else {
     placeholder.innerHTML = '😊';
   }
-  document.getElementById('pmod-name').textContent = (p.username||p.firstName||'Member') + (p.age ? ', ' + p.age : '');
+  document.getElementById('pmod-name').textContent = (p.name || p.username || p.firstName || p.displayName || 'Member') + (p.age ? ', ' + p.age : '');
   const meta = [p.location||p.parish, p.height, p.job].filter(Boolean).join(' · ');
   document.getElementById('pmod-meta').textContent = meta;
   const badges = document.getElementById('pmod-badges');
   badges.innerHTML = '';
-  if (p.verified || p.verificationStatus==='approved') badges.innerHTML += '<span class="cbdg bv">✅ Verified</span>';
-  if (p.realBadge) badges.innerHTML += '<span class="cbdg br">🔗 Linked</span>';
-  if (p.plan==='diamond') badges.innerHTML += '<span class="cbdg bd">💎 Diamond</span>';
-  else if (p.plan==='linked') badges.innerHTML += '<span class="cbdg" style="background:rgba(255,210,26,.12);color:var(--gold);">🔗 Linked</span>';
+  const isVerified = !!(p.verified || p.verificationStatus==='approved' || p.realBadge || p.isVerified);
+  if (isVerified) badges.innerHTML += '<span class="cbdg bv">✅ Verified</span>';
+  const userPlan = (p.plan || p.tier || '').toLowerCase();
+  if (userPlan==='diamond') badges.innerHTML += '<span class="cbdg bd">💎 Diamond</span>';
+  else if (userPlan==='linked') badges.innerHTML += '<span class="cbdg" style="background:rgba(255,210,26,.12);color:var(--gold);">🔗 Linked</span>';
   document.getElementById('pmod-bio').textContent = p.bio || '';
   const tags = document.getElementById('pmod-tags');
   tags.innerHTML = (p.interests||[]).map(t=>`<span class="prof-modal-tag">${t}</span>`).join('') || '<span style="color:var(--muted);font-size:.8rem;">No interests listed</span>';
@@ -5385,7 +5386,7 @@ onAuthStateChanged(auth, async (user) => {
     const bioSnip = p.bio ? `<div style="font-size:.78rem;color:rgba(255,255,255,.72);margin-bottom:7px;font-style:italic;line-height:1.35;">“${String(p.bio).slice(0,82)}${String(p.bio).length>82?'…':''}”</div>` : '';
     stk.innerHTML = `<div class="pcard top" id="top-card"><div class="stamp-l" id="stamp-l">SKIP ✗</div><div class="stamp-r" id="stamp-r">LINK 💚</div><div class="card-dots" id="cdots"><div class="cdot on"></div></div><div class="card-tl" style="width:18%;" onclick="event.stopPropagation();prevPh()"></div><div class="card-tr" style="width:18%;" onclick="event.stopPropagation();nextPh()"></div><div id="card-ph" style="width:100%;height:100%;background:${p.bg};position:relative;overflow:hidden;">${photoHtml}</div><div class="card-gr"></div><div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:50px;font-size:.66rem;color:rgba(255,255,255,.82);pointer-events:none;">Tap center to view profile</div><div class="card-body"><div class="cn-row"><span class="cn">${p.name}</span>${p.age?`<span class="ca">${p.age}</span>`:''}<span class="cbdg ${p.bc}">${p.badge}</span></div><div class="cloc">📍 ${p.loc}${p.height?' · '+p.height:''}${p.job?' · '+p.job:''}</div>${bioSnip}<div class="ctags">${(p.tags||[]).map(t=>`<span class="ctag">${t}</span>`).join('')}</div></div></div>`;
     const top = document.getElementById('top-card');
-    if(top) top.onclick = e => { if(!e.target.classList.contains('card-tl') && !e.target.classList.contains('card-tr')) openProfModal(currentProfile); };
+    if(top) top.onclick = (e => { const _p = p; return function(ev){ if(!ev.target.classList.contains('card-tl') && !ev.target.classList.contains('card-tr')) openProfModal(_p); }; })(p);
   }
 
   async function loadRealDiscoverProfiles(){
@@ -5607,7 +5608,11 @@ window.closeMatch=function(){ keepSwipingAfterMatch(); };
       const others=all.filter(s=>s.uid!==u.uid);
       let html=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Add Story</span></div>`;
       window._myStoryListFull=mine;
-      mine.forEach((s,i)=>{ html+=`<div class="sw-wrap" data-my-story="${i}"><div class="st-ring active-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyMediaThumb(s,'47px')}</div></div><span class="st-nm">My Story${mine.length>1?' '+(i+1):''}</span></div>`; });
+      // Show ONE bubble for all my stories — not individual ones
+      if(mine.length>0){
+        const first=mine[0];
+        html+=`<div class="sw-wrap" data-my-story="0"><div class="st-ring active-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyMediaThumb(first,'47px')}</div></div><span class="st-nm">My Story${mine.length>1?' · '+mine.length:''}</span></div>`;
+      }
       const grouped={}; others.forEach(s=>{ const key=s.uid||s.ownerId||'unknown'; (grouped[key] ||= []).push(s); });
       let gi=0; Object.values(grouped).forEach(group=>{ const first=group[0]; const label=(first.ownerName||'Match').split(' ')[0].slice(0,10); window['_storyGroup_'+gi]=group; html+=`<div class="sw-wrap" data-story-group="${gi}"><div class="st-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyMediaThumb(first,'47px')}</div></div><span class="st-nm">${label}${group.length>1?' · '+group.length:''}</span></div>`; gi++; });
       strip.innerHTML=html;
