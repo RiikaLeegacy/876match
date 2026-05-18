@@ -1175,7 +1175,7 @@ input:focus,select:focus,textarea:focus{
         <button onclick="go('messages-screen');switchMT('messages');" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💬 Messages</button>
         <button onclick="go('speedlink-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">⚡ Speed Link</button>
         <button onclick="go('circle-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">🎯 Circle</button>
-        <button onclick="go('premium-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:#A8EDFF;border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(168,237,255,0.05)'" onmouseout="this.style.background='transparent'">💎 Upgrade</button>
+        <button id="sidebar-upgrade-btn" onclick="go('premium-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:#A8EDFF;border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(168,237,255,0.05)'" onmouseout="this.style.background='transparent'">💎 Upgrade</button>
       </nav>
       <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:16px;margin-top:16px;">
         <button onclick="go('profile-screen')" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:12px;background:transparent;border:none;font-family:inherit;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
@@ -2130,7 +2130,6 @@ function loadDashboard(){
     if(!auth||!auth.currentUser) return;
     const u=auth.currentUser;
     const fn=document.getElementById('dash-first-name');
-    if(fn&&u.displayName) fn.textContent=u.displayName.split(' ')[0];
     const av2=document.getElementById('dash-av2');
     // Use Firestore username/firstName — NOT Firebase Auth displayName (which may reflect Google account name)
     const _avName = (window._userData&&(window._userData.username||window._userData.firstName))||null;
@@ -2454,9 +2453,13 @@ async function loadProfile(){
     if(d.bio)document.getElementById('prof-bio').textContent='"'+d.bio+'"';
     if(d.photoUrl){const av=document.getElementById('prof-av');av.innerHTML=`<img src="${d.photoUrl}" style="width:100%;height:100%;object-fit:cover;">`;}
     const pb=document.getElementById('prof-badge');const pp=document.getElementById('prof-plan');
-    if(plan==='diamond'){pb.className='cbdg bd';pb.textContent='💎 Diamond';pp.textContent='💎 Diamond';pp.style.color='#A8EDFF';}
-    else if(plan==='linked'){if(d.realBadge){pb.className='cbdg br';pb.textContent='⭐ Real';}else{pb.className='cbdg bv';pb.textContent='✅ Verified';}pp.textContent='🔗 Linked';}
-    else{pb.className='cbdg bv';pb.textContent='✅ Verified';pp.textContent='Free · Ting';}
+    // prof-badge = verification status only; prof-plan = subscription tier
+    const isVerified = !!(d.verified || d.realBadge || d.verificationStatus==='approved');
+    pb.className = isVerified ? 'cbdg bv' : 'cbdg bv';
+    pb.textContent = isVerified ? '✅ Verified' : '🪪 Pending';
+    if(plan==='diamond'){pp.textContent='💎 Diamond';pp.style.color='#A8EDFF';}
+    else if(plan==='linked'){pp.textContent='🔗 Linked';pp.style.color='var(--gold)';}
+    else{pp.textContent='Free · Ting';pp.style.color='rgba(255,255,255,.45)';}
     if(d.photos && d.photos.length){userPhotos=d.photos.map(u=>({url:u}));renderProfPhotos();}
     const vs=document.getElementById('id-st');if(vs)vs.textContent=d.verificationStatus==='approved'?'✅ Approved':d.verificationStatus==='pending'?'⏳ Pending':'Not submitted';
     const rd=document.getElementById('real-d');const ra=document.getElementById('real-a');
@@ -4703,9 +4706,11 @@ onAuthStateChanged(auth, async (user) => {
     document.body.classList.toggle('is-diamond', plan==='diamond');
     document.body.classList.toggle('is-linked', plan==='linked');
     document.body.classList.toggle('is-ting', plan==='ting');
-    // Hide upgrade pill for paid plans
+    // Hide upgrade pill and sidebar upgrade btn for paid plans
     const pp2 = document.getElementById('plan-pill');
     if(pp2) pp2.style.display = (plan==='diamond'||plan==='linked') ? 'none' : '';
+    const sub = document.getElementById('sidebar-upgrade-btn');
+    if(sub) sub.style.display = (plan==='diamond'||plan==='linked') ? 'none' : '';
     // Hide upgrade buttons for diamond users
     if(plan==='diamond'){
       document.querySelectorAll('button,div,a').forEach(el=>{
@@ -4720,17 +4725,18 @@ onAuthStateChanged(auth, async (user) => {
     const pp=$('prof-plan'); if(pp){ pp.textContent = plan==='diamond'?'💎 Diamond':plan==='linked'?'🔗 Linked':'Free · Ting'; pp.style.color=plan==='diamond'?'#A8EDFF':plan==='linked'?'var(--gold)':'rgba(255,255,255,.45)'; }
     const pb=$('prof-badge'); if(pb){
       const verified = !!(window._userData && (window._userData.verified || window._userData.realBadge || window._userData.verificationStatus==='approved'));
-      pb.className='cbdg bv'; pb.textContent = verified ? '✅ Verified' : '🪪 ID Pending';
+      pb.className='cbdg bv'; pb.textContent = verified ? '✅ Verified' : '🪪 Pending';
     }
+    // Remove duplicate plan badge if it exists next to the verified badge
+    const planBadgeEl = document.querySelector('#prof-badge ~ .cbdg, .cbdg.bp');
+    if(planBadgeEl && planBadgeEl !== pb) planBadgeEl.style.display='none';
     // Diamond Compatibility Circle label fix: never edit broad containers like body/html,
     // because changing their textContent wipes the whole app from the screen.
     const circleLabels = Array.from(document.querySelectorAll('p,span,small,div.badge,div.circ-stat,div[id*=circle],div[id*=session],div[class*=circle],div[class*=session]'))
       .filter(el => el && el.children.length === 0 && /reset(s)? at midnight/i.test(el.textContent || ''));
     if(plan==='diamond') {
       circleLabels.forEach(el => {
-        if((el.textContent || '').toLowerCase().includes('unlimited')) {
-          el.textContent = 'Diamond unlimited sessions';
-        }
+        el.textContent = 'Diamond · Unlimited sessions';
       });
     }
   };
@@ -4738,8 +4744,14 @@ onAuthStateChanged(auth, async (user) => {
   // Make Google auth never override chosen app name in the dashboard greeting.
   window.fixDisplayNames = function(){
     try{
-      const d=window._userData||{}; const name = d.username || d.displayName || d.firstName || '';
-      if(name){ const fn=$('dash-first-name'); if(fn) fn.textContent=name.split(' ')[0]; const dn=$('dash-name'); if(dn) dn.textContent=name; }
+      const d=window._userData||{};
+      // username is the chosen display name; never use Firebase Auth displayName
+      const name = d.username || d.firstName || '';
+      if(name){
+        const fn=$('dash-first-name'); if(fn) fn.textContent=name;
+        const dn=$('dash-name'); if(dn) dn.textContent=name;
+        const av2=document.getElementById('dash-av2'); if(av2&&!av2.querySelector('img')) av2.textContent=name.charAt(0).toUpperCase();
+      }
     }catch(e){}
   };
 
@@ -4748,13 +4760,152 @@ onAuthStateChanged(auth, async (user) => {
     const title = type==='terms'?'Terms of Service':'Privacy Policy';
     const body = type==='terms' ? `
       <h1 style="color:var(--gold);margin-bottom:10px;">876Match Terms of Service</h1>
-      <div class="policy-card"><h2>Safety & Offline Interactions</h2><p>Users are responsible for exercising caution when communicating online or meeting offline. Do not share passwords, banking information, sensitive documents, home addresses, or other personal information with people you recently met online.</p><p>876Match encourages verified, respectful connections, but verification does not guarantee another person’s intentions, safety, honesty, or behavior.</p></div>
-      <div class="policy-card"><h2>Subscriptions & Billing</h2><p>Linked and Diamond subscriptions may renew automatically unless cancelled through the payment provider. Feature access may change when a user upgrades, downgrades, cancels, or payment fails.</p></div>
-      <div class="policy-card"><h2>Refunds & Disputes</h2><p>Refunds are reviewed case-by-case for duplicate billing or technical errors. Platform dissatisfaction or lack of matches does not guarantee a refund.</p></div>` : `
+      <small style="color:var(--muted);display:block;margin-bottom:14px;">Last Updated: May 2026</small>
+      <div class="policy-card">
+<h2>1. Acceptance of Terms</h2>
+<p>By creating an account or using 876Match, you agree to comply with these Terms of Service, platform rules, community standards, and applicable laws.</p>
+</div>
+
+<div class="policy-card">
+<h2>2. Eligibility</h2>
+<ul>
+<li>You must be at least 18 years old to use 876Match.</li>
+<li>You must provide accurate registration information.</li>
+<li>You may not impersonate another individual or create fraudulent accounts.</li>
+</ul>
+</div>
+
+<div class="policy-card">
+<h2>3. User Accounts</h2>
+<p>Users are responsible for maintaining the security of their accounts, passwords, devices, and login credentials.</p>
+<p>876Match reserves the right to suspend or terminate accounts that violate platform policies, safety standards, or applicable laws.</p>
+</div>
+
+<div class="policy-card">
+<h2>4. Verification Disclaimer</h2>
+<p>876Match may use identity verification systems to improve safety and authenticity. However, verification does not guarantee another user's identity, honesty, intentions, safety, or behavior.</p>
+</div>
+
+<div class="policy-card">
+<h2>5. Subscriptions & Billing</h2>
+<ul>
+<li>Linked and Diamond subscriptions may renew automatically unless cancelled before the next billing cycle.</li>
+<li>Subscription pricing and platform features may change over time.</li>
+<li>Payments are securely processed through third-party payment providers.</li>
+<li>876Match does not guarantee matches, compatibility, replies, conversations, dates, or relationship outcomes.</li>
+</ul>
+</div>
+
+<div class="policy-card">
+<h2>6. Refund Policy</h2>
+<p>Refunds are generally not provided for partially used subscription periods, unused features, compatibility outcomes, conversations, user interactions, or platform dissatisfaction.</p>
+<p>Refund requests may be reviewed individually in limited situations such as duplicate billing or technical errors.</p>
+</div>
+
+<div class="policy-card">
+<h2>7. Chargebacks & Fraudulent Disputes</h2>
+<p>Fraudulent chargebacks, payment disputes, or abuse of the payment system may result in account suspension, restriction, removal of premium features, or permanent platform bans.</p>
+</div>
+
+<div class="policy-card">
+<h2>8. Safety & Offline Interactions</h2>
+<ul>
+<li>Users should exercise caution when communicating with people online.</li>
+<li>Do not share passwords, banking information, sensitive documents, or home addresses with users you recently met online.</li>
+<li>Users should avoid sending money to individuals they met through the platform.</li>
+<li>Meeting another user offline is done entirely at your own discretion and responsibility.</li>
+</ul>
+</div>
+
+<div class="policy-card">
+<h2>9. Prohibited Conduct</h2>
+<ul>
+<li>Harassment or threats</li>
+<li>Scams or fraudulent behavior</li>
+<li>Hate speech or discrimination</li>
+<li>Impersonation or stolen photos</li>
+<li>Sharing illegal or explicit content</li>
+<li>Using the platform for unlawful purposes</li>
+</ul>
+</div>
+
+<div class="policy-card">
+<h2>10. Reports & Moderation</h2>
+<p>Users may report suspicious, inappropriate, threatening, or fraudulent behavior. 876Match reserves the right to investigate reports and take moderation action when necessary.</p>
+</div>
+
+<div class="policy-card">
+<h2>11. Intellectual Property</h2>
+<p>876Match branding, design elements, logos, and platform content remain the property of 876Match unless otherwise stated.</p>
+</div>
+
+<div class="policy-card">
+<h2>12. Limitation of Liability</h2>
+<p>876Match is provided on an “as is” basis without guarantees regarding uninterrupted availability, compatibility, relationships, or user behavior.</p>
+</div>
+
+<div class="policy-card">
+<h2>13. Contact & Support</h2>
+<p>For support, billing issues, or policy concerns, contact: support@876match.com</p>
+</div>` : `
       <h1 style="color:var(--gold);margin-bottom:10px;">876Match Privacy Policy</h1>
-      <div class="policy-card"><h2>Information We Collect</h2><p>876Match may collect profile details, public username, private legal name for verification, uploaded photos, ID verification content, messages, stories, subscription status, and usage data.</p></div>
-      <div class="policy-card"><h2>Story Visibility</h2><p>Stories are designed for matched users only. Viewers, reactions, and replies may be stored so users can see who interacted with their stories.</p></div>
-      <div class="policy-card"><h2>Verification</h2><p>Government ID information is used internally for safety and authenticity review. Your public profile should show your username/display name, not your private legal name.</p></div>`;
+      <small style="color:var(--muted);display:block;margin-bottom:14px;">Last Updated: May 2026</small>
+      <div class="policy-card">
+<h2>1. Information We Collect</h2>
+<ul>
+<li>Profile details and preferences</li>
+<li>Uploaded photos and verification content</li>
+<li>Messages, stories, and interactions</li>
+<li>Subscription and billing information</li>
+<li>Device, browser, and usage data</li>
+</ul>
+</div>
+
+<div class="policy-card">
+<h2>2. How Information Is Used</h2>
+<p>876Match may use collected information to improve matchmaking, moderation, safety, communication, subscriptions, notifications, analytics, and overall platform performance.</p>
+</div>
+
+<div class="policy-card">
+<h2>3. Marketing Communications</h2>
+<p>Users who opt into marketing communications may receive updates, promotions, announcements, or information related to affiliated platform services.</p>
+<p>Users may opt out of marketing communications at any time.</p>
+</div>
+
+<div class="policy-card">
+<h2>4. Data Sharing</h2>
+<p>876Match does not sell personal user data. Certain information may be shared with service providers necessary for platform operations such as payment processing, analytics, moderation, hosting, and security services.</p>
+</div>
+
+<div class="policy-card">
+<h2>5. Payment Processing</h2>
+<p>Payment information is processed by secure third-party payment providers. 876Match does not directly store full payment card details.</p>
+</div>
+
+<div class="policy-card">
+<h2>6. Safety & Moderation</h2>
+<p>Information may be reviewed internally for fraud prevention, moderation, identity verification, safety investigations, or policy enforcement.</p>
+</div>
+
+<div class="policy-card">
+<h2>7. Data Retention</h2>
+<p>876Match may retain certain information for moderation, fraud prevention, legal compliance, billing, and platform security purposes.</p>
+</div>
+
+<div class="policy-card">
+<h2>8. Security</h2>
+<p>876Match takes reasonable technical and administrative steps to protect user information. However, no online platform can guarantee complete security.</p>
+</div>
+
+<div class="policy-card">
+<h2>9. User Rights</h2>
+<p>Users may request account updates, corrections, or account removal subject to moderation, legal obligations, billing requirements, and fraud prevention reviews.</p>
+</div>
+
+<div class="policy-card">
+<h2>10. Contact</h2>
+<p>For privacy-related concerns or support, contact: support@876match.com</p>
+</div>`;
     $('policy-content').innerHTML = body;
     $('policy-screen').classList.add('open');
   };
@@ -4812,7 +4963,11 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       // Matched stories — group by user
-      const matched = all.filter(s=>s.uid!==u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      // Filter matched stories — show any non-expired story from other users
+      const matched = all.filter(s=>{
+        if(s.uid===u.uid) return false;
+        try{ return !s.expiresAt || s.expiresAt.toDate()>now; }catch(e){ return true; }
+      });
       const byUser = {};
       matched.forEach(s=>{ if(!byUser[s.uid]) byUser[s.uid]=[]; byUser[s.uid].push(s); });
       const users = Object.values(byUser);
@@ -4852,7 +5007,10 @@ onAuthStateChanged(auth, async (user) => {
         const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video'?`<video src="${currentStory.mediaUrl}" autoplay playsinline controls></video>`:`<img src="${currentStory.mediaUrl}">`;
         $('story-viewer').classList.add('open'); startStoryAuto();
       };
-    }catch(e){ if(list) list.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:20px 0;text-align:center;">Could not load stories.</div>'; }
+    }catch(e){
+      console.error('Stories load error:', e);
+      if(list) list.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:20px 0;text-align:center;">No stories yet — be the first to post!</div>';
+    }
   };
 
   window.openStoryUpload=function(){
@@ -4883,6 +5041,8 @@ onAuthStateChanged(auth, async (user) => {
       const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
       const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+      // Debug: log story count
+      console.log('Stories in DB:', allStories.length, 'mine:', allStories.filter(s=>s.uid===u.uid).length);
 
       // Show user's own active (non-expired) stories first
       const myStories=allStories.filter(s=>s.uid===u.uid && s.expiresAt && s.expiresAt.toDate()>now);
