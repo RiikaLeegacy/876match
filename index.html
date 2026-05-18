@@ -5021,17 +5021,48 @@ onAuthStateChanged(auth, async (user) => {
     const file=this.files&&this.files[0]; if(!file)return;
     showToast('Uploading story...');
     try{
-      const u=window._fbAuth.currentUser; const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      // Upload to Cloudinary for a permanent URL (not a blob which expires on page close)
+      const u=window._fbAuth.currentUser;
+      if(!u){showToast('Please log in first.');return;}
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const isVideo=file.type.startsWith('video');
-      const fd=new FormData();fd.append('file',file);fd.append('upload_preset',PRESET);fd.append('folder','yaadconnect/stories');
-      const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${isVideo?'video':'image'}/upload`,{method:'POST',body:fd});
-      const d=await r.json();
-      if(!d.secure_url){showToast('Story upload failed. Try again.');return;}
-      const url=d.secure_url;
-      await fb.addDoc(fb.collection(window._fbDb,'stories'),{uid:u.uid,ownerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',mediaUrl:url,mediaType:isVideo?'video':'image',visibility:'matchesOnly',viewers:[],reactions:[],createdAt:fb.serverTimestamp(),expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))});
-      showToast('Story posted! ✅'); loadMatchedStories(); if(typeof loadStoriesScreen==='function') loadStoriesScreen();
-    }catch(e){showToast('Story could not save. Check connection.');}
+      let url='';
+      // Try Cloudinary upload
+      try{
+        const fd=new FormData();
+        fd.append('file',file);
+        fd.append('upload_preset',PRESET);
+        fd.append('folder','yaadconnect/stories');
+        const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${isVideo?'video':'image'}/upload`,{method:'POST',body:fd});
+        const d=await r.json();
+        if(d.secure_url){ url=d.secure_url; }
+        else{ console.error('Cloudinary story error:', d); }
+      }catch(ce){ console.error('Cloudinary story fetch failed:', ce); }
+      // Fallback: use base64 data URL so story saves even if Cloudinary fails
+      if(!url){
+        url = await new Promise((res,rej)=>{
+          const reader=new FileReader();
+          reader.onload=e=>res(e.target.result);
+          reader.onerror=rej;
+          reader.readAsDataURL(file);
+        });
+      }
+      await fb.addDoc(fb.collection(window._fbDb,'stories'),{
+        uid:u.uid,
+        ownerName:(window._userData&&(window._userData.username||window._userData.firstName))||'Member',
+        mediaUrl:url,
+        mediaType:isVideo?'video':'image',
+        visibility:'matchesOnly',
+        viewers:[],reactions:[],
+        createdAt:fb.serverTimestamp(),
+        expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))
+      });
+      showToast('Story posted! ✅');
+      loadMatchedStories();
+      if(typeof loadStoriesScreen==='function') loadStoriesScreen();
+    }catch(e){
+      console.error('Story save error:', e);
+      showToast('Could not post story: ' + (e.message||'unknown error'));
+    }
   });
   window.loadMatchedStories=async function(){
     const strip=document.querySelector('.stories-strip'); if(!strip)return;
