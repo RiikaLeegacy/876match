@@ -1171,7 +1171,7 @@ input:focus,select:focus,textarea:focus{
       <nav style="display:flex;flex-direction:column;gap:4px;flex:1;">
         <button onclick="go('dashboard')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:rgba(255,210,26,0.09);color:var(--gold);border:none;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;text-align:left;">🏠 Dashboard</button>
         <button onclick="go('discover')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💚 Swipe</button>
-        <button onclick="go('discover');setTimeout(()=>{try{loadMatchedStories()}catch(e){}},100)" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">✨ Stories</button>
+        <button onclick="go('stories-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">✨ Stories</button>
         <button onclick="go('messages-screen');switchMT('messages');" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💬 Messages</button>
         <button onclick="go('speedlink-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">⚡ Speed Link</button>
         <button onclick="go('circle-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">🎯 Circle</button>
@@ -1203,7 +1203,7 @@ input:focus,select:focus,textarea:focus{
         <!-- Today's Matches -->
         <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:22px;padding:28px;">
           <span style="display:inline-flex;padding:6px 12px;border-radius:50px;background:rgba(255,210,26,0.12);color:var(--gold);font-size:.75rem;font-weight:800;margin-bottom:18px;">Today's Matches</span>
-          <h2 id="dash-vibe-count" style="font-size:1.5rem;font-weight:900;letter-spacing:-.04em;margin-bottom:8px;">Finding people who fit your vibe...</h2>
+          <h2 id="dash-vibe-count" style="font-size:1.5rem;font-weight:900;letter-spacing:-.04em;margin-bottom:8px;">People who fit your vibe will appear here.</h2>
           <p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:22px;">Explore profiles, check stories, and decide who gets your attention today.</p>
           <button onclick="go('discover')" style="padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#ffb800);color:#070707;font-weight:900;font-size:.95rem;border:none;cursor:pointer;font-family:inherit;">Start Swiping</button>
         </div>
@@ -1245,7 +1245,7 @@ input:focus,select:focus,textarea:focus{
       <button id="plan-pill" onclick="go('premium-screen')" style="display:none;background:rgba(255,210,26,.1);border:1px solid rgba(255,210,26,.22);color:var(--gold);padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;">✦ Upgrade</button>
       <div style="display:flex;gap:8px;align-items:center;">
         <div class="ico-btn" onclick="go('premium-screen')">💎</div>
-        <div class="ico-btn" onclick="go('messages-screen')">💬<div class="n-dot">3</div></div>
+        <div class="ico-btn" onclick="go('messages-screen')">💬<div class="n-dot" id="msg-unread-dot" style="display:none;"></div></div>
         <div id="top-av" onclick="go('profile-screen')" style="width:34px;height:34px;border-radius:50%;background:var(--card);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;overflow:hidden;">😊</div>
       </div>
     </div>
@@ -2058,7 +2058,7 @@ let userPhotos=[],signupPhotos=[],uploadedID="";
 let stripeInst=null,stripeCard=null,checkoutPlan=null;
 let rvBlob=null,rvChunks=[],rvRec=null,rvStream=null;
 let qi=0,elim=[],cardCount=0;
-const profiles=[
+let profiles=[
   {name:"Tiara",age:23,loc:"Spanish Town, St. Catherine",badge:"✅ Verified",bc:"bv",
    tags:["🎵 Music","📚 Reading","🎨 Arts"],bg:"linear-gradient(135deg,#2a3d1a,#111e0d)",
    bio:"Creative soul with a love for music and good books. Looking for someone who can match my energy and isn't afraid of deep conversations.",
@@ -2085,7 +2085,7 @@ const profiles=[
    height:"5ft 3in",job:"Nurse",edu:"Bachelor's Degree",religion:"Christian",children:"Want some",
    skin:"#8b5c2a",outfit:"#3a1a10",hair:"#050505",gender:"woman"},
 ];
-let currentProfile = null;
+let currentProfile = profiles[0] || null;
 const qs=[
   {q:"How many children would you like to have?",ans:["None","1–2","3+","Not sure"]},
   {q:"What matters most in a partner?",ans:["Ambition","Loyalty","Attraction","Humour"]},
@@ -2096,7 +2096,6 @@ const qs=[
 
 // ── NAV ──
 function go(id){
-  if(id==='stories-screen') id='discover';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById(id);
   if(el){el.classList.add('active');window.scrollTo(0,0);}
@@ -2106,7 +2105,9 @@ function go(id){
   if(id==='circle-screen'){var cps=document.getElementById('circle-phase-select');var cpq=document.getElementById('circle-phase-questions');var cpr=document.getElementById('circle-phase-result');if(cps)cps.style.display='block';if(cpq)cpq.style.display='none';if(cpr)cpr.style.display='none';setTimeout(initCircleSessions,50);}
   if(id==='prefs-screen')loadPrefs();
   if(id==='dashboard')loadDashboard();
+  if(id==='discover'){ setTimeout(()=>{ if(typeof loadRealProfilesForDiscover==='function') loadRealProfilesForDiscover(); },120); }
   if(id==='messages-screen'){ setTimeout(()=>{ switchMT('messages'); },150); }
+  if(id==='stories-screen'){ setTimeout(loadStoriesScreen, 100); }
 }
 
 function openProfModal(profile) {
@@ -2180,35 +2181,6 @@ window.swipeFromModal = function(dir) {
   if (typeof sw === 'function') sw(dir);
 };
 
-
-async function updateDashboardVibeCount(){
-  const el=document.getElementById('dash-vibe-count');
-  if(!el) return;
-  try{
-    const auth=window._fbAuth, db=window._fbDb;
-    if(auth&&auth.currentUser&&db){
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap=await fb.getDocs(fb.collection(db,'users'));
-      const me=auth.currentUser.uid;
-      let count=0;
-      snap.forEach(doc=>{
-        const d=doc.data()||{};
-        if(doc.id===me) return;
-        if(d.disabled||d.deleted||d.paused) return;
-        const verified = d.verified===true || d.realBadge===true || d.verificationStatus==='approved' || d.approvalStatus==='approved';
-        if(!verified) return;
-        count++;
-      });
-      if(count>0){ el.textContent = count===1 ? '1 person fits your vibe today.' : `${count} people fit your vibe today.`; return; }
-    }
-  }catch(e){ console.log('Vibe count error:', e); }
-  // Safe fallback: daily-changing estimate, not a permanent hardcoded number.
-  const today=new Date().toLocaleDateString('en-CA',{timeZone:'America/Jamaica'});
-  let seed=0; for(const ch of today){ seed+=ch.charCodeAt(0); }
-  const est=4+(seed%19);
-  el.textContent=`About ${est} people may fit your vibe today.`;
-}
-
 function loadDashboard(){
   try{
     const auth=window._fbAuth;
@@ -2224,8 +2196,9 @@ function loadDashboard(){
     if(pl) pl.textContent=window._userPlan==='diamond'?'💎 Diamond':window._userPlan==='linked'?'🔗 Linked':'Free · Ting';
     if(pb) pb.textContent=window._userPlan==='diamond'?'Diamond Member':window._userPlan==='linked'?'Linked Member':'Free Member';
     const nudge=document.getElementById('dash-upgrade-nudge');
-    if(nudge) nudge.style.display=(window._userPlan==='diamond'||window._userPlan==='linked')?'none':'flex';
-    if(typeof updateDashboardVibeCount==='function') updateDashboardVibeCount();
+    if(nudge) nudge.style.display=window._userPlan==='diamond'?'none':'flex';
+    updateTopAvatar();
+    if(typeof loadRealProfilesForDiscover==='function') loadRealProfilesForDiscover();
   }catch(e){}
 }
 
@@ -2421,6 +2394,66 @@ async function forgotPw(){
 function deactivate(){if(confirm("Pause your account? You won't appear to others."))showToast("Account paused.");}
 function deleteAcc(){if(confirm("Delete your account? This cannot be undone."))showToast("Contact support to confirm deletion.");}
 
+
+async function loadRealProfilesForDiscover(){
+  try{
+    const auth=window._fbAuth, db=window._fbDb;
+    if(!auth||!auth.currentUser||!db) return;
+    const {collection,getDocs}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap=await getDocs(collection(db,"users"));
+    const currentUid=auth.currentUser.uid;
+    const rows=snap.docs.map(doc=>({uid:doc.id,...doc.data()}))
+      .filter(u=>u.uid!==currentUid)
+      .filter(u=>!u.paused && u.active!==false && u.deleted!==true);
+
+    const mapped=rows.map(u=>{
+      const photo=userPhotoFromData(u);
+      const plan=normPlan(u.plan||'ting');
+      const verified=!!(u.verified||u.realBadge||u.verificationStatus==='approved'||u.approvalStatus==='approved');
+      return {
+        uid:u.uid,
+        name:u.username||u.firstName||u.displayName||'Member',
+        username:u.username,
+        firstName:u.firstName,
+        age:u.age||'',
+        loc:u.parish||u.city||u.location||'Jamaica',
+        location:u.parish||u.city||u.location||'Jamaica',
+        badge: plan==='diamond'?'💎 Diamond':(plan==='linked'?'🔗 Linked':(verified?'✅ Verified':'🪪 Pending')),
+        bc: plan==='diamond'?'bd':(verified?'bv':'br'),
+        tags:Array.isArray(u.interests)&&u.interests.length?u.interests.slice(0,5):['Real connection'],
+        interests:Array.isArray(u.interests)?u.interests:[],
+        bg:u.bg||'linear-gradient(135deg,#1a2a1a,#0d120d)',
+        bio:u.bio||'',
+        height:u.height||'',
+        job:u.job||'',
+        edu:u.edu||u.education||'',
+        religion:u.religion||'',
+        children:u.children||'',
+        photoUrl:photo,
+        photos:Array.isArray(u.photos)?u.photos:(photo?[photo]:[]),
+        plan:plan,
+        verified:verified,
+        verificationStatus:u.verificationStatus
+      };
+    });
+
+    if(mapped.length){
+      profiles=mapped;
+      cardCount=0;
+      const stk=document.getElementById('cstk');
+      if(stk){ stk.innerHTML=''; loadCard(); }
+    }
+
+    const countEl=document.getElementById('dash-vibe-count');
+    if(countEl){
+      const count=mapped.length;
+      countEl.textContent = count===1 ? '1 person fits your vibe today.' : `${count} people fit your vibe today.`;
+    }
+  }catch(e){
+    console.error('Real profile load error:', e);
+  }
+}
+
 // ── SWIPE ──
 function sw(dir){
   const top=document.getElementById('top-card');if(!top)return;
@@ -2431,6 +2464,9 @@ function loadCard(){
   const stk=document.getElementById('cstk');if(!stk)return;
   if(cardCount>=profiles.length){stk.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:11px;"><div style="font-size:2.5rem;">🎯</div><p style="color:var(--muted);text-align:center;font-size:.85rem;">You\'ve seen everyone nearby.<br><span style="color:var(--gold);">Try Speed Link!</span></p></div>';return;}
   const p=profiles[cardCount++];
+  currentProfile = p;
+  const realPhoto = userPhotoFromData(p);
+  const cardBg = p.bg || 'linear-gradient(135deg,#1a2a1a,#0d120d)';
   const svgFills=[
     {skin:'#c8956a',outfit:'#1a5c30',hair:'#1a0a00'},
     {skin:'#7a5230',outfit:'#1a2a6b',hair:'#0a0505'},
@@ -2441,12 +2477,12 @@ function loadCard(){
   const sf=svgFills[cardCount%svgFills.length];
   const svgPerson=`<svg viewBox="0 0 300 420" style="width:100%;height:100%;position:absolute;bottom:0;" preserveAspectRatio="xMidYMax meet"><ellipse cx="150" cy="380" rx="90" ry="80" fill="${sf.outfit}"/><rect x="135" y="200" width="30" height="40" fill="${sf.skin}"/><circle cx="150" cy="175" r="55" fill="${sf.skin}"/><ellipse cx="150" cy="145" rx="58" ry="35" fill="${sf.hair}"/><ellipse cx="95" cy="175" rx="18" ry="40" fill="${sf.hair}"/><ellipse cx="205" cy="175" rx="18" ry="40" fill="${sf.hair}"/><ellipse cx="130" cy="170" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="170" cy="170" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="130" cy="170" rx="3" ry="3" fill="#0a0505"/><ellipse cx="170" cy="170" rx="3" ry="3" fill="#0a0505"/><path d="M 132 192 Q 150 207 168 192" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
   const c=document.createElement('div');c.className='pcard top';c.id='top-card';
-  c.innerHTML=`<div class="stamp-l" id="stamp-l">SKIP ✗</div><div class="stamp-r" id="stamp-r">LINK 💚</div><div class="card-dots" id="cdots"><div class="cdot on"></div></div><div class="card-tl" onclick="prevPh()"></div><div class="card-tr" onclick="nextPh()"></div><div id="card-ph" style="width:100%;height:100%;background:${p.bg};position:relative;overflow:hidden;">${svgPerson}</div><div class="card-gr"></div><div class="card-body"><div class="cn-row"><span class="cn">${p.name}</span><span class="ca">${p.age}</span><span class="cbdg ${p.bc}">${p.badge}</span></div><div class="cloc">📍 ${p.loc}</div><div class="ctags">${p.tags.map(t=>`<span class="ctag">${t}</span>`).join('')}</div></div>`;
+  c.innerHTML=`<div class="stamp-l" id="stamp-l">SKIP ✗</div><div class="stamp-r" id="stamp-r">LINK 💚</div><div class="card-dots" id="cdots"><div class="cdot on"></div></div><div class="card-tl" onclick="prevPh()"></div><div class="card-tr" onclick="nextPh()"></div><div id="card-ph" style="width:100%;height:100%;background:${cardBg};position:relative;overflow:hidden;">${realPhoto?`<img src="${realPhoto}" style="width:100%;height:100%;object-fit:cover;">`:svgPerson}</div><div class="card-gr"></div><div class="card-body"><div class="cn-row"><span class="cn">${p.name}</span><span class="ca">${p.age}</span><span class="cbdg ${p.bc}">${p.badge}</span></div><div class="cloc">📍 ${p.loc}</div><div class="ctags">${(p.tags||p.interests||[]).map(t=>`<span class="ctag">${t}</span>`).join('')}</div></div>`;
   stk.querySelectorAll('.pcard').forEach((c2,i)=>{c2.classList.remove('top');c2.style.transform=i===0?'rotate(3.5deg) scale(.96)':'rotate(-2.5deg) scale(.92)';c2.style.zIndex=i===0?'1':'0';});
   currentProfile = p;
   // Add bio snippet and tap hint to innerHTML
-  const bioSnip = p.bio ? `<div style="font-size:.78rem;color:rgba(255,255,255,.62);margin-bottom:6px;font-style:italic;">"${p.bio.substring(0,65)}..."</div>` : '';
-  c.innerHTML=`<div class="stamp-l" id="stamp-l">SKIP ✗</div><div class="stamp-r" id="stamp-r">LINK 💚</div><div class="card-dots" id="cdots"><div class="cdot on"></div></div><div class="card-tl" style="width:18%;" onclick="event.stopPropagation();prevPh()"></div><div class="card-tr" style="width:18%;" onclick="event.stopPropagation();nextPh()"></div><div id="card-ph" style="width:100%;height:100%;background:${p.bg};position:relative;overflow:hidden;">${svgPerson}</div><div class="card-gr"></div><div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:50px;font-size:.66rem;color:rgba(255,255,255,.78);pointer-events:none;">Tap center to view profile</div><div class="card-body"><div class="cn-row"><span class="cn">${p.name}</span><span class="ca">${p.age}</span><span class="cbdg ${p.bc}">${p.badge}</span></div><div class="cloc">📍 ${p.loc}${p.height?' · '+p.height:''}</div>${bioSnip}<div class="ctags">${p.tags.map(t=>`<span class="ctag">${t}</span>`).join('')}</div></div>`;
+  const bioSnip = p.bio ? `<div style="font-size:.78rem;color:rgba(255,255,255,.62);margin-bottom:6px;font-style:italic;">"${String(p.bio).substring(0,85)}${String(p.bio).length>85?'...':''}"</div>` : '';
+  c.innerHTML=`<div class="stamp-l" id="stamp-l">SKIP ✗</div><div class="stamp-r" id="stamp-r">LINK 💚</div><div class="card-dots" id="cdots"><div class="cdot on"></div></div><div class="card-tl" onclick="event.stopPropagation();prevPh()"></div><div class="card-tr" onclick="event.stopPropagation();nextPh()"></div><div id="card-ph" style="width:100%;height:100%;background:${cardBg};position:relative;overflow:hidden;">${realPhoto?`<img src="${realPhoto}" style="width:100%;height:100%;object-fit:cover;">`:svgPerson}</div><div class="card-gr"></div><div style="position:absolute;top:14px;left:14px;z-index:5;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:50px;font-size:.66rem;color:rgba(255,255,255,.7);pointer-events:none;">Tap to view profile</div><div class="card-body"><div class="cn-row"><span class="cn">${p.name}</span><span class="ca">${p.age}</span><span class="cbdg ${p.bc}">${p.badge}</span></div><div class="cloc">📍 ${(p.loc||p.location||'Jamaica')}${p.height?' · '+p.height:''}</div>${bioSnip}<div class="ctags">${(p.tags||p.interests||[]).map(t=>`<span class="ctag">${t}</span>`).join('')}</div></div>`;
   c.onclick = (e) => { if(!e.target.classList.contains('card-tl') && !e.target.classList.contains('card-tr')) openProfModal(p); };
   stk.insertBefore(c,stk.firstChild);
 }
@@ -2577,7 +2613,7 @@ async function loadProfile(){
 }
 function renderBanners(plan){
   const el=document.getElementById('prof-banners');if(!el)return;
-  if(plan==='ting'){el.innerHTML=`<div class="ub ub-r" onclick="go('premium-screen')"><div><div class="ub-t" style="color:var(--gold);">⭐ Upgrade to Linked</div><div class="ub-d2">Get the Linked badge and unlock more ways to connect</div></div><span style="color:var(--gold);opacity:.5;">→</span></div><div class="ub ub-d" onclick="go('premium-screen')"><div><div class="ub-t" style="color:#A8EDFF;">💎 Upgrade to Diamond</div><div class="ub-d2">Video calls, unlimited swipes, priority placement</div></div><span style="color:#A8EDFF;opacity:.5;">→</span></div>`;}
+  if(plan==='ting'){el.innerHTML=`<div class="ub ub-r" onclick="go('premium-screen')"><div><div class="ub-t" style="color:var(--gold);">⭐ Upgrade to Linked</div><div class="ub-d2">Get the Real badge - upgrade to Linked first</div></div><span style="color:var(--gold);opacity:.5;">→</span></div><div class="ub ub-d" onclick="go('premium-screen')"><div><div class="ub-t" style="color:#A8EDFF;">💎 Upgrade to Diamond</div><div class="ub-d2">Video calls, unlimited swipes, priority placement</div></div><span style="color:#A8EDFF;opacity:.5;">→</span></div>`;}
   else if(plan==='linked'){el.innerHTML=`<div class="ub ub-d" onclick="go('premium-screen')"><div><div class="ub-t" style="color:#A8EDFF;">💎 Upgrade to Diamond</div><div class="ub-d2">Video calls, unlimited entries, priority placement</div></div><span style="color:#A8EDFF;opacity:.5;">→</span></div>`;}
   else el.innerHTML='';
 }
@@ -4796,6 +4832,55 @@ onAuthStateChanged(auth, async (user) => {
     try{return normPlan((window._userData&&window._userData.plan)||window._userPlan||sessionStorage.getItem('plan')||'ting');}catch(e){return 'ting';}
   };
   window.hasPlan = function(min){return (planRank[getActivePlan()]||0) >= (planRank[min]||0);};
+
+  function userPhotoFromData(d){
+    try{
+      if(!d) return '';
+      if(d.photoUrl) return d.photoUrl;
+      if(Array.isArray(d.photos) && d.photos.length){
+        const first=d.photos[0];
+        return typeof first==='string'?first:(first&&first.url)||'';
+      }
+      if(d.mainPhoto) return d.mainPhoto;
+      if(d.profilePhoto) return d.profilePhoto;
+      return '';
+    }catch(e){ return ''; }
+  }
+
+  window.updateTopAvatar = function(){
+    try{
+      const d=window._userData||{};
+      const av=$('top-av');
+      if(!av) return;
+      const photo=userPhotoFromData(d);
+      if(photo){
+        av.innerHTML=`<img src="${photo}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      }else{
+        const name=d.username||d.firstName||'';
+        av.textContent=name?name.charAt(0).toUpperCase():'👤';
+      }
+    }catch(e){}
+  };
+
+  function storyThumbHtml(s, size){
+    size=size||52;
+    const radius=size===52?'50%':'12px';
+    if(!s || !s.mediaUrl) return `<div class="st-in">🖼️</div>`;
+    if(s.mediaType==='video'){
+      return `<video src="${s.mediaUrl}" muted playsinline style="width:100%;height:100%;object-fit:cover;border-radius:${radius};"></video>`;
+    }
+    return `<img src="${s.mediaUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:${radius};">`;
+  }
+
+  function tsMillis(v){
+    try{
+      if(!v) return 0;
+      if(typeof v.toDate==='function') return v.toDate().getTime();
+      if(v.seconds) return v.seconds*1000;
+      return new Date(v).getTime()||0;
+    }catch(e){return 0;}
+  }
+
   window.applyPlanUI = function(){
     const plan = getActivePlan();
     // Only run if we have real Firestore data — don't flicker on stale sessionStorage
@@ -4805,16 +4890,14 @@ onAuthStateChanged(auth, async (user) => {
     document.body.classList.toggle('is-ting', plan==='ting');
     // Hide upgrade pill and sidebar upgrade btn for paid plans
     const pp2 = document.getElementById('plan-pill');
-    if(pp2) pp2.style.display = (plan==='diamond'||plan==='linked') ? 'none' : 'inline-flex';
+    if(pp2) pp2.style.display = (plan==='diamond'||plan==='linked') ? 'none' : '';
     const sub = document.getElementById('sidebar-upgrade-btn');
     if(sub) sub.style.display = (plan==='diamond'||plan==='linked') ? 'none' : '';
-    const dashNudge = document.getElementById('dash-upgrade-nudge');
-    if(dashNudge) dashNudge.style.display = (plan==='diamond'||plan==='linked') ? 'none' : 'flex';
     // Hide upgrade buttons for diamond users
     if(plan==='diamond'){
       document.querySelectorAll('button,div,a').forEach(el=>{
         const txt=(el.textContent||'').trim().toLowerCase().replace(/[\u2726\u{1F48E}\s]/gu,'');
-        if(txt==='upgrade'||txt==='upgradenow'||txt.includes('upgradetodiamond')||txt.includes('upgradetoreal')){
+        if(txt==='upgrade'||txt==='upgradenow'||txt.includes('upgradetodiamond')||txt.includes('upgradetolinked')){
           el.style.display='none'; el.setAttribute('data-diamond-hide','1');
         }
       });
@@ -4838,6 +4921,7 @@ onAuthStateChanged(auth, async (user) => {
         el.textContent = 'Diamond · Unlimited sessions';
       });
     }
+    updateTopAvatar();
   };
 
   // Make Google auth never override chosen app name in the dashboard greeting.
@@ -4851,6 +4935,7 @@ onAuthStateChanged(auth, async (user) => {
         const dn=$('dash-name'); if(dn) dn.textContent=name;
         const av2=document.getElementById('dash-av2'); if(av2&&!av2.querySelector('img')) av2.textContent=name.charAt(0).toUpperCase();
       }
+      updateTopAvatar();
     }catch(e){}
   };
 
@@ -5169,53 +5254,67 @@ onAuthStateChanged(auth, async (user) => {
       });
       showToast('Story posted! ✅');
       this.value='';
-      if(document.querySelector('.stories-strip')) document.querySelector('.stories-strip').dataset.storySig='';
-      loadMatchedStories();
+      const strip=document.querySelector('.stories-strip'); if(strip) delete strip.dataset.storySig;
+      await loadMatchedStories(true);
+      if(typeof loadStoriesScreen==='function') loadStoriesScreen();
     }catch(e){
       console.error('Story save error:', e);
       showToast('Could not post story: ' + (e.message||'unknown error'));
     }
   });
-  window.loadMatchedStories=async function(){
+  window.loadMatchedStories=async function(force){
     const strip=document.querySelector('.stories-strip'); if(!strip)return;
     try{
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
       const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
-      const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const allStories=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>isActiveStory(s, now));
+      allStories.sort((a,b)=>tsMillis(b.createdAt)-tsMillis(a.createdAt));
+
       const activeSig = allStories
-        .filter(s => isActiveStory(s, now))
-        .map(s => `${s.id || ''}:${s.uid || ''}:${(s.mediaUrl || '').slice(-18)}`)
+        .map(s => `${s.id || ''}:${s.uid || ''}:${(s.mediaUrl || '').slice(-24)}:${tsMillis(s.createdAt)}`)
         .sort()
         .join('|');
-      if(strip.dataset.storySig === activeSig){ return; }
+      if(!force && strip.dataset.storySig === activeSig){ return; }
       strip.dataset.storySig = activeSig;
-      strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Your Story</span></div>`;
-      // Debug: log story count
-      console.log('Stories in DB:', allStories.length, 'mine:', allStories.filter(s=>s.uid===u.uid).length);
 
-      // Show user's own active (non-expired) stories first
-      const myStories=allStories.filter(s=>{ if(s.uid!==u.uid) return false; return isActiveStory(s, now); });
+      strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Add Story</span></div>`;
+
+      // Show user's own active stories first. The bubble uses the newest story thumbnail.
+      const myStories=allStories.filter(s=>s.uid===u.uid);
       if(myStories.length>0){
         const myEl=document.createElement('div'); myEl.className='sw-wrap';
-        const firstMyStory=myStories[0];
-        myEl.innerHTML=`<div class="st-ring active-ring"><div class="st-in">${firstMyStory.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">My Story</span>`;
+        const newest=myStories[0];
+        myEl.innerHTML=`<div class="st-ring active-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyThumbHtml(newest,52)}</div></div><span class="st-nm">My Story${myStories.length>1?' · '+myStories.length:''}</span>`;
         myEl.onclick=()=>{ window._myStoryList=myStories; window._myStoryIndex=0; openMyStoryViewer(); };
         strip.appendChild(myEl);
       }
 
-      // Show matched users' stories
-      storyList=allStories.filter(s=>{ if(s.uid===u.uid) return false; return isActiveStory(s, now); });
-      storyList.forEach((s,i)=>{ const el=document.createElement('div'); el.className='sw-wrap'; el.innerHTML=`<div class="st-ring"><div class="st-in">${s.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`; el.onclick=()=>openStoryViewer(i); strip.appendChild(el); });
-      if(storyList.length===0&&myStories.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
-    }catch(e){}
+      // Show matched users' stories. For now this uses all other active stories available to the signed-in user.
+      // When match-only audience is fully enforced, filter this list by match IDs before rendering.
+      storyList=allStories.filter(s=>s.uid!==u.uid);
+      storyList.forEach((s,i)=>{
+        const el=document.createElement('div'); el.className='sw-wrap';
+        el.innerHTML=`<div class="st-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyThumbHtml(s,52)}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`;
+        el.onclick=()=>openStoryViewer(i);
+        strip.appendChild(el);
+      });
+      if(storyList.length===0&&myStories.length===0){
+        const hint=document.createElement('div');
+        hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;';
+        hint.textContent='Matched stories will appear here.';
+        strip.appendChild(hint);
+      }
+    }catch(e){
+      console.error('Story strip load error:', e);
+    }
   };
+
   // Simple viewer for own stories
   window.openMyStoryViewer=function(){
     const list=window._myStoryList||[]; const i=window._myStoryIndex||0;
     const s=list[i]; if(!s)return;
-    window._storyViewerMode='mine';
-    currentStory=s;
     $('story-owner').textContent='Your Story';
     const media=$('story-media'); media.innerHTML=s.mediaType==='video'?`<video src="${s.mediaUrl}" autoplay playsinline controls></video>`:`<img src="${s.mediaUrl}">`;
     $('story-viewer').classList.add('open'); startStoryAuto();
@@ -5226,16 +5325,8 @@ onAuthStateChanged(auth, async (user) => {
     const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video' ? `<video src="${currentStory.mediaUrl}" autoplay playsinline></video>` : `<img src="${currentStory.mediaUrl}">`;
   }
   function startStoryAuto(){clearInterval(storyTimer); storyStart=Date.now(); storyTimer=setInterval(()=>{const pct=Math.min(100,((Date.now()-storyStart)/6000)*100); $('story-progress').style.width=pct+'%'; if(pct>=100){ nextStory();}},100);}
-  function nextStory(){
-    if(window._storyViewerMode==='mine'){
-      const list=window._myStoryList||[];
-      if((window._myStoryIndex||0)+1<list.length){ window._myStoryIndex=(window._myStoryIndex||0)+1; openMyStoryViewer(); }
-      else closeStoryViewer();
-      return;
-    }
-    if(storyIndex+1<storyList.length){storyIndex++; renderStory(); markStoryViewed(); startStoryAuto();} else closeStoryViewer();
-  }
-  window.closeStoryViewer=function(){clearInterval(storyTimer); window._storyViewerMode=null; $('story-viewer').classList.remove('open'); $('story-progress').style.width='0%';};
+  function nextStory(){ if(storyIndex+1<storyList.length){storyIndex++; renderStory(); markStoryViewed(); startStoryAuto();} else closeStoryViewer(); }
+  window.closeStoryViewer=function(){clearInterval(storyTimer); $('story-viewer').classList.remove('open'); $('story-progress').style.width='0%';};
   async function markStoryViewed(){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.setDoc(fb.doc(window._fbDb,'storyViews',currentStory.id+'_'+u.uid),{storyId:currentStory.id,ownerUid:currentStory.uid,viewerUid:u.uid,viewerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',viewedAt:fb.serverTimestamp()},{merge:true});}catch(e){}}
   window.reactToCurrentStory=async function(reaction){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'reaction',reaction,createdAt:fb.serverTimestamp()}); showToast('Reaction sent.');}catch(e){showToast('Could not send reaction.');}}
   window.replyToCurrentStory=function(){showMiniModal('Reply to Story','Send a private story reply.',`<textarea id="story-reply-text" placeholder="Write your reply..."></textarea>`,async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'message',message:$('story-reply-text').value,createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Reply sent.');}catch(e){showToast('Could not send reply.');}})};
