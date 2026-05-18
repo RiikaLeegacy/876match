@@ -5416,6 +5416,196 @@ onAuthStateChanged(auth, async (user) => {
   // Make the initially-rendered static demo card clickable instead of dead.
   setTimeout(()=>{ if(!currentProfile && profiles[0]){ currentProfile = profiles[0]; const top=document.getElementById('top-card'); if(top) top.onclick = e => { if(!e.target.classList.contains('card-tl') && !e.target.classList.contains('card-tr')) openProfModal(currentProfile); }; } updateTopAvatar(); }, 900);
 
+
+
+  // === CONTROLLED REPAIR: matches, stories, avatar, swipe state ===
+  function safeName(p){ return (p && (p.name || p.username || p.displayName || p.firstName)) || 'Match'; }
+  function safePhoto(p){
+    if(!p) return '';
+    const photos = Array.isArray(p.photos) ? p.photos : [];
+    return p.photoUrl || p.profilePhoto || p.avatarUrl || p.avatar || (photos[0] && (photos[0].url || photos[0])) || '';
+  }
+  function avatarMarkup(p, size){
+    const wh=size||'58px'; const photo=safePhoto(p); const nm=safeName(p); const initial=(nm||'M').charAt(0).toUpperCase();
+    if(photo) return `<img src="${photo}" style="width:${wh};height:${wh};border-radius:50%;object-fit:cover;display:block;" onerror="this.outerHTML='<div style=\'width:${wh};height:${wh};border-radius:50%;display:grid;place-items:center;background:rgba(255,210,26,.12);color:var(--gold);font-weight:900;\'>${initial}</div>'">`;
+    return `<div style="width:${wh};height:${wh};border-radius:50%;display:grid;place-items:center;background:rgba(255,210,26,.12);color:var(--gold);font-weight:900;">${initial}</div>`;
+  }
+
+  function nextProfileCard(){
+    if(profiles && cardCount < profiles.length){ renderProfileCard(profiles[cardCount++]); }
+    else {
+      const stk=document.getElementById('cstk');
+      if(stk) stk.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:11px;"><div style="font-size:2.5rem;">🎯</div><p style="color:var(--muted);text-align:center;font-size:.85rem;">You\'ve seen everyone nearby.<br><span style="color:var(--gold);">Try again later or update your preferences.</span></p></div>';
+      currentProfile=null;
+    }
+  }
+
+  async function createRealMatch(profile){
+    const auth=window._fbAuth, db=window._fbDb;
+    const me=auth && auth.currentUser;
+    if(!me || !db || !profile || !profile.uid) return null;
+    const theirUid=profile.uid || profile.id;
+    const theirName=safeName(profile);
+    const theirPhoto=safePhoto(profile);
+    const myName=(window._userData&&(window._userData.username||window._userData.displayName||window._userData.firstName))||'Me';
+    const myPhotos=window._userData && Array.isArray(window._userData.photos) ? window._userData.photos : [];
+    const myPhoto=(window._userData&&(window._userData.photoUrl||window._userData.profilePhoto||window._userData.avatarUrl)) || (myPhotos[0]&&(myPhotos[0].url||myPhotos[0])) || '';
+    const pairId=[me.uid,theirUid].sort().join('_');
+    try{
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await fb.setDoc(fb.doc(db,'matches',pairId),{
+        id:pairId,
+        users:[me.uid,theirUid],
+        participants:{[me.uid]:true,[theirUid]:true},
+        names:{[me.uid]:myName,[theirUid]:theirName},
+        photos:{[me.uid]:myPhoto,[theirUid]:theirPhoto},
+        plans:{[me.uid]:getActivePlan(),[theirUid]:profile.plan||profile.tier||'ting'},
+        createdAt:fb.serverTimestamp(),
+        updatedAt:fb.serverTimestamp()
+      },{merge:true});
+      await fb.updateDoc(fb.doc(db,'users',me.uid),{
+        matches:fb.arrayUnion({uid:theirUid,name:theirName,photoUrl:theirPhoto,plan:profile.plan||'',matchedAt:Date.now()})
+      }).catch(()=>{});
+      try{
+        const convId=pairId;
+        await window._rtdb.ref('conversations/'+convId).update({
+          participants:{[me.uid]:true,[theirUid]:true},
+          partnerNames:{[me.uid]:myName,[theirUid]:theirName},
+          partnerPhotos:{[me.uid]:myPhoto,[theirUid]:theirPhoto},
+          createdAt:Date.now(),
+          lastMessage:'',
+          lastMessageTime:Date.now()
+        });
+      }catch(rtde){ console.warn('RTDB conversation create failed', rtde); }
+      return {uid:theirUid,name:theirName,photoUrl:theirPhoto,plan:profile.plan||''};
+    }catch(e){ console.error('createRealMatch failed:',e); showToast('Match saved visually, but database save had an issue.'); return null; }
+  }
+
+  function updateMatchPopup(profile){
+    const ol=document.getElementById('match-ol'); if(!ol) return;
+    const name=safeName(profile);
+    const txt=document.getElementById('match-names-text'); if(txt) txt.textContent=`You and ${name} matched 🎉`;
+    const avs=ol.querySelector('.match-avs');
+    const myData=window._userData||{};
+    const myPhotos=Array.isArray(myData.photos)?myData.photos:[];
+    const myProfile={name:myData.username||myData.displayName||myData.firstName||'You', photoUrl:myData.photoUrl||myData.profilePhoto||myData.avatarUrl||(myPhotos[0]&&(myPhotos[0].url||myPhotos[0]))};
+    if(avs) avs.innerHTML=`<div class="match-av" style="font-size:0;overflow:hidden;">${avatarMarkup(myProfile,'76px')}</div><div style="font-size:1.3rem;align-self:center;">💛</div><div class="match-av" style="font-size:0;overflow:hidden;">${avatarMarkup(profile,'76px')}</div>`;
+    const buttons=ol.querySelectorAll('button');
+    if(buttons[0]) buttons[0].onclick=()=>openLastMatchChat();
+    if(buttons[1]) buttons[1].onclick=()=>keepSwipingAfterMatch();
+  }
+
+  window.showMatch=function(profile){
+    const p=profile||currentProfile||window._lastMatchProfile;
+    window._lastMatchProfile=p;
+    updateMatchPopup(p);
+    const ol=document.getElementById('match-ol'); if(ol) ol.classList.add('show');
+  };
+  window.keepSwipingAfterMatch=function(){
+    const ol=document.getElementById('match-ol'); if(ol) ol.classList.remove('show');
+    nextProfileCard();
+  };
+  window.openLastMatchChat=function(){
+    const p=window._lastMatchProfile;
+    const ol=document.getElementById('match-ol'); if(ol) ol.classList.remove('show');
+    if(p && p.uid){ openChat(p.uid, safeName(p), p.plan||''); }
+    else { go('messages-screen'); setTimeout(()=>switchMT('matches'),100); }
+  };
+  window.closeMatch=function(){ keepSwipingAfterMatch(); };
+
+  window.sw=async function(dir){
+    const top=document.getElementById('top-card'); if(!top) return;
+    const actedProfile=currentProfile;
+    top.style.animation=(dir==='right'?'swR':'swL')+' .4s ease forwards';
+    setTimeout(async()=>{
+      try{ top.remove(); }catch(e){}
+      if(dir==='right' && actedProfile){
+        const saved=await createRealMatch(actedProfile);
+        window._lastMatchProfile=saved ? {...actedProfile,...saved} : actedProfile;
+        showMatch(window._lastMatchProfile);
+      }else{
+        nextProfileCard();
+      }
+    },380);
+  };
+
+  window.loadMatches=async function(){
+    const auth=window._fbAuth, db=window._fbDb; const me=auth&&auth.currentUser;
+    const matchList=document.getElementById('match-list'); const noMatches=document.getElementById('no-matches');
+    if(!me || !db || !matchList) return;
+    try{
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap=await fb.getDocs(fb.collection(db,'matches'));
+      const matches=[];
+      snap.docs.forEach(docSnap=>{
+        const m=docSnap.data()||{};
+        const users=Array.isArray(m.users)?m.users:Object.keys(m.participants||{});
+        if(!users.includes(me.uid)) return;
+        const theirUid=users.find(x=>x!==me.uid); if(!theirUid) return;
+        matches.push({
+          uid:theirUid,
+          name:(m.names&&m.names[theirUid])||'Match',
+          photoUrl:(m.photos&&m.photos[theirUid])||'',
+          plan:(m.plans&&m.plans[theirUid])||'',
+          time:m.updatedAt||m.createdAt||null
+        });
+      });
+      // fallback to old user.matches array
+      if(!matches.length){
+        const us=await fb.getDoc(fb.doc(db,'users',me.uid));
+        const arr=(us.exists()&&Array.isArray(us.data().matches))?us.data().matches:[];
+        arr.forEach(x=>matches.push(x));
+      }
+      if(!matches.length){ matchList.innerHTML=''; if(noMatches) noMatches.style.display='block'; return; }
+      if(noMatches) noMatches.style.display='none';
+      matchList.innerHTML=matches.map(m=>`<div class="msg-item" onclick="openChat('${m.uid}','${String(m.name||'Match').replace(/'/g,'&#39;')}','${m.plan||''}')"><div class="msg-av" style="font-size:0;overflow:hidden;">${avatarMarkup(m,'46px')}</div><div style="flex:1;"><div class="msg-nm">${escHtml(m.name||'Match')}</div><div class="msg-pv">You matched! Say hello 👋</div></div><div class="msg-dot"></div></div>`).join('');
+    }catch(e){ console.error('loadMatches repair failed:',e); }
+  };
+
+  // Render each of your active stories, not only one grouped frame.
+  window.loadMatchedStories=async function(){
+    const strip=document.querySelector('.stories-strip'); if(!strip) return;
+    try{
+      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const u=window._fbAuth&&window._fbAuth.currentUser; if(!u) return;
+      const now=new Date();
+      const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
+      const all=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>isActiveStory(s,now)).sort((a,b)=>storySafeDate(b.createdAt)-storySafeDate(a.createdAt));
+      const sig=all.map(s=>`${s.id}:${s.uid}:${s.mediaUrl||''}`).join('|');
+      if(strip.dataset.storySig===sig) return;
+      strip.dataset.storySig=sig;
+      const mine=all.filter(s=>s.uid===u.uid);
+      const others=all.filter(s=>s.uid!==u.uid);
+      let html=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Add Story</span></div>`;
+      window._myStoryListFull=mine;
+      mine.forEach((s,i)=>{ html+=`<div class="sw-wrap" data-my-story="${i}"><div class="st-ring active-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyMediaThumb(s,'47px')}</div></div><span class="st-nm">My Story${mine.length>1?' '+(i+1):''}</span></div>`; });
+      const grouped={}; others.forEach(s=>{ const key=s.uid||s.ownerId||'unknown'; (grouped[key] ||= []).push(s); });
+      let gi=0; Object.values(grouped).forEach(group=>{ const first=group[0]; const label=(first.ownerName||'Match').split(' ')[0].slice(0,10); window['_storyGroup_'+gi]=group; html+=`<div class="sw-wrap" data-story-group="${gi}"><div class="st-ring"><div class="st-in" style="overflow:hidden;padding:0;">${storyMediaThumb(first,'47px')}</div></div><span class="st-nm">${label}${group.length>1?' · '+group.length:''}</span></div>`; gi++; });
+      strip.innerHTML=html;
+      strip.querySelectorAll('[data-my-story]').forEach(el=>{ el.onclick=()=>openStoryFromList(window._myStoryListFull||[], Number(el.dataset.myStory)||0, 'Your Story'); });
+      strip.querySelectorAll('[data-story-group]').forEach(el=>{ el.onclick=()=>openStoryFromList(window['_storyGroup_'+el.dataset.storyGroup]||[],0,null); });
+    }catch(e){ console.error('loadMatchedStories repair failed:', e); }
+  };
+
+  function updateBottomProfileAvatars(){
+    const d=window._userData||{};
+    const photos=Array.isArray(d.photos)?d.photos:[];
+    const photo=d.photoUrl||d.profilePhoto||d.avatarUrl||d.avatar||(photos[0]&&(photos[0].url||photos[0]));
+    const initial=(d.firstName||d.username||'U').charAt(0).toUpperCase();
+    document.querySelectorAll('.bot-bar .nav-item').forEach(btn=>{
+      const label=btn.querySelector('.nl'); const icon=btn.querySelector('.ni');
+      if(label && icon && (label.textContent||'').trim().toLowerCase()==='profile'){
+        if(photo) icon.innerHTML=`<img src="${photo}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;display:block;" onerror="this.parentNode.textContent='${initial}'">`;
+        else icon.textContent=initial;
+      }
+    });
+  }
+  const oldUpdateTopAvatar=updateTopAvatar;
+  updateTopAvatar=function(){ try{oldUpdateTopAvatar();}catch(e){} updateBottomProfileAvatars(); };
+  setInterval(updateBottomProfileAvatars,2500);
+
+  // === END CONTROLLED REPAIR ===
+
   // === END SAFE STABILIZER ===
 
   document.addEventListener('DOMContentLoaded', wireRecovery);
