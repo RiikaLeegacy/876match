@@ -1171,7 +1171,7 @@ input:focus,select:focus,textarea:focus{
       <nav style="display:flex;flex-direction:column;gap:4px;flex:1;">
         <button onclick="go('dashboard')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:rgba(255,210,26,0.09);color:var(--gold);border:none;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;text-align:left;">🏠 Dashboard</button>
         <button onclick="go('discover')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💚 Swipe</button>
-        <button onclick="openStoryUpload()" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">✨ Stories</button>
+        <button onclick="go('stories-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">✨ Stories</button>
         <button onclick="go('messages-screen');switchMT('messages');" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">💬 Messages</button>
         <button onclick="go('speedlink-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">⚡ Speed Link</button>
         <button onclick="go('circle-screen')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:transparent;color:rgba(255,255,255,0.65);border:none;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">🎯 Circle</button>
@@ -1193,8 +1193,8 @@ input:focus,select:focus,textarea:focus{
           <p style="color:var(--muted);font-size:.92rem;">Your verified dating space is ready.</p>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:50px;">
-          <div id="dash-av2" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--green));display:flex;align-items:center;justify-content:center;font-weight:900;color:#050505;font-size:.9rem;overflow:hidden;">R</div>
-          <span id="dash-plan-badge" style="font-size:.85rem;color:rgba(255,255,255,0.7);">Diamond Preview</span>
+          <div id="dash-av2" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--green));display:flex;align-items:center;justify-content:center;font-weight:900;color:#050505;font-size:.9rem;overflow:hidden;"></div>
+          <span id="dash-plan-badge" style="font-size:.85rem;color:rgba(255,255,255,0.7);"></span>
         </div>
       </div>
 
@@ -1252,14 +1252,7 @@ input:focus,select:focus,textarea:focus{
 
     <!-- Stories strip -->
     <div class="stories-strip">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;" onclick="showToast('Post stories — Linked & Diamond only!')">
-        <div class="add-st">＋</div><span class="st-nm">Your Story</span>
-      </div>
-      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#2d1a0a,#1a0d05);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#c8956a"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#8b5c2a"/></svg></div></div><span class="st-nm">Shanice</span></div>
-      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#0a1a2d,#05101a);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#7a5230"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#3d2010"/></svg></div></div><span class="st-nm">Marcus</span></div>
-      <div class="sw-wrap"><div class="st-ring seen"><div class="st-in" style="background:linear-gradient(135deg,#1a2d1a,#0d1a0d);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#b07840"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#6b4520"/></svg></div></div><span class="st-nm">Kezia</span></div>
-      <div class="sw-wrap"><div class="st-ring"><div class="st-in" style="background:linear-gradient(135deg,#1a0a2d,#100519);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#5a3820"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#2d1a0a"/></svg></div></div><span class="st-nm">Devon</span></div>
-      <div class="sw-wrap"><div class="st-ring seen"><div class="st-in" style="background:linear-gradient(135deg,#2d1a2d,#1a0d1a);font-size:0;overflow:hidden;"><svg viewBox="0 0 52 52" style="width:100%;height:100%;"><circle cx="26" cy="20" r="10" fill="#c49060"/><ellipse cx="26" cy="42" rx="16" ry="12" fill="#7a5030"/></svg></div></div><span class="st-nm">Natasha</span></div>
+      <!-- Populated dynamically by loadMatchedStories() -->
     </div>
 
     <div class="disc-area">
@@ -1348,6 +1341,40 @@ input:focus,select:focus,textarea:focus{
 <!-- ════════════════════════════════════
      MESSAGES
 ════════════════════════════════════ -->
+<!-- ══════════════════════════════════ STORIES SCREEN ══════════════════════════════════ -->
+<div id="stories-screen" class="screen">
+  <div class="app-scr">
+    <div class="top-bar" style="padding:14px 16px;">
+      <button onclick="go('dashboard')" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;">← Back</button>
+      <span style="font-weight:800;font-size:1rem;color:#fff;">✨ Stories</span>
+      <div style="width:60px;"></div>
+    </div>
+
+    <!-- Post new story -->
+    <div style="padding:16px;">
+      <div id="my-story-banner" style="background:rgba(255,210,26,0.07);border:1px solid rgba(255,210,26,0.2);border-radius:16px;padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="openStoryUpload()">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--green));display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">＋</div>
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:var(--gold);">Add to Your Story</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:2px;">Photo or video · visible for 24 hours</div>
+        </div>
+      </div>
+
+      <!-- My active story preview -->
+      <div id="my-active-story" style="display:none;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px;margin-bottom:20px;">
+        <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:10px;">YOUR ACTIVE STORY</div>
+        <div id="my-story-preview-list" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Matched stories -->
+      <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:12px;">STORIES FROM MATCHES</div>
+      <div id="stories-screen-list" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="color:var(--muted);font-size:.82rem;padding:20px 0;text-align:center;">Loading stories...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="messages-screen" class="screen">
   <div class="app-scr">
     <div class="top-bar">
@@ -2094,6 +2121,7 @@ function go(id){
   if(id==='prefs-screen')loadPrefs();
   if(id==='dashboard')loadDashboard();
   if(id==='messages-screen'){ setTimeout(()=>{ switchMT('messages'); },150); }
+  if(id==='stories-screen'){ setTimeout(loadStoriesScreen, 100); }
 }
 
 function loadDashboard(){
@@ -4670,13 +4698,19 @@ onAuthStateChanged(auth, async (user) => {
   window.hasPlan = function(min){return (planRank[getActivePlan()]||0) >= (planRank[min]||0);};
   window.applyPlanUI = function(){
     const plan = getActivePlan();
+    // Only run if we have real Firestore data — don't flicker on stale sessionStorage
+    if(!window._userData && !window._userPlan) return;
     document.body.classList.toggle('is-diamond', plan==='diamond');
     document.body.classList.toggle('is-linked', plan==='linked');
     document.body.classList.toggle('is-ting', plan==='ting');
+    // Hide upgrade pill for paid plans
+    const pp2 = document.getElementById('plan-pill');
+    if(pp2) pp2.style.display = (plan==='diamond'||plan==='linked') ? 'none' : '';
+    // Hide upgrade buttons for diamond users
     if(plan==='diamond'){
       document.querySelectorAll('button,div,a').forEach(el=>{
-        const txt=(el.textContent||'').trim().toLowerCase();
-        if(txt==='💎 upgrade'||txt==='upgrade'||txt==='upgrade now'||txt.includes('upgrade to diamond')||txt.includes('upgrade to real')){
+        const txt=(el.textContent||'').trim().toLowerCase().replace(/[\u2726\u{1F48E}\s]/gu,'');
+        if(txt==='upgrade'||txt==='upgradenow'||txt.includes('upgradetodiamond')||txt.includes('upgradetoreal')){
           el.style.display='none'; el.setAttribute('data-diamond-hide','1');
         }
       });
@@ -4749,6 +4783,78 @@ onAuthStateChanged(auth, async (user) => {
 
   // Story system: matched-only, autoplay, viewers, reactions, replies.
   let storyList=[], storyIndex=0, storyTimer=null, storyStart=0, currentStory=null;
+
+  window.loadStoriesScreen = async function(){
+    const list = document.getElementById('stories-screen-list');
+    const myPreview = document.getElementById('my-active-story');
+    const myPreviewList = document.getElementById('my-story-preview-list');
+    if(!list) return;
+    try{
+      const fb = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const u = window._fbAuth && window._fbAuth.currentUser; if(!u) return;
+      const now = new Date();
+      const snap = await fb.getDocs(fb.collection(window._fbDb,'stories'));
+      const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+      // My own active stories
+      const mine = all.filter(s=>s.uid===u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      if(mine.length>0 && myPreview && myPreviewList){
+        myPreview.style.display='block';
+        myPreviewList.innerHTML = mine.map((s,i)=>`
+          <div onclick="window._myStoryList=${JSON.stringify([])}; window._myStoryListFull=true; openMyStoryViewerIdx(${i});" style="cursor:pointer;border-radius:12px;overflow:hidden;width:80px;height:120px;background:#111;position:relative;flex-shrink:0;">
+            ${s.mediaType==='video' ? `<video src="${s.mediaUrl}" style="width:100%;height:100%;object-fit:cover;" muted></video>` : `<img src="${s.mediaUrl}" style="width:100%;height:100%;object-fit:cover;">`}
+            <div style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:.62rem;color:rgba(255,255,255,.7);">Tap to view</div>
+          </div>`).join('');
+        // Store for viewer
+        window._myStoryListFull = mine;
+      } else if(myPreview){
+        myPreview.style.display='none';
+      }
+
+      // Matched stories — group by user
+      const matched = all.filter(s=>s.uid!==u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      const byUser = {};
+      matched.forEach(s=>{ if(!byUser[s.uid]) byUser[s.uid]=[]; byUser[s.uid].push(s); });
+      const users = Object.values(byUser);
+
+      if(users.length===0){
+        list.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:20px 0;text-align:center;">No stories from matches yet.</div>';
+        return;
+      }
+
+      list.innerHTML = users.map((userStories, ui)=>{
+        const first = userStories[0];
+        const name = (first.ownerName||'Match').slice(0,16);
+        const thumb = first.mediaType==='video'
+          ? `<video src="${first.mediaUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;" muted></video>`
+          : `<img src="${first.mediaUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;">`;
+        return `<div onclick="window._screenStoryList=${JSON.stringify(userStories)};window._screenStoryIndex=0;openScreenStoryViewer();" style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(255,255,255,.04);border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.07);">
+          <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);flex-shrink:0;">${thumb}</div>
+          <div><div style="font-weight:700;font-size:.9rem;">${name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${userStories.length} story${userStories.length>1?'s':''}</div></div>
+        </div>`;
+      }).join('');
+
+      // Store flat list for viewer
+      storyList = matched;
+      window.openScreenStoryViewer = function(){
+        const stories = window._screenStoryList||[];
+        if(!stories.length) return;
+        currentStory = stories[0]; storyIndex=0;
+        $('story-owner').textContent = currentStory.ownerName||'Story';
+        const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video'?`<video src="${currentStory.mediaUrl}" autoplay playsinline></video>`:`<img src="${currentStory.mediaUrl}">`;
+        $('story-viewer').classList.add('open'); markStoryViewed(); startStoryAuto();
+      };
+      window.openMyStoryViewerIdx = function(i){
+        const list = window._myStoryListFull||[];
+        if(!list[i]) return;
+        currentStory = list[i];
+        $('story-owner').textContent = 'Your Story';
+        const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video'?`<video src="${currentStory.mediaUrl}" autoplay playsinline controls></video>`:`<img src="${currentStory.mediaUrl}">`;
+        $('story-viewer').classList.add('open'); startStoryAuto();
+      };
+    }catch(e){ if(list) list.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:20px 0;text-align:center;">Could not load stories.</div>'; }
+  };
+
   window.openStoryUpload=function(){
     if(!hasPlan('linked')){ showToast('Stories are for Linked and Diamond members.'); return; }
     const inp=$('story-file-input'); if(inp) inp.click();
@@ -4766,7 +4872,7 @@ onAuthStateChanged(auth, async (user) => {
       if(!d.secure_url){showToast('Story upload failed. Try again.');return;}
       const url=d.secure_url;
       await fb.addDoc(fb.collection(window._fbDb,'stories'),{uid:u.uid,ownerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',mediaUrl:url,mediaType:isVideo?'video':'image',visibility:'matchesOnly',viewers:[],reactions:[],createdAt:fb.serverTimestamp(),expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))});
-      showToast('Story posted! ✅'); loadMatchedStories();
+      showToast('Story posted! ✅'); loadMatchedStories(); if(typeof loadStoriesScreen==='function') loadStoriesScreen();
     }catch(e){showToast('Story could not save. Check connection.');}
   });
   window.loadMatchedStories=async function(){
@@ -4826,7 +4932,9 @@ onAuthStateChanged(auth, async (user) => {
     showMiniModal('Manage Subscription', `Current plan: ${plan==='diamond'?'Diamond':plan==='linked'?'Linked':'Ting / Free'}.`, `<select id="sub-action"><option value="upgrade">Upgrade / change plan</option><option value="downgrade">Request downgrade</option><option value="cancel">Cancel subscription</option></select><p style="font-size:.78rem;color:var(--muted);">Subscription changes should be confirmed through Stripe/payment settings so billing stays accurate.</p>`, async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.addDoc(fb.collection(window._fbDb,'billingDisputes'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,type:$('sub-action').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Subscription request submitted.');}catch(e){showToast('Unable to submit subscription request.');}});
   };
   document.addEventListener('DOMContentLoaded', wireRecovery);
-  setTimeout(wireRecovery,700); setInterval(wireRecovery,3500);
+  setTimeout(wireRecovery,700);
+  // Only repeat for stories refresh — not for name/plan (those are set once from Firestore)
+  setInterval(function(){ try{ loadMatchedStories(); }catch(e){} }, 5000);
 })();
 </script>
 
