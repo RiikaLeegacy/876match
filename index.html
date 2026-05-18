@@ -358,6 +358,7 @@ input:focus,select:focus,textarea:focus{
 .st-ring{width:52px;height:52px;border-radius:50%;padding:2.5px;
   background:linear-gradient(135deg,var(--gold),var(--green));}
 .st-ring.seen{background:rgba(255,255,255,.12);}
+.st-ring.active-ring{background:linear-gradient(135deg,var(--gold),var(--green));}
 .st-in{width:100%;height:100%;border-radius:50%;background:var(--card);
   display:flex;align-items:center;justify-content:center;font-size:1.3rem;
   border:2.5px solid var(--bg);}
@@ -994,7 +995,8 @@ input:focus,select:focus,textarea:focus{
         <h2 class="auth-title">Let's Get Started 👋</h2>
         <p class="auth-sub">Basic info first — takes about 2 minutes.</p>
         <div class="two-col">
-          <div class="field-g"><label>First Name</label><div class="iw"><span class="fi">👤</span><input type="text" id="reg-fn" placeholder="First name"></div></div>
+          <div class="field-g"><label>Username <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">visible to others</span></label><div class="iw"><span class="fi">🏷️</span><input type="text" id="reg-username" placeholder="e.g. KingstonKing, NatureLover876"></div></div>
+          <div class="field-g"><label>Full Legal Name <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">🔒 admin only · never shown publicly</span></label><div class="iw"><span class="fi">👤</span><input type="text" id="reg-fn" placeholder="First and last name"></div></div>
           <div class="field-g"><label>Age</label><div class="iw"><span class="fi">🎂</span><input type="number" id="reg-age" placeholder="Age" min="18"></div></div>
         </div>
         <div class="field-g"><label>Email</label><div class="iw"><span class="fi">✉</span><input type="email" id="reg-email" placeholder="your@email.com"></div></div>
@@ -1467,7 +1469,7 @@ input:focus,select:focus,textarea:focus{
             <div id="id-st" style="font-size:.7rem;color:rgba(255,255,255,.28);">Pending review</div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:11px;background:rgba(255,210,26,.04);border:1px solid rgba(255,210,26,.12);border-radius:12px;cursor:pointer;" onclick="handleRealClick()">
-            <div><div style="font-weight:700;font-size:.84rem;color:var(--gold);" id="real-badge-title">⭐ Real Badge</div><div id="real-d" style="font-size:.7rem;color:var(--muted);margin-top:2px;">Submit your government ID to earn it</div></div>
+            <div><div style="font-weight:700;font-size:.84rem;color:var(--gold);" id="real-badge-title">⭐ Real Badge</div><div id="real-d" style="font-size:.7rem;color:var(--muted);margin-top:2px;">Awarded to verified, authentic profiles</div></div>
             <div id="real-a" style="font-size:.7rem;color:var(--gold);font-weight:700;">Get it →</div>
           </div>
         </div>
@@ -2102,7 +2104,9 @@ function loadDashboard(){
     const fn=document.getElementById('dash-first-name');
     if(fn&&u.displayName) fn.textContent=u.displayName.split(' ')[0];
     const av2=document.getElementById('dash-av2');
-    if(av2&&u.displayName) av2.textContent=u.displayName.charAt(0).toUpperCase();
+    // Use Firestore username/firstName — NOT Firebase Auth displayName (which may reflect Google account name)
+    const _avName = (window._userData&&(window._userData.username||window._userData.firstName))||null;
+    if(av2&&_avName) av2.textContent=_avName.charAt(0).toUpperCase();
     const pl=document.getElementById('dash-plan-lbl');
     const pb=document.getElementById('dash-plan-badge');
     if(pl) pl.textContent=window._userPlan==='diamond'?'💎 Diamond':window._userPlan==='linked'?'🔗 Linked':'Free · Ting';
@@ -2192,9 +2196,11 @@ async function uploadID(inp){
 async function registerUser(){
   const email=((document.getElementById('reg-email')||{}).value||'').trim();
   const pw=((document.getElementById('reg-pw')||{}).value||'').trim();
+  const username=((document.getElementById('reg-username')||{}).value||'').trim();
   const fn=((document.getElementById('reg-fn')||{}).value||'').trim();
   const age=((document.getElementById('reg-age')||{}).value||'').trim();
-  if(!email||!pw||!fn||!age){showToast("Please fill in all required fields.");return;}
+  if(!email||!pw||!username||!fn||!age){showToast("Please fill in all required fields.");return;}
+  if(username.length<3){showToast("Username must be at least 3 characters.");return;}
   if(parseInt(age)<18){showToast("You must be 18 or older to join.");return;}
   if(pw.length<6){showToast("Password must be at least 6 characters.");return;}
   const btn=document.getElementById('reg-btn');btn.textContent="Creating account...";btn.disabled=true;
@@ -2205,7 +2211,10 @@ async function registerUser(){
     const {doc,setDoc,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const cred=await createUserWithEmailAndPassword(auth,email,pw);
     await setDoc(doc(db,"users",cred.user.uid),{
-      firstName:fn,age:parseInt(age),
+      username:username,
+      firstName:fn,  // legal name — admin only
+      fullName:fn,   // legal name — admin only
+      age:parseInt(age),
       gender:(document.getElementById('reg-gender')||{value:''}).value||"",
       lookingFor:(document.getElementById('reg-looking')||{value:''}).value||"",
       email,
@@ -2430,12 +2439,12 @@ async function loadProfile(){
       if(rvs)rvs.textContent='Diamond members show their 💎 tier badge after joining. The green tick is for government ID verification.';
       if(d.realBadge){if(rd)rd.textContent='💎 Diamond badge active';if(ra){ra.textContent='✅';ra.style.color='var(--green)';}}
       else if(d.realVerifyStatus==='pending'){if(rd)rd.textContent='Under review - badge coming soon';if(ra){ra.textContent='⏳';ra.style.color='rgba(255,255,255,.28)';}}
-      else{if(rd)rd.textContent='Submit your government ID to earn it';if(ra)ra.textContent='Record now →';}
+      else{if(rd)rd.textContent='Awarded to verified, authentic profiles';if(ra)ra.textContent='Record now →';}
     } else if(plan==='linked'){
       if(rbt)rbt.textContent='⭐ Real Badge';
       if(d.realBadge){if(rd)rd.textContent='⭐ Real badge active';if(ra){ra.textContent='✅';ra.style.color='var(--green)';}}
       else if(d.realVerifyStatus==='pending'){if(rd)rd.textContent='Under review';if(ra){ra.textContent='⏳';ra.style.color='rgba(255,255,255,.28)';}}
-      else{if(rd)rd.textContent='Submit your government ID to earn it';if(ra)ra.textContent='Record now →';}
+      else{if(rd)rd.textContent='Awarded to verified, authentic profiles';if(ra)ra.textContent='Record now →';}
     } else {
       if(rd)rd.textContent='Requires Linked or Diamond plan';
       if(ra){ra.textContent='Upgrade →';ra.onclick=()=>go('premium-screen');}
@@ -4544,12 +4553,13 @@ onAuthStateChanged(auth, async (user) => {
 
         // Populate dashboard elements safely
         const set = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
-        const firstName = data.firstName || '';
-        set('dash-first-name', firstName);
-        set('dash-name', firstName + ' ' + (data.lastName || ''));
-        if (firstName) {
+        // Username is the public display name; firstName is the legal name (admin only)
+        const displayName = data.username || data.firstName || '';
+        set('dash-first-name', displayName);
+        set('dash-name', displayName);
+        if (displayName) {
           const av2 = document.getElementById('dash-av2');
-          if (av2) av2.textContent = firstName.charAt(0).toUpperCase();
+          if (av2) av2.textContent = displayName.charAt(0).toUpperCase();
         }
         const planLabel = window._userPlan === 'diamond' ? '💎 Diamond' : window._userPlan === 'linked' ? '🔗 Linked' : 'Free · Ting';
         const planBadge = window._userPlan === 'diamond' ? 'Diamond Member' : window._userPlan === 'linked' ? 'Linked Member' : 'Free Member';
@@ -4745,25 +4755,52 @@ onAuthStateChanged(auth, async (user) => {
   };
   $('story-file-input').addEventListener('change', async function(){
     const file=this.files&&this.files[0]; if(!file)return;
-    showToast('Preparing story upload...');
+    showToast('Uploading story...');
     try{
       const u=window._fbAuth.currentUser; const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      // Store story as a local blob URL for immediate preview; permanent Cloudinary/Firebase Storage upload can be connected later.
-      const url=URL.createObjectURL(file);
-      await fb.addDoc(fb.collection(window._fbDb,'stories'),{uid:u.uid,ownerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',mediaUrl:url,mediaType:file.type.startsWith('video')?'video':'image',visibility:'matchesOnly',viewers:[],reactions:[],createdAt:fb.serverTimestamp(),expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))});
-      showToast('Story added for your matches.'); loadMatchedStories();
-    }catch(e){showToast('Story could not save yet. Check Firestore rules/storage setup.');}
+      // Upload to Cloudinary for a permanent URL (not a blob which expires on page close)
+      const isVideo=file.type.startsWith('video');
+      const fd=new FormData();fd.append('file',file);fd.append('upload_preset',PRESET);fd.append('folder','yaadconnect/stories');
+      const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${isVideo?'video':'image'}/upload`,{method:'POST',body:fd});
+      const d=await r.json();
+      if(!d.secure_url){showToast('Story upload failed. Try again.');return;}
+      const url=d.secure_url;
+      await fb.addDoc(fb.collection(window._fbDb,'stories'),{uid:u.uid,ownerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',mediaUrl:url,mediaType:isVideo?'video':'image',visibility:'matchesOnly',viewers:[],reactions:[],createdAt:fb.serverTimestamp(),expiresAt:fb.Timestamp.fromDate(new Date(Date.now()+24*3600*1000))});
+      showToast('Story posted! ✅'); loadMatchedStories();
+    }catch(e){showToast('Story could not save. Check connection.');}
   });
   window.loadMatchedStories=async function(){
     const strip=document.querySelector('.stories-strip'); if(!strip)return;
     strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Your Story</span></div>`;
     try{
       const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
+      const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
-      storyList=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.uid!==u.uid && (s.visibility==='matchesOnly'||s.matchedOnly===true));
+      const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+      // Show user's own active (non-expired) stories first
+      const myStories=allStories.filter(s=>s.uid===u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      if(myStories.length>0){
+        const myEl=document.createElement('div'); myEl.className='sw-wrap';
+        const firstMyStory=myStories[0];
+        myEl.innerHTML=`<div class="st-ring active-ring"><div class="st-in">${firstMyStory.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">My Story</span>`;
+        myEl.onclick=()=>{ window._myStoryList=myStories; window._myStoryIndex=0; openMyStoryViewer(); };
+        strip.appendChild(myEl);
+      }
+
+      // Show matched users' stories
+      storyList=allStories.filter(s=>s.uid!==u.uid && (s.visibility==='matchesOnly'||s.matchedOnly===true) && s.expiresAt && s.expiresAt.toDate()>now);
       storyList.forEach((s,i)=>{ const el=document.createElement('div'); el.className='sw-wrap'; el.innerHTML=`<div class="st-ring"><div class="st-in">${s.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`; el.onclick=()=>openStoryViewer(i); strip.appendChild(el); });
-      if(storyList.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
+      if(storyList.length===0&&myStories.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
     }catch(e){}
+  };
+  // Simple viewer for own stories
+  window.openMyStoryViewer=function(){
+    const list=window._myStoryList||[]; const i=window._myStoryIndex||0;
+    const s=list[i]; if(!s)return;
+    $('story-owner').textContent='Your Story';
+    const media=$('story-media'); media.innerHTML=s.mediaType==='video'?`<video src="${s.mediaUrl}" autoplay playsinline controls></video>`:`<img src="${s.mediaUrl}">`;
+    $('story-viewer').classList.add('open'); startStoryAuto();
   };
   window.openStoryViewer=function(i){storyIndex=i||0; currentStory=storyList[storyIndex]; if(!currentStory)return; renderStory(); $('story-viewer').classList.add('open'); markStoryViewed(); startStoryAuto();};
   function renderStory(){
