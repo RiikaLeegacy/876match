@@ -2905,153 +2905,137 @@ async function processPayment(){
   }
 }
 
+// Chat state globals
+var _activeConvId = null;
+var _activePartnerUid = null;
+var _typingTimeout = null;
 
-async function openChat(partnerUid, partnerName, partnerPlan) {
+async function openChat(partnerUid, partnerName, partnerPhoto, convId) {
   const auth = window._fbAuth;
   if (!auth || !auth.currentUser) { go('login-screen'); return; }
-
   const myUid = auth.currentUser.uid;
-  // Conversation ID = sorted UIDs joined
-  const convId = [myUid, partnerUid].sort().join('_');
-  _activeConvId = convId;
+  const resolvedConvId = convId || [myUid, partnerUid].sort().join('_');
+  _activeConvId = resolvedConvId;
+  _activePartnerUid = partnerUid;
 
-  // Set UI
+  // Set chat header
   const nameEl = document.getElementById('chat-partner-name');
   const statusEl = document.getElementById('chat-partner-status');
+  const avEl = document.getElementById('chat-partner-av');
   if (nameEl) nameEl.textContent = partnerName || 'Match';
-  if (statusEl) statusEl.textContent = partnerPlan === 'diamond' ? '💎 Diamond member' : partnerPlan === 'linked' ? '🔗 Linked member' : '✅ Verified member';
-
-  // Navigate to chat screen
-  go('chat-screen');
-
-  // Ensure conversation exists in RTDB
-  const convRef = window._rtdb.ref('conversations/' + convId);
-  await convRef.once('value', snap => {
-    if (!snap.exists()) {
-      convRef.set({
-        participants: { [myUid]: true, [partnerUid]: true },
-        partnerNames: { [myUid]: (window._userData && window._userData.firstName) || 'Me', [partnerUid]: partnerName || 'Match' },
-        createdAt: Date.now(),
-        lastMessage: '',
-        lastMessageTime: Date.now()
-      });
-    }
-  });
-
-  // Clear old listener
-  if (_activeListener) {
-    window._rtdb.ref('messages/' + _activeConvId).off('value', _activeListener);
+  if (statusEl) statusEl.textContent = '';
+  if (avEl) {
+    avEl.innerHTML = partnerPhoto
+      ? `<img src="${partnerPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--green));display:flex;align-items:center;justify-content:center;font-weight:900;color:#050505;">${(partnerName||'M').charAt(0).toUpperCase()}</div>`;
   }
 
-  // Listen for messages in real time
-  const msgRef = window._rtdb.ref('messages/' + convId);
+  go('chat-screen');
+
+  // Ensure conversation exists in Firestore
+  const {setDoc, doc, serverTimestamp, getDocs, collection, query, orderBy, addDoc, onSnapshot} = window._fb;
+  const db = window._fbDb;
+  try {
+    await setDoc(doc(db, 'conversations', resolvedConvId), {
+      participants: [myUid, partnerUid],
+      partnerNames: {
+        [myUid]: (window._userData && (window._userData.username || window._userData.firstName)) || 'Me',
+        [partnerUid]: partnerName || 'Match'
+      },
+      partnerPhotos: {
+        [myUid]: (window._userData && window._userData.photoUrl) || '',
+        [partnerUid]: partnerPhoto || ''
+      },
+      lastMessageTime: Date.now()
+    }, { merge: true });
+  } catch(e) { console.log('Conv create error:', e); }
+
+  // Stop previous listener
+  if (window._chatUnsub) { try { window._chatUnsub(); } catch(e) {} window._chatUnsub = null; }
+
+  // Load messages from Firestore subcollection
   const container = document.getElementById('chat-messages');
   const emptyEl = document.getElementById('chat-empty');
+  const msgCol = collection(db, 'conversations', resolvedConvId, 'messages');
 
-  _activeListener = msgRef.on('value', snap => {
-    const msgs = snap.val();
-    if (!msgs) {
-      if (emptyEl) emptyEl.style.display = 'flex';
-      return;
+  try {
+    // Load existing messages
+    const snap = await getDocs(query(msgCol, orderBy('ts', 'asc')));
+    if (container) {
+      container.querySelectorAll('.bubble,.chat-day-label').forEach(b => b.remove());
     }
-    if (emptyEl) emptyEl.style.display = 'none';
+    if (snap.empty) {
+      if (emptyEl) emptyEl.style.display = 'flex';
+    } else {
+      if (emptyEl) emptyEl.style.display = 'none';
+      snap.docs.forEach(d => renderChatMessage(d.data(), myUid, container, emptyEl));
+    }
+    if (container) container.scrollTop = container.scrollHeight;
 
-    // Sort by timestamp
-    const sorted = Object.entries(msgs).sort((a, b) => a[1].ts - b[1].ts);
-
-    // Render messages
-    const existingBubbles = container.querySelectorAll('.bubble, .chat-day-label');
-    existingBubbles.forEach(b => b.remove());
-
-    let lastDate = '';
-    sorted.forEach(([id, msg]) => {
-      const isMe = msg.uid === myUid;
-      const msgDate = new Date(msg.ts).toLocaleDateString('en-JM', { month: 'short', day: 'numeric' });
-
-      if (msgDate !== lastDate) {
-        lastDate = msgDate;
-        const dayLabel = document.createElement('div');
-        dayLabel.className = 'chat-day-label';
-        dayLabel.textContent = msgDate === new Date().toLocaleDateString('en-JM', { month: 'short', day: 'numeric' }) ? 'Today' : msgDate;
-        container.insertBefore(dayLabel, emptyEl);
-      }
-
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble ' + (isMe ? 'bubble-me' : 'bubble-them');
-      const timeStr = new Date(msg.ts).toLocaleTimeString('en-JM', { hour: '2-digit', minute: '2-digit' });
-      bubble.innerHTML = `${escHtml(msg.text)}<span class="bubble-time">${timeStr}${isMe ? ' · ' + (msg.read ? '✓✓' : '✓') : ''}</span>`;
-      container.insertBefore(bubble, emptyEl);
+    // Live listener for new messages
+    window._chatUnsub = onSnapshot(query(msgCol, orderBy('ts', 'asc')), snap => {
+      if (!container) return;
+      container.querySelectorAll('.bubble,.chat-day-label').forEach(b => b.remove());
+      if (snap.empty) { if (emptyEl) emptyEl.style.display = 'flex'; return; }
+      if (emptyEl) emptyEl.style.display = 'none';
+      snap.docs.forEach(d => renderChatMessage(d.data(), myUid, container, emptyEl));
+      container.scrollTop = container.scrollHeight;
     });
-
-    // Mark messages as read
-    sorted.forEach(([id, msg]) => {
-      if (msg.uid !== myUid && !msg.read) {
-        window._rtdb.ref('messages/' + convId + '/' + id + '/read').set(true);
-      }
-    });
-
-    // Scroll to bottom
-    container.scrollTop = container.scrollHeight;
-  });
+  } catch(e) {
+    console.error('Chat load error:', e);
+    if (container) container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;">Could not load messages.</div>';
+  }
 }
 
-function escHtml(text) {
-  if(!text) return '';
-  return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+function renderChatMessage(msg, myUid, container, emptyEl) {
+  const isMe = msg.uid === myUid;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (isMe ? 'bubble-me' : 'bubble-them');
+  const timeStr = msg.ts ? new Date(msg.ts).toLocaleTimeString('en-JM', { hour: '2-digit', minute: '2-digit' }) : '';
+  bubble.innerHTML = `${escHtml(msg.text)}<span class="bubble-time">${timeStr}${isMe ? ' · ✓' : ''}</span>`;
+  if (emptyEl) container.insertBefore(bubble, emptyEl);
+  else container.appendChild(bubble);
 }
 
 // Send a message
 async function sendMessage() {
   const auth = window._fbAuth;
   if (!auth || !auth.currentUser || !_activeConvId) return;
-
   const input = document.getElementById('chat-input');
   const text = input && input.value.trim();
   if (!text) return;
-
   input.value = '';
   input.style.height = 'auto';
-
   const myUid = auth.currentUser.uid;
-  const msgData = {
-    uid: myUid,
-    text: text,
-    ts: Date.now(),
-    read: false
-  };
-
+  const {addDoc, updateDoc, collection, doc, serverTimestamp} = window._fb;
+  const db = window._fbDb;
   try {
-    // Push message to RTDB
-    await window._rtdb.ref('messages/' + _activeConvId).push(msgData);
-    // Notify the other person
-    if (_activePartnerUid) {
-      const myName = (window._userData && window._userData.firstName) || '876Match';
-      sendNotificationToUser(_activePartnerUid, myName + ' sent you a message 💬', text.substring(0,60), 'message');
-    }
-    // Update conversation last message
-    await window._rtdb.ref('conversations/' + _activeConvId).update({
+    // Save message to Firestore subcollection
+    await addDoc(collection(db, 'conversations', _activeConvId, 'messages'), {
+      uid: myUid,
+      text: text,
+      ts: Date.now(),
+      read: false
+    });
+    // Update conversation preview
+    await updateDoc(doc(db, 'conversations', _activeConvId), {
       lastMessage: text.length > 50 ? text.substring(0, 50) + '...' : text,
       lastMessageTime: Date.now(),
       lastSenderUid: myUid
     });
-    // Clear typing indicator
-    await window._rtdb.ref('typing/' + _activeConvId + '/' + myUid).set(false);
+    // Notify partner
+    if (_activePartnerUid) {
+      const myName = (window._userData && (window._userData.username || window._userData.firstName)) || '876Match';
+      try { sendNotificationToUser(_activePartnerUid, myName + ' sent you a message 💬', text.substring(0,60), 'message'); } catch(e) {}
+    }
   } catch(e) {
     showToast('Could not send message. Check connection.');
-    console.log('Send error:', e);
+    console.error('Send error:', e);
   }
 }
 
-// Typing indicator
-function handleTyping() {
-  const auth = window._fbAuth;
-  if (!auth && auth.currentUser || !_activeConvId) return;
-  window._rtdb.ref('typing/' + _activeConvId + '/' + auth.currentUser.uid).set(true);
-  clearTimeout(_typingTimeout);
-  _typingTimeout = setTimeout(() => {
-    window._rtdb.ref('typing/' + _activeConvId + '/' + auth.currentUser.uid).set(false);
-  }, 2000);
-}
+// Typing indicator — simplified, no RTDB dependency
+function handleTyping() { /* typing indicator reserved for future */ }
 
 // Auto-resize textarea
 function autoResize(el) {
