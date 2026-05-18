@@ -1257,21 +1257,6 @@ input:focus,select:focus,textarea:focus{
 
     <div class="disc-area">
       <div class="card-stack" id="cstk">
-        <!-- Back cards -->
-        <div class="pcard">
-          <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a2a4a,#0d1530);display:flex;align-items:center;justify-content:center;position:relative;">
-            <svg viewBox="0 0 200 280" style="width:60%;opacity:0.9"><circle cx="100" cy="90" r="42" fill="#7a5230"/><ellipse cx="100" cy="210" rx="65" ry="75" fill="#3d2010"/><circle cx="100" cy="90" r="42" fill="none" stroke="rgba(255,210,26,0.2)" stroke-width="2"/></svg>
-          </div>
-          <div class="card-gr"></div>
-          <div class="card-body"><div class="cn-row"><span class="cn">Marcus</span><span class="ca">29</span><span class="cbdg bv">✅ Verified</span></div><div class="cloc">📍 London, UK 🇬🇧</div><div class="ctags"><span class="ctag">✈️ Travel</span><span class="ctag">🎵 Music</span></div></div>
-        </div>
-        <div class="pcard">
-          <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a3a2a,#0a1a12);display:flex;align-items:center;justify-content:center;">
-            <svg viewBox="0 0 200 280" style="width:60%;opacity:0.9"><circle cx="100" cy="90" r="42" fill="#b07840"/><ellipse cx="100" cy="210" rx="65" ry="75" fill="#6b4520"/></svg>
-          </div>
-          <div class="card-gr"></div>
-          <div class="card-body"><div class="cn-row"><span class="cn">Kezia</span><span class="ca">24</span></div><div class="cloc">📍 Montego Bay, St. James</div></div>
-        </div>
         <!-- Top card -->
         <div class="pcard top" id="top-card" onclick="openProfModal(currentProfile)">
           <div class="stamp-l" id="stamp-l">SKIP ✗</div>
@@ -1329,7 +1314,7 @@ input:focus,select:focus,textarea:focus{
       <div class="match-con">
         <div style="font-size:3.5rem;margin-bottom:11px;">🎉</div>
         <h2 style="font-size:1.9rem;font-weight:900;letter-spacing:-.05em;color:var(--gold);margin-bottom:6px;">It's a Match!</h2>
-        <p style="color:var(--muted);font-size:.86rem;">You and Shanice both want to link.</p>
+        <p style="color:var(--muted);font-size:.86rem;" id="match-names-text">It's a match! 🎉</p>
         <div class="match-avs"><div class="match-av">😊</div><div style="font-size:1.3rem;align-self:center;">💛</div><div class="match-av" style="font-size:0;overflow:hidden;"><svg viewBox="0 0 80 80" style="width:100%;height:100%;"><circle cx="40" cy="28" r="16" fill="#c8956a"/><ellipse cx="40" cy="68" rx="26" ry="22" fill="#1a5c30"/></svg></div></div>
         <button class="btn-gold btn-full" style="margin-bottom:9px;" onclick="closeMatch()">Send a Message 💬</button>
         <button class="btn-outline btn-full" onclick="closeMatch()">Keep Swiping</button>
@@ -2123,6 +2108,77 @@ function go(id){
   if(id==='messages-screen'){ setTimeout(()=>{ switchMT('messages'); },150); }
   if(id==='stories-screen'){ setTimeout(loadStoriesScreen, 100); }
 }
+
+function openProfModal(profile) {
+  if (!profile) return;
+  // Build or reuse modal
+  let modal = document.getElementById('dyn-prof-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'dyn-prof-modal';
+    modal.className = 'prof-modal';
+    modal.innerHTML = `
+      <div class="prof-modal-sheet">
+        <div class="prof-modal-photos" id="pmod-photos">
+          <div class="prof-modal-photos-placeholder" id="pmod-ph-placeholder">😊</div>
+          <button class="prof-modal-close" onclick="document.getElementById('dyn-prof-modal').classList.remove('show')">✕</button>
+          <div class="prof-modal-dots" id="pmod-dots"></div>
+        </div>
+        <div class="prof-modal-body">
+          <div class="prof-modal-name" id="pmod-name"></div>
+          <div class="prof-modal-meta" id="pmod-meta"></div>
+          <div class="prof-modal-badges" id="pmod-badges"></div>
+          <div class="prof-modal-bio" id="pmod-bio"></div>
+          <div class="prof-modal-section">
+            <div class="prof-modal-section-title">Interests</div>
+            <div class="prof-modal-tags" id="pmod-tags"></div>
+          </div>
+          <div class="prof-modal-info-grid" id="pmod-info"></div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn-outline" style="flex:1;" onclick="document.getElementById('dyn-prof-modal').classList.remove('show')">Close</button>
+            <button class="btn-gold" style="flex:1;" onclick="swipeFromModal('right')">💚 Link</button>
+          </div>
+        </div>
+      </div>`;
+    modal.addEventListener('click', e => { if(e.target===modal) modal.classList.remove('show'); });
+    document.body.appendChild(modal);
+  }
+  // Populate
+  const p = profile;
+  const photos = p.photos && p.photos.length ? p.photos : (p.photoUrl ? [p.photoUrl] : []);
+  const photosEl = document.getElementById('pmod-photos');
+  const placeholder = document.getElementById('pmod-ph-placeholder');
+  if (photos.length > 0) {
+    placeholder.innerHTML = `<img src="${photos[0]}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    placeholder.innerHTML = '😊';
+  }
+  document.getElementById('pmod-name').textContent = (p.username||p.firstName||'Member') + (p.age ? ', ' + p.age : '');
+  const meta = [p.location||p.parish, p.height, p.job].filter(Boolean).join(' · ');
+  document.getElementById('pmod-meta').textContent = meta;
+  const badges = document.getElementById('pmod-badges');
+  badges.innerHTML = '';
+  if (p.verified || p.verificationStatus==='approved') badges.innerHTML += '<span class="cbdg bv">✅ Verified</span>';
+  if (p.realBadge) badges.innerHTML += '<span class="cbdg br">⭐ Real</span>';
+  if (p.plan==='diamond') badges.innerHTML += '<span class="cbdg bd">💎 Diamond</span>';
+  else if (p.plan==='linked') badges.innerHTML += '<span class="cbdg" style="background:rgba(255,210,26,.12);color:var(--gold);">🔗 Linked</span>';
+  document.getElementById('pmod-bio').textContent = p.bio || '';
+  const tags = document.getElementById('pmod-tags');
+  tags.innerHTML = (p.interests||[]).map(t=>`<span class="prof-modal-tag">${t}</span>`).join('') || '<span style="color:var(--muted);font-size:.8rem;">No interests listed</span>';
+  const info = document.getElementById('pmod-info');
+  const infoItems = [
+    p.edu && {label:'Education', val:p.edu},
+    p.religion && {label:'Religion', val:p.religion},
+    p.children && {label:'Children', val:p.children},
+  ].filter(Boolean);
+  info.innerHTML = infoItems.map(i=>`<div class="prof-modal-info-item"><div class="prof-modal-info-label">${i.label}</div><div class="prof-modal-info-val">${i.val}</div></div>`).join('');
+  modal.classList.add('show');
+}
+
+window.swipeFromModal = function(dir) {
+  document.getElementById('dyn-prof-modal').classList.remove('show');
+  if (typeof sw === 'function') sw(dir);
+};
 
 function loadDashboard(){
   try{
@@ -4541,16 +4597,27 @@ window._fbAuth = auth;
 window._fbApp = app;
 window._fbDb = db;
 
-// Load Realtime Database safely — won't crash if not yet enabled in Firebase console
+// Load Realtime Database safely using compat API so .ref() works
 (async () => {
   try {
-    const { getDatabase } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-    window._rtdb = getDatabase(app);
+    const { getDatabase, ref, set, update, push, get, onValue, off, child } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    const db = getDatabase(app);
+    // Wrap modular API into .ref() style for legacy code
+    const makeRef = (path) => ({
+      path,
+      on: (evt, cb, err) => { const r=ref(db,path); onValue(r,snap=>cb(snap),err||null); return r; },
+      off: (evt, cb) => { try{ off(ref(db,path)); }catch(e){} },
+      once: (evt) => get(ref(db,path)),
+      set: (val) => set(ref(db,path),val),
+      update: (val) => update(ref(db,path),val),
+      push: (val) => push(ref(db,path),val),
+      orderByChild: (c) => ({ equalTo: (v) => ({ on: (evt,cb)=>{ onValue(ref(db,path),snap=>cb(snap)); } }) }),
+      child: (sub) => makeRef(path+'/'+sub),
+    });
+    window._rtdb = { ref: (path) => makeRef(path) };
   } catch(e) {
-    // Provide a safe stub so messaging code doesn't crash
     const noop = () => Promise.resolve();
-    const ref = () => ({ on: ()=>{}, off: ()=>{}, once: ()=>Promise.resolve({val:()=>null,exists:()=>false}), set: noop, update: noop, push: noop, orderByChild: ()=>({ equalTo: ()=>({ on: ()=>{} }) }) });
-    window._rtdb = { ref };
+    window._rtdb = { ref: () => ({ on:()=>{}, off:()=>{}, once:()=>Promise.resolve({val:()=>null,exists:()=>false}), set:noop, update:noop, push:noop, child:()=>({set:noop}), orderByChild:()=>({equalTo:()=>({on:()=>{}})}) }) };
   }
 })();
 
@@ -4966,7 +5033,7 @@ onAuthStateChanged(auth, async (user) => {
       // Filter matched stories — show any non-expired story from other users
       const matched = all.filter(s=>{
         if(s.uid===u.uid) return false;
-        try{ return !s.expiresAt || s.expiresAt.toDate()>now; }catch(e){ return true; }
+        const exp=toDate(s.expiresAt); return !exp||exp>now;
       });
       const byUser = {};
       matched.forEach(s=>{ if(!byUser[s.uid]) byUser[s.uid]=[]; byUser[s.uid].push(s); });
@@ -5076,7 +5143,8 @@ onAuthStateChanged(auth, async (user) => {
       console.log('Stories in DB:', allStories.length, 'mine:', allStories.filter(s=>s.uid===u.uid).length);
 
       // Show user's own active (non-expired) stories first
-      const myStories=allStories.filter(s=>s.uid===u.uid && s.expiresAt && s.expiresAt.toDate()>now);
+      const toDate=v=>{ try{ return v&&(typeof v.toDate==='function'?v.toDate():new Date(v)); }catch(e){ return null; } };
+      const myStories=allStories.filter(s=>{ if(s.uid!==u.uid) return false; const exp=toDate(s.expiresAt); return !exp||exp>now; });
       if(myStories.length>0){
         const myEl=document.createElement('div'); myEl.className='sw-wrap';
         const firstMyStory=myStories[0];
@@ -5086,7 +5154,7 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       // Show matched users' stories
-      storyList=allStories.filter(s=>s.uid!==u.uid && (s.visibility==='matchesOnly'||s.matchedOnly===true) && s.expiresAt && s.expiresAt.toDate()>now);
+      const toDateS=v=>{try{return v&&(typeof v.toDate==='function'?v.toDate():new Date(v));}catch(e){return null;}}; storyList=allStories.filter(s=>{ if(s.uid===u.uid) return false; const exp=toDateS(s.expiresAt); return !exp||exp>now; });
       storyList.forEach((s,i)=>{ const el=document.createElement('div'); el.className='sw-wrap'; el.innerHTML=`<div class="st-ring"><div class="st-in">${s.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">${(s.ownerName||'Story').slice(0,10)}</span>`; el.onclick=()=>openStoryViewer(i); strip.appendChild(el); });
       if(storyList.length===0&&myStories.length===0){ const hint=document.createElement('div'); hint.style.cssText='color:var(--muted);font-size:.72rem;padding:15px 8px;'; hint.textContent='Matched stories will appear here.'; strip.appendChild(hint); }
     }catch(e){}
