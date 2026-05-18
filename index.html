@@ -1257,39 +1257,18 @@ input:focus,select:focus,textarea:focus{
 
     <div class="disc-area">
       <div class="card-stack" id="cstk">
-        <!-- Top card -->
-        <div class="pcard top" id="top-card" onclick="openProfModal(currentProfile)">
+        <!-- Top card — populated dynamically by loadProfiles() -->
+        <div class="pcard top" id="top-card">
           <div class="stamp-l" id="stamp-l">SKIP ✗</div>
           <div class="stamp-r" id="stamp-r">LINK 💚</div>
-          <div class="card-dots" id="cdots"><div class="cdot on"></div><div class="cdot off"></div><div class="cdot off"></div></div>
-          <div class="card-tl" onclick="event.stopPropagation();prevPh()"></div>
-          <div class="card-tr" onclick="event.stopPropagation();nextPh()"></div>
-          <div id="card-ph" style="width:100%;height:100%;background:linear-gradient(160deg,#2a1a0a,#1a0d05);position:relative;overflow:hidden;">
-            <svg viewBox="0 0 300 480" style="width:100%;height:100%;position:absolute;bottom:0;" preserveAspectRatio="xMidYMax meet">
-              <defs><radialGradient id="glow0" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="rgba(255,150,50,0.3)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
-              <ellipse cx="150" cy="440" rx="110" ry="90" fill="#1a5c30"/>
-              <rect x="132" y="230" width="36" height="50" fill="#c8956a"/>
-              <circle cx="150" cy="200" r="62" fill="#c8956a"/>
-              <ellipse cx="150" cy="162" rx="65" ry="40" fill="#1a0a00"/>
-              <ellipse cx="88" cy="200" rx="22" ry="52" fill="#1a0a00"/>
-              <ellipse cx="212" cy="200" rx="22" ry="52" fill="#1a0a00"/>
-              <ellipse cx="128" cy="194" rx="9" ry="7" fill="#2a1a0a"/><ellipse cx="172" cy="194" rx="9" ry="7" fill="#2a1a0a"/>
-              <ellipse cx="128" cy="194" rx="4" ry="4" fill="#080303"/><ellipse cx="172" cy="194" rx="4" ry="4" fill="#080303"/>
-              <ellipse cx="126" cy="192" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/><ellipse cx="170" cy="192" rx="2" ry="2" fill="rgba(255,255,255,0.6)"/>
-              <path d="M 128 218 Q 150 234 172 218" stroke="#7a3010" stroke-width="3" fill="none" stroke-linecap="round"/>
-              <path d="M 128 260 Q 150 272 172 260" stroke="rgba(255,210,26,0.6)" stroke-width="1.5" fill="none"/>
-              <ellipse cx="150" cy="460" rx="140" ry="70" fill="url(#glow0)"/>
-            </svg>
+          <div class="card-dots" id="cdots"><div class="cdot on"></div></div>
+          <div class="card-tl" style="width:18%;" onclick="event.stopPropagation();prevPh()"></div>
+          <div class="card-tr" style="width:18%;" onclick="event.stopPropagation();nextPh()"></div>
+          <div id="card-ph" style="width:100%;height:100%;background:#111;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <div style="color:rgba(255,255,255,.25);font-size:.9rem;">Loading profiles...</div>
           </div>
           <div class="card-gr"></div>
-          <!-- Tap to view hint -->
-          <div style="position:absolute;top:14px;left:14px;z-index:5;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:50px;font-size:.66rem;color:rgba(255,255,255,.7);pointer-events:none;">Tap to view profile</div>
-          <div class="card-body">
-            <div class="cn-row"><span class="cn">Shanice</span><span class="ca">26</span><span class="cbdg br">🔗 Linked</span></div>
-            <div class="cloc">📍 Kingston · 5'6" · Nurse</div>
-            <div style="font-size:.8rem;color:rgba(255,255,255,.65);margin-bottom:7px;font-style:italic;">"Foodie at heart, beach lover, always chasing good vibes."</div>
-            <div class="ctags"><span class="ctag">🍽 Foodie</span><span class="ctag">🏖 Beach</span><span class="ctag">💪 Fitness</span><span class="ctag">🎵 Music</span></div>
-          </div>
+          <div class="card-body"><div class="cn-row"><span class="cn" id="top-card-name">—</span></div></div>
         </div>
       </div>
       <div class="act-row">
@@ -1316,7 +1295,7 @@ input:focus,select:focus,textarea:focus{
         <h2 style="font-size:1.9rem;font-weight:900;letter-spacing:-.05em;color:var(--gold);margin-bottom:6px;">It's a Match!</h2>
         <p style="color:var(--muted);font-size:.86rem;" id="match-names-text">It's a match! 🎉</p>
         <div class="match-avs"><div class="match-av">😊</div><div style="font-size:1.3rem;align-self:center;">💛</div><div class="match-av" style="font-size:0;overflow:hidden;"><svg viewBox="0 0 80 80" style="width:100%;height:100%;"><circle cx="40" cy="28" r="16" fill="#c8956a"/><ellipse cx="40" cy="68" rx="26" ry="22" fill="#1a5c30"/></svg></div></div>
-        <button class="btn-gold btn-full" style="margin-bottom:9px;" onclick="closeMatch()">Send a Message 💬</button>
+        <button class="btn-gold btn-full" style="margin-bottom:9px;" onclick="closeMatch();openMatchConversation()">Send a Message 💬</button>
         <button class="btn-outline btn-full" onclick="closeMatch()">Keep Swiping</button>
       </div>
     </div>
@@ -1376,7 +1355,7 @@ input:focus,select:focus,textarea:focus{
       <div class="lk-grid">
         <div class="lcard" onclick="showToast('Match her first to message!')">
           <div style="width:100%;height:100%;background:linear-gradient(135deg,#2d3a1a,#14201a);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 100 140" style="width:70%;opacity:.9"><circle cx="50" cy="38" r="22" fill="#c8956a"/><ellipse cx="50" cy="110" rx="35" ry="38" fill="#1a5c30"/><ellipse cx="50" cy="18" rx="24" ry="14" fill="#1a0a00"/></svg></div>
-          <div class="lcard-info"><div style="font-weight:700;font-size:.88rem;">Shanice, 26</div><div style="font-size:.68rem;color:rgba(255,255,255,.45);">📍 Kingston</div></div>
+          <div class="lcard-info"><div style="font-weight:700;font-size:.88rem;" id="liked-you-name">—</div><div style="font-size:.68rem;color:rgba(255,255,255,.45);">Liked your profile</div></div>
           <div class="lcard-bdg">❤️ Liked you</div>
         </div>
         <div class="lcard"><div style="width:100%;height:100%;background:linear-gradient(135deg,#1a2a4a,#0d1530);filter:blur(10px);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 100 140" style="width:70%"><circle cx="50" cy="38" r="22" fill="#7a5230"/><ellipse cx="50" cy="110" rx="35" ry="38" fill="#3d2010"/></svg></div></div>
@@ -2187,7 +2166,7 @@ async function updateDashboardVibeCount(){
   try{
     const auth=window._fbAuth, db=window._fbDb;
     if(auth&&auth.currentUser&&db){
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb=window._fb;
       const snap=await fb.getDocs(fb.collection(db,'users'));
       const me=auth.currentUser.uid;
       let count=0;
@@ -2321,7 +2300,7 @@ async function registerUser(){
     const auth=window._fbAuth;
     const db=window._fbDb;
     const {createUserWithEmailAndPassword}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-    const {doc,setDoc,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const {doc,setDoc,serverTimestamp} = window._fb;
     const cred=await createUserWithEmailAndPassword(auth,email,pw);
     await setDoc(doc(db,"users",cred.user.uid),{
       username:username,
@@ -2527,7 +2506,7 @@ async function loadProfile(){
     const auth=window._fbAuth;
     const db=window._fbDb;
     if(!auth||!auth.currentUser)return;
-    const {doc,getDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const {doc,getDoc} = window._fb;
     const snap=await getDoc(doc(db,"users",auth.currentUser.uid));
     if(!snap.exists())return;
     const d=snap.data();const plan=d.plan||'ting';
@@ -2602,11 +2581,11 @@ async function changeAv(inp){
   try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:fd});const d=await r.json();if(d.secure_url){if(userPhotos.length>0)userPhotos[0]={url:d.secure_url};else userPhotos.push({url:d.secure_url});await savePhs();const av=document.getElementById('prof-av');if(av)av.innerHTML=`<img src="${d.secure_url}" style="width:100%;height:100%;object-fit:cover;">`;renderProfPhotos();showToast("Photo updated! ✅");}}catch(e){showToast("Upload failed.");}
 }
 async function savePhs(){
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");if(auth&&auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{photos:userPhotos.map(p=>p.url),photoUrl:(userPhotos[0] && userPhotos[0].url)||""});}catch(e){}
+  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;if(auth&&auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{photos:userPhotos.map(p=>p.url),photoUrl:(userPhotos[0] && userPhotos[0].url)||""});}catch(e){}
 }
 async function saveProf(){
   const nm=document.getElementById('ed-nm').value.trim();if(!nm){showToast("Please enter your name.");return;}
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");await updateDoc(doc(db,"users",auth.currentUser.uid),{firstName:nm,bio:document.getElementById('ed-bio').value.trim(),height:document.getElementById('ed-ht').value.trim(),job:document.getElementById('ed-job').value.trim()});showToast("Profile saved! ✅");loadProfile();}catch(e){showToast("Save failed.");}
+  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;await updateDoc(doc(db,"users",auth.currentUser.uid),{firstName:nm,bio:document.getElementById('ed-bio').value.trim(),height:document.getElementById('ed-ht').value.trim(),job:document.getElementById('ed-job').value.trim()});showToast("Profile saved! ✅");loadProfile();}catch(e){showToast("Save failed.");}
 }
 async function loadSettings(){
   try{const auth=window._fbAuth;if(auth&&auth.currentUser){const el=document.getElementById('set-em');if(el)el.textContent=auth.currentUser.email;}}catch(e){}
@@ -2644,7 +2623,7 @@ function restartCircle(){
   const cr=document.getElementById('circ-res');if(cr)cr.style.display='none';
 }
 async function checkCircle(){
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");if(auth.currentUser){const s=await getDoc(doc(db,"users",auth.currentUser.uid));const p=s.exists()?(s.data().plan||'ting'):'ting';if(p==='diamond'){go('circle-screen');return;}if(p==='linked'){if(confirm('Compatibility Circle\n\nTap to see entry pricing\n\nJoin?'))go('circle-screen');return;}}}catch(e){}
+  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;if(auth.currentUser){const s=await getDoc(doc(db,"users",auth.currentUser.uid));const p=s.exists()?(s.data().plan||'ting'):'ting';if(p==='diamond'){go('circle-screen');return;}if(p==='linked'){if(confirm('Compatibility Circle\n\nTap to see entry pricing\n\nJoin?'))go('circle-screen');return;}}}catch(e){}
   showToast("Circle requires Linked or Diamond.");setTimeout(()=>go('premium-screen'),1500);
 }
 // Speed Link session state
@@ -2779,7 +2758,7 @@ async function confirmSLReservation() {
   try {
     var auth = window._fbAuth;
     if (auth && auth.currentUser) {
-      var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const { doc, setDoc, serverTimestamp } = window._fb;
       await setDoc(doc(window._fbDb, "speedLinkReservations", auth.currentUser.uid), {
         uid: auth.currentUser.uid,
         name: (window._userData && window._userData.firstName) || "Member",
@@ -2834,12 +2813,12 @@ async function checkSpeedLink(){
 
 // ── PREFS ──
 async function loadPrefs(){
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");if(!auth.currentUser)return;const snap=await getDoc(doc(db,"users",auth.currentUser.uid));if(snap.exists()&&snap.data().preferences){const p=snap.data().preferences;if(p.ageMin)document.getElementById('p-min').value=p.ageMin;if(p.ageMax)document.getElementById('p-max').value=p.ageMax;if(p.location)document.getElementById('p-loc').value=p.location;if(p.lookingFor)document.getElementById('p-look').value=p.lookingFor;}}catch(e){}
+  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;if(!auth.currentUser)return;const snap=await getDoc(doc(db,"users",auth.currentUser.uid));if(snap.exists()&&snap.data().preferences){const p=snap.data().preferences;if(p.ageMin)document.getElementById('p-min').value=p.ageMin;if(p.ageMax)document.getElementById('p-max').value=p.ageMax;if(p.location)document.getElementById('p-loc').value=p.location;if(p.lookingFor)document.getElementById('p-look').value=p.lookingFor;}}catch(e){}
 }
 async function savePrefs(){
   const min=document.getElementById('p-min').value,max=document.getElementById('p-max').value;
   if(parseInt(min)>parseInt(max)){showToast("Min age can't be higher than max.");return;}
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");await updateDoc(doc(db,"users",auth.currentUser.uid),{preferences:{ageMin:parseInt(min),ageMax:parseInt(max),location:document.getElementById('p-loc').value,lookingFor:document.getElementById('p-look').value}});showToast("Preferences saved! ✅");setTimeout(()=>go('settings-screen'),1000);}catch(e){showToast("Save failed.");}
+  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;await updateDoc(doc(db,"users",auth.currentUser.uid),{preferences:{ageMin:parseInt(min),ageMax:parseInt(max),location:document.getElementById('p-loc').value,lookingFor:document.getElementById('p-look').value}});showToast("Preferences saved! ✅");setTimeout(()=>go('settings-screen'),1000);}catch(e){showToast("Save failed.");}
 }
 
 // ── REAL BADGE ──
@@ -2853,7 +2832,7 @@ async function submitRV(){
   document.getElementById('rv-done').classList.remove('on');document.getElementById('rv-up').classList.add('on');
   document.getElementById('rv-pf').style.width='30%';
   const fd=new FormData();fd.append('file',rvBlob,'rv.webm');fd.append('upload_preset',PRESET);fd.append('folder','yaadconnect/real-verifications');
-  try{document.getElementById('rv-pf').style.width='70%';const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:'POST',body:fd});const d=await r.json();document.getElementById('rv-pf').style.width='100%';if(d.secure_url){const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");if(auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{realVerifyVideoUrl:d.secure_url,realVerifyStatus:"pending"});showToast("✅ Submitted! Your 🔗 Linked badge will appear within 24 hours.");setTimeout(()=>go('profile-screen'),2000);}}catch(e){btn.textContent="📤 Submit for Review";btn.disabled=false;document.getElementById('rv-up').classList.remove('on');document.getElementById('rv-done').classList.add('on');showToast("Upload failed. Check connection.");}
+  try{document.getElementById('rv-pf').style.width='70%';const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:'POST',body:fd});const d=await r.json();document.getElementById('rv-pf').style.width='100%';if(d.secure_url){const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;if(auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{realVerifyVideoUrl:d.secure_url,realVerifyStatus:"pending"});showToast("✅ Submitted! Your 🔗 Linked badge will appear within 24 hours.");setTimeout(()=>go('profile-screen'),2000);}}catch(e){btn.textContent="📤 Submit for Review";btn.disabled=false;document.getElementById('rv-up').classList.remove('on');document.getElementById('rv-done').classList.add('on');showToast("Upload failed. Check connection.");}
 }
 
 // ── STRIPE ──
@@ -3112,7 +3091,7 @@ async function loadMatches() {
   const auth = window._fbAuth;
   if (!auth && auth.currentUser) return;
   const myUid = auth.currentUser.uid;
-  const {doc, getDoc} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const {doc, getDoc} = window._fb;
   const db = window._fbDb;
 
   // Get matches from Firestore
@@ -3156,7 +3135,7 @@ async function saveMatch(theirUid, theirName) {
   if (!auth && auth.currentUser) return;
   const myUid = auth.currentUser.uid;
   try {
-    const {doc, updateDoc, arrayUnion} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const {doc, updateDoc, arrayUnion} = window._fb;
     // Add to my matches
     await updateDoc(doc(db,'users',myUid), {
       matches: arrayUnion({ uid: theirUid, name: theirName, matchedAt: Date.now() })
@@ -3748,7 +3727,7 @@ async function saveFCMToken(token) {
   try {
     const auth = window._fbAuth;
     if (!auth || !auth.currentUser) return;
-    const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, setDoc } = window._fb;
     await setDoc(doc(window._fbDb, "fcmTokens", auth.currentUser.uid), {
       token: token,
       updatedAt: new Date().toISOString(),
@@ -3954,7 +3933,7 @@ function lockPendingFeatures() {
 // ── CHECK APPROVAL STATUS ON LOGIN ──
 async function checkApprovalStatus(uid) {
   try {
-    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, getDoc } = window._fb;
     const snap = await getDoc(doc(window._fbDb, 'users', uid));
     if (snap.exists()) {
       const data = snap.data();
@@ -3980,7 +3959,7 @@ async function lockSpeedLinkSpot() {
     if (!auth || !auth.currentUser) { showToast('Please log in first.'); return; }
     if (plan !== 'diamond') { showToast('Speed Link locking requires Diamond membership.'); return; }
     // Save to Firestore so it persists
-    const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, setDoc, serverTimestamp } = window._fb;
     await setDoc(doc(window._fbDb, 'speedLinkLocks', auth.currentUser.uid), {
       uid: auth.currentUser.uid,
       lockedAt: serverTimestamp(),
@@ -3996,7 +3975,7 @@ async function checkSpeedLinkLock() {
   try {
     var auth = window._fbAuth;
     if (!auth || !auth.currentUser) return;
-    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, getDoc } = window._fb;
     var uid = auth.currentUser.uid;
     var weekKey = getSpeedLinkWeekKey();
 
@@ -4168,7 +4147,7 @@ function updateCountdownDisplay(d, h, m, s) {
 async function loadSpeedLinkCapacity() {
   try {
     var weekKey = getSpeedLinkWeekKey();
-    var { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { collection, query, where, getDocs } = window._fb;
     var snap = await getDocs(collection(window._fbDb, "speedLinkReservations"));
     var thisWeek = snap.docs.filter(function(d) { return d.data().week === weekKey; });
     var count = thisWeek.length;
@@ -4210,7 +4189,7 @@ async function lockAndJoin() {
   try {
     var auth = window._fbAuth;
     var weekKey = getSpeedLinkWeekKey();
-    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, setDoc, serverTimestamp } = window._fb;
     await setDoc(doc(window._fbDb, "speedLinkReservations", auth.currentUser.uid), {
       uid: auth.currentUser.uid,
       name: (window._userData && window._userData.firstName) || "Member",
@@ -4248,7 +4227,7 @@ async function joinSpeedLinkNow() {
 async function addToWaitingPool() {
   try {
     var auth = window._fbAuth;
-    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, setDoc, serverTimestamp } = window._fb;
     var poolData = {
       uid: auth.currentUser.uid,
       name: (window._userData && window._userData.firstName) || "Member",
@@ -4274,7 +4253,7 @@ async function tryToMatch() {
     var myGender = (window._userData && window._userData.gender) || "";
     var myLooking = (window._userData && window._userData.lookingFor) || "everyone";
 
-    var { collection, getDocs, doc, updateDoc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { collection, getDocs, doc, updateDoc, setDoc, serverTimestamp } = window._fb;
     var snap = await getDocs(collection(window._fbDb, "speedLinkWaiting"));
     var waiting = snap.docs
       .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
@@ -4348,7 +4327,7 @@ function listenForMatch() {
     }
 
     try {
-      var { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const { doc, getDoc } = window._fb;
       var snap = await getDoc(doc(window._fbDb, "speedLinkWaiting", myUid));
       if (snap.exists() && snap.data().status === "matched" && snap.data().roomName) {
         clearInterval(poll);
@@ -4509,7 +4488,7 @@ function slSessionEnd() {
 async function slSaveToInbox() {
   if (!_slPartnerUid) { showToast("No match to save yet."); return; }
   try {
-    var { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { doc, setDoc, serverTimestamp } = window._fb;
     var auth = window._fbAuth;
     var convId = [auth.currentUser.uid, _slPartnerUid].sort().join("_");
     await setDoc(doc(window._fbDb, "conversations", convId), {
@@ -4558,7 +4537,7 @@ async function slReport() {
   var reason = prompt("What would you like to report? (harassment / inappropriate content / other)");
   if (!reason) return;
   try {
-    var { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { collection, addDoc, serverTimestamp } = window._fb;
     var auth = window._fbAuth;
     await addDoc(collection(window._fbDb, "reports"), {
       reporterId: auth.currentUser.uid,
@@ -4607,7 +4586,7 @@ function slLeave() {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyCrCp25I9LPpfmz579K2i0OYLEs04mGkEQ",
@@ -4626,6 +4605,8 @@ const db = getFirestore(app);
 window._fbAuth = auth;
 window._fbApp = app;
 window._fbDb = db;
+// Cache all Firestore functions globally — prevents repeated dynamic imports that can fail
+window._fb = { doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment, Timestamp, writeBatch };
 
 // Load Realtime Database safely using compat API so .ref() works
 (async () => {
@@ -4671,6 +4652,8 @@ onAuthStateChanged(auth, async (user) => {
         const data = snap.data();
         window._userPlan = data.plan || 'ting';
         window._userData = data;
+        // Apply plan UI immediately — hides upgrade button, sets correct badges
+        setTimeout(()=>{ try{ applyPlanUI(); fixDisplayNames(); }catch(e){} }, 50);
         // Init push notifications
         if(typeof initPushNotifications === 'function') initPushNotifications();
         if(typeof loadUnreadNotifications === 'function') loadUnreadNotifications();
@@ -4777,10 +4760,8 @@ onAuthStateChanged(auth, async (user) => {
     <div class="story-bar"><div id="story-progress" class="story-bar-fill"></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#090909;"><strong id="story-owner">Story</strong><button class="dark" onclick="closeStoryViewer()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">×</button></div>
     <div id="story-media" class="story-media"></div>
-    <div class="story-actions">
-      <button class="dark" onclick="reactToCurrentStory('❤️')">❤️ React</button>
-      <button class="dark" onclick="replyToCurrentStory()">💬 Message</button>
-      <button class="gold" onclick="showStoryViewers()">👀 Viewers</button>
+    <div class="story-actions" id="story-actions">
+      <!-- Populated dynamically based on whether it's your own story or someone else's -->
     </div>
   </div>
 </div>
@@ -5012,7 +4993,7 @@ onAuthStateChanged(auth, async (user) => {
   window.contactSupport = function(){
     showMiniModal('Contact Support','Tell us what you need help with.', `<textarea id="support-msg" placeholder="Write your message..."></textarea>`, async()=>{
       const msg=($('support-msg')||{}).value||''; if(!msg.trim()){showToast('Please write a message first.');return;}
-      try{ const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:u.uid,email:u.email,message:msg,status:'open',createdAt:fb.serverTimestamp()}); showToast('Support request sent.'); closeMiniModal(); }catch(e){showToast('Unable to send support request.');}
+      try{ const fb=window._fb; const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:u.uid,email:u.email,message:msg,status:'open',createdAt:fb.serverTimestamp()}); showToast('Support request sent.'); closeMiniModal(); }catch(e){showToast('Unable to send support request.');}
     });
   };
   window.showMiniModal=function(title,desc,html,onConfirm){
@@ -5022,12 +5003,12 @@ onAuthStateChanged(auth, async (user) => {
   window.closeMiniModal=function(){ $('modal-mini').classList.remove('open'); };
   window.deactivate=function(){
     showMiniModal('Pause your account','Need a break? Your profile will be hidden until your selected pause period ends.', `<select id="pause-length"><option value="7">1 week</option><option value="30">1 month</option><option value="60">2 months</option><option value="0">Indefinitely</option></select>`, async()=>{
-      try{const days=parseInt($('pause-length').value,10); const until=days?new Date(Date.now()+days*86400000):null; const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.updateDoc(fb.doc(window._fbDb,'users',window._fbAuth.currentUser.uid),{paused:true,pauseUntil:until?fb.Timestamp.fromDate(until):null}); closeMiniModal(); showToast(days?`Account paused for ${days} days.`:'Account paused indefinitely.');}catch(e){showToast('Could not pause account.');}
+      try{const days=parseInt($('pause-length').value,10); const until=days?new Date(Date.now()+days*86400000):null; const fb=window._fb; await fb.updateDoc(fb.doc(window._fbDb,'users',window._fbAuth.currentUser.uid),{paused:true,pauseUntil:until?fb.Timestamp.fromDate(until):null}); closeMiniModal(); showToast(days?`Account paused for ${days} days.`:'Account paused indefinitely.');}catch(e){showToast('Could not pause account.');}
     });
   };
   window.deleteAcc=function(){
     showMiniModal('Delete account','Before deleting, please tell us why you are leaving.', `<select id="delete-reason"><option>Found someone</option><option>Taking a break</option><option>Did not like matches</option><option>Privacy concerns</option><option>Too expensive</option><option>Technical issue</option><option>Other</option></select><textarea id="delete-note" placeholder="Optional note..."></textarea>`, async()=>{
-      try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,topic:'Delete Account',reason:$('delete-reason').value,note:$('delete-note').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Deletion request submitted for review.');}catch(e){showToast('Could not submit deletion request.');}
+      try{const fb=window._fb; await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,topic:'Delete Account',reason:$('delete-reason').value,note:$('delete-note').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Deletion request submitted for review.');}catch(e){showToast('Could not submit deletion request.');}
     });
   };
 
@@ -5052,7 +5033,7 @@ onAuthStateChanged(auth, async (user) => {
     const myPreviewList = document.getElementById('my-story-preview-list');
     if(!list) return;
     try{
-      const fb = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb = window._fb;
       const u = window._fbAuth && window._fbAuth.currentUser; if(!u) return;
       const now = new Date();
       const snap = await fb.getDocs(fb.collection(window._fbDb,'stories'));
@@ -5134,7 +5115,7 @@ onAuthStateChanged(auth, async (user) => {
     try{
       const u=window._fbAuth.currentUser;
       if(!u){showToast('Please log in first.');return;}
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb=window._fb;
       const isVideo=file.type.startsWith('video');
       let url='';
       // Try Cloudinary upload
@@ -5179,7 +5160,7 @@ onAuthStateChanged(auth, async (user) => {
   window.loadMatchedStories=async function(){
     const strip=document.querySelector('.stories-strip'); if(!strip)return;
     try{
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
+      const fb=window._fb; const u=window._fbAuth&&window._fbAuth.currentUser; if(!u)return;
       const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
       const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -5188,18 +5169,22 @@ onAuthStateChanged(auth, async (user) => {
         .map(s => `${s.id || ''}:${s.uid || ''}:${(s.mediaUrl || '').slice(-18)}`)
         .sort()
         .join('|');
+      // Early return if nothing changed — prevents flickering from the 5s refresh interval
       if(strip.dataset.storySig === activeSig){ return; }
       strip.dataset.storySig = activeSig;
-      strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Your Story</span></div>`;
-      // Debug: log story count
-      console.log('Stories in DB:', allStories.length, 'mine:', allStories.filter(s=>s.uid===u.uid).length);
+      console.log('Stories updated:', allStories.length, 'total, mine:', allStories.filter(s=>s.uid===u.uid).length);
+      strip.innerHTML=`<div class="sw-wrap" onclick="openStoryUpload()"><div class="add-st">＋</div><span class="st-nm">Add Story</span></div>`;
 
-      // Show user's own active (non-expired) stories first
+      // Show ONE bubble for all my stories
       const myStories=allStories.filter(s=>{ if(s.uid!==u.uid) return false; return isActiveStory(s, now); });
       if(myStories.length>0){
         const myEl=document.createElement('div'); myEl.className='sw-wrap';
         const firstMyStory=myStories[0];
-        myEl.innerHTML=`<div class="st-ring active-ring"><div class="st-in">${firstMyStory.mediaType==='video'?'🎥':'🖼️'}</div></div><span class="st-nm">My Story</span>`;
+        // Show thumbnail of first story
+        const myThumb = firstMyStory.mediaUrl ?
+          `<img src="${firstMyStory.mediaUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` :
+          (firstMyStory.mediaType==='video'?'🎥':'🖼️');
+        myEl.innerHTML=`<div class="st-ring active-ring"><div class="st-in" style="overflow:hidden;font-size:0;">${myThumb}</div></div><span class="st-nm">My Story</span>`;
         myEl.onclick=()=>{ window._myStoryList=myStories; window._myStoryIndex=0; openMyStoryViewer(); };
         strip.appendChild(myEl);
       }
@@ -5216,11 +5201,28 @@ onAuthStateChanged(auth, async (user) => {
     const s=list[i]; if(!s)return;
     window._storyViewerMode='mine';
     currentStory=s;
-    $('story-owner').textContent='Your Story';
+    $('story-owner').textContent='Your Story (' + (i+1) + '/' + list.length + ')';
     const media=$('story-media'); media.innerHTML=s.mediaType==='video'?`<video src="${s.mediaUrl}" autoplay playsinline controls></video>`:`<img src="${s.mediaUrl}">`;
+    // Own story: show Viewers + pause + delete
+    const acts=$('story-actions');
+    if(acts) acts.innerHTML=`
+      <button class="dark" onclick="showStoryViewers()">👀 Viewers</button>
+      <button class="dark" onclick="pauseStory()" id="story-pause-btn">⏸ Pause</button>
+      <button class="dark" style="color:#ff6b6b;" onclick="deleteCurrentStory()">🗑 Delete</button>
+    `;
     $('story-viewer').classList.add('open'); startStoryAuto();
   };
-  window.openStoryViewer=function(i){storyIndex=i||0; currentStory=storyList[storyIndex]; if(!currentStory)return; renderStory(); $('story-viewer').classList.add('open'); markStoryViewed(); startStoryAuto();};
+  window.openStoryViewer=function(i){
+    storyIndex=i||0; currentStory=storyList[storyIndex]; if(!currentStory)return;
+    renderStory();
+    // Others' stories: React + Message only, no Viewers button
+    const acts=$('story-actions');
+    if(acts) acts.innerHTML=`
+      <button class="dark" onclick="reactToCurrentStory('❤️')">❤️ React</button>
+      <button class="dark" onclick="replyToCurrentStory()">💬 Message</button>
+    `;
+    $('story-viewer').classList.add('open'); markStoryViewed(); startStoryAuto();
+  };
   function renderStory(){
     currentStory=storyList[storyIndex]; if(!currentStory)return; $('story-owner').textContent=currentStory.ownerName||'Story';
     const media=$('story-media'); media.innerHTML = currentStory.mediaType==='video' ? `<video src="${currentStory.mediaUrl}" autoplay playsinline></video>` : `<img src="${currentStory.mediaUrl}">`;
@@ -5236,10 +5238,30 @@ onAuthStateChanged(auth, async (user) => {
     if(storyIndex+1<storyList.length){storyIndex++; renderStory(); markStoryViewed(); startStoryAuto();} else closeStoryViewer();
   }
   window.closeStoryViewer=function(){clearInterval(storyTimer); window._storyViewerMode=null; $('story-viewer').classList.remove('open'); $('story-progress').style.width='0%';};
-  async function markStoryViewed(){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.setDoc(fb.doc(window._fbDb,'storyViews',currentStory.id+'_'+u.uid),{storyId:currentStory.id,ownerUid:currentStory.uid,viewerUid:u.uid,viewerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',viewedAt:fb.serverTimestamp()},{merge:true});}catch(e){}}
-  window.reactToCurrentStory=async function(reaction){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'reaction',reaction,createdAt:fb.serverTimestamp()}); showToast('Reaction sent.');}catch(e){showToast('Could not send reaction.');}}
-  window.replyToCurrentStory=function(){showMiniModal('Reply to Story','Send a private story reply.',`<textarea id="story-reply-text" placeholder="Write your reply..."></textarea>`,async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'message',message:$('story-reply-text').value,createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Reply sent.');}catch(e){showToast('Could not send reply.');}})};
-  window.showStoryViewers=async function(){try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); const snap=await fb.getDocs(fb.collection(window._fbDb,'storyViews')); const viewers=snap.docs.map(d=>d.data()).filter(v=>v.storyId===currentStory.id).map(v=>v.viewerName||v.viewerUid); showMiniModal('Story Viewers', viewers.length?viewers.join('<br>'):'No viewers yet.','',closeMiniModal);}catch(e){showMiniModal('Story Viewers','No viewers available yet.','',closeMiniModal);}};
+  window.pauseStory=function(){
+    const btn=$('story-pause-btn');
+    if(storyTimer){ clearInterval(storyTimer); storyTimer=null; if(btn) btn.textContent='▶ Resume'; }
+    else { startStoryAuto(); if(btn) btn.textContent='⏸ Pause'; }
+  };
+  window.deleteCurrentStory=async function(){
+    if(!currentStory||!currentStory.id){showToast('Cannot delete this story.'); return;}
+    if(!confirm('Delete this story?')) return;
+    try{
+      const fb=window._fb;
+      await fb.deleteDoc(fb.doc(window._fbDb,'stories',currentStory.id));
+      // Move to next or close
+      const list=window._myStoryList||[];
+      const remaining=list.filter(s=>s.id!==currentStory.id);
+      if(remaining.length>0){ window._myStoryList=remaining; window._myStoryIndex=0; openMyStoryViewer(); }
+      else{ closeStoryViewer(); }
+      loadMatchedStories();
+      showToast('Story deleted.');
+    }catch(e){ showToast('Could not delete story.'); }
+  };
+  async function markStoryViewed(){try{const fb=window._fb; const u=window._fbAuth.currentUser; await fb.setDoc(fb.doc(window._fbDb,'storyViews',currentStory.id+'_'+u.uid),{storyId:currentStory.id,ownerUid:currentStory.uid,viewerUid:u.uid,viewerName:(window._userData&&((window._userData.username||window._userData.firstName)))||'Member',viewedAt:fb.serverTimestamp()},{merge:true});}catch(e){}}
+  window.reactToCurrentStory=async function(reaction){try{const fb=window._fb; const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'reaction',reaction,createdAt:fb.serverTimestamp()}); showToast('Reaction sent.');}catch(e){showToast('Could not send reaction.');}}
+  window.replyToCurrentStory=function(){showMiniModal('Reply to Story','Send a private story reply.',`<textarea id="story-reply-text" placeholder="Write your reply..."></textarea>`,async()=>{try{const fb=window._fb; const u=window._fbAuth.currentUser; await fb.addDoc(fb.collection(window._fbDb,'storyReplies'),{storyId:currentStory.id,ownerUid:currentStory.uid,fromUid:u.uid,type:'message',message:$('story-reply-text').value,createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Reply sent.');}catch(e){showToast('Could not send reply.');}})};
+  window.showStoryViewers=async function(){try{const fb=window._fb; const snap=await fb.getDocs(fb.collection(window._fbDb,'storyViews')); const viewers=snap.docs.map(d=>d.data()).filter(v=>v.storyId===currentStory.id).map(v=>v.viewerName||v.viewerUid); showMiniModal('Story Viewers', viewers.length?viewers.join('<br>'):'No viewers yet.','',closeMiniModal);}catch(e){showMiniModal('Story Viewers','No viewers available yet.','',closeMiniModal);}};
 
   // Click handlers/settings fixes after DOM paints.
   function wireRecovery(){
@@ -5249,7 +5271,7 @@ onAuthStateChanged(auth, async (user) => {
   }
   window.showSubscriptionManager=function(){
     const plan=getActivePlan();
-    showMiniModal('Manage Subscription', `Current plan: ${plan==='diamond'?'Diamond':plan==='linked'?'Linked':'Ting / Free'}.`, `<select id="sub-action"><option value="upgrade">Upgrade / change plan</option><option value="downgrade">Request downgrade</option><option value="cancel">Cancel subscription</option></select><p style="font-size:.78rem;color:var(--muted);">Subscription changes should be confirmed through Stripe/payment settings so billing stays accurate.</p>`, async()=>{try{const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); await fb.addDoc(fb.collection(window._fbDb,'billingDisputes'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,type:$('sub-action').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Subscription request submitted.');}catch(e){showToast('Unable to submit subscription request.');}});
+    showMiniModal('Manage Subscription', `Current plan: ${plan==='diamond'?'Diamond':plan==='linked'?'Linked':'Ting / Free'}.`, `<select id="sub-action"><option value="upgrade">Upgrade / change plan</option><option value="downgrade">Request downgrade</option><option value="cancel">Cancel subscription</option></select><p style="font-size:.78rem;color:var(--muted);">Subscription changes should be confirmed through Stripe/payment settings so billing stays accurate.</p>`, async()=>{try{const fb=window._fb; await fb.addDoc(fb.collection(window._fbDb,'billingDisputes'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,type:$('sub-action').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Subscription request submitted.');}catch(e){showToast('Unable to submit subscription request.');}});
   };
 
 
@@ -5291,7 +5313,7 @@ onAuthStateChanged(auth, async (user) => {
   loadMatchedStories = window.loadMatchedStories = async function(){
     const strip = document.querySelector('.stories-strip'); if(!strip) return;
     try{
-      const fb = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb = window._fb;
       const u = window._fbAuth && window._fbAuth.currentUser; if(!u) return;
       const now = new Date();
       const snap = await fb.getDocs(fb.collection(window._fbDb,'stories'));
@@ -5368,7 +5390,7 @@ onAuthStateChanged(auth, async (user) => {
 
   async function loadRealDiscoverProfiles(){
     try{
-      const fb = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb = window._fb;
       const u = window._fbAuth && window._fbAuth.currentUser; if(!u || !window._fbDb) return false;
       const snap = await fb.getDocs(fb.collection(window._fbDb,'users'));
       const real = snap.docs
@@ -5452,7 +5474,7 @@ onAuthStateChanged(auth, async (user) => {
     const myPhoto=(window._userData&&(window._userData.photoUrl||window._userData.profilePhoto||window._userData.avatarUrl)) || (myPhotos[0]&&(myPhotos[0].url||myPhotos[0])) || '';
     const pairId=[me.uid,theirUid].sort().join('_');
     try{
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb=window._fb;
       await fb.setDoc(fb.doc(db,'matches',pairId),{
         id:pairId,
         users:[me.uid,theirUid],
@@ -5511,7 +5533,14 @@ onAuthStateChanged(auth, async (user) => {
     if(p && p.uid){ openChat(p.uid, safeName(p), p.plan||''); }
     else { go('messages-screen'); setTimeout(()=>switchMT('matches'),100); }
   };
-  window.closeMatch=function(){ keepSwipingAfterMatch(); };
+  window.openMatchConversation=function(){
+  // Open messages tab to the most recent match
+  try{
+    go('messages-screen');
+    setTimeout(()=>{ if(typeof switchMT==='function') switchMT('matches'); }, 200);
+  }catch(e){}
+};
+window.closeMatch=function(){ keepSwipingAfterMatch(); };
 
   window.sw=async function(dir){
     const top=document.getElementById('top-card'); if(!top) return;
@@ -5534,7 +5563,7 @@ onAuthStateChanged(auth, async (user) => {
     const matchList=document.getElementById('match-list'); const noMatches=document.getElementById('no-matches');
     if(!me || !db || !matchList) return;
     try{
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb=window._fb;
       const snap=await fb.getDocs(fb.collection(db,'matches'));
       const matches=[];
       snap.docs.forEach(docSnap=>{
@@ -5566,7 +5595,7 @@ onAuthStateChanged(auth, async (user) => {
   window.loadMatchedStories=async function(){
     const strip=document.querySelector('.stories-strip'); if(!strip) return;
     try{
-      const fb=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const fb=window._fb;
       const u=window._fbAuth&&window._fbAuth.currentUser; if(!u) return;
       const now=new Date();
       const snap=await fb.getDocs(fb.collection(window._fbDb,'stories'));
