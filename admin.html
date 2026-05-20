@@ -213,7 +213,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="sb-item" onclick="showPage('reports')"><span class="icon">🚨</span>Reports<span class="sb-badge" id="reports-badge">0</span></div>
         <div class="sb-item" onclick="showPage('safety')"><span class="icon">🛡️</span>Safety Center<span class="sb-badge" id="safety-badge">0</span></div>
         <div class="sb-item" onclick="showPage('archives')"><span class="icon">🗄️</span>Archives</div>
-        <div class="sb-item" onclick="showPage('support')"><span class="icon">💬</span>Support</div>
+        <div class="sb-item" onclick="showPage('support')"><span class="icon">💬</span>Support <span id="support-badge" style="display:none;background:var(--red,#ff4444);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:800;align-items:center;justify-content:center;margin-left:auto;">0</span></div>
 
         <div class="sb-section">Users</div>
         <div class="sb-item" onclick="showPage('users')"><span class="icon">👥</span>All Users</div>
@@ -850,6 +850,8 @@ onAuthStateChanged(auth, async (user) => {
 
     loadDashboard();
     loadVerifications();
+    // Live listener for new support requests — shows badge
+    listenForNewSupportRequests();
     loadReports();
   } else {
     document.getElementById('auth-screen').style.display = 'flex';
@@ -963,7 +965,7 @@ async function loadDashboard() {
     const tbody = document.getElementById('recent-signups');
     tbody.innerHTML = recent.map(u => `
       <tr>
-        <td><strong>${u.firstName || '—'}</strong></td>
+        <td><strong>${u.username || u.firstName || '—'}</strong><br><span style="color:var(--muted);font-size:.7rem;">${u.fullName||u.firstName||''}</span></td>
         <td style="color:var(--muted);font-size:.78rem;">${u.email || '—'}</td>
         <td>${planBadge(u.plan)}</td>
         <td style="color:var(--muted);font-size:.76rem;">${u.createdAt ? new Date(u.createdAt.seconds*1000).toLocaleDateString() : '—'}</td>
@@ -989,19 +991,26 @@ async function loadVerifications() {
         <div class="verif-top">
           <div class="verif-avatar">${(u.firstName||'?').charAt(0)}</div>
           <div>
-            <div class="verif-name">${u.firstName || 'Unknown'}, ${u.age || '—'}</div>
-            <div class="verif-meta">${u.email || ''} · ${u.gender || ''} · ${u.job || 'No job listed'}</div>
-            <div class="verif-meta" style="margin-top:3px;">Submitted: ${u.createdAt ? new Date(u.createdAt.seconds*1000).toLocaleDateString() : '—'}</div>
+            <div class="verif-name">${u.username || u.firstName || 'Unknown'}, ${u.age || '—'}</div>
+            <div class="verif-meta">Legal: <strong>${u.fullName || u.firstName || '—'}</strong> · ${u.email || ''}</div>
+            <div class="verif-meta">${u.gender || ''} · ${u.job || 'No job listed'} · Joined: ${u.createdAt ? new Date(u.createdAt.seconds*1000).toLocaleDateString() : '—'}</div>
           </div>
         </div>
-        <div class="verif-id-wrap">
-          <div class="verif-id-img" onclick="previewID('${u.idUrl||''}')">
-            ${u.idUrl ? '<img src="'+u.idUrl+'" style="width:80px;height:52px;border-radius:6px;object-fit:cover;">' : '📄 No ID'}
+        <div class="verif-id-wrap" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;">PROFILE PHOTO</div>
+            ${u.photoUrl ? `<img src="${u.photoUrl}" onclick="previewID(this.src)" style="width:90px;height:90px;border-radius:10px;object-fit:cover;cursor:pointer;border:2px solid var(--border);">` : '<div style="width:90px;height:90px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.7rem;">No photo</div>'}
           </div>
           <div>
-            <div style="font-size:.8rem;font-weight:700;margin-bottom:3px;">Submitted ID</div>
-            <div style="font-size:.72rem;color:var(--muted);">Click image to preview full size</div>
-            ${u.photoUrl ? '<img src="'+u.photoUrl+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-top:6px;border:2px solid var(--border);" title="Profile photo">' : ''}
+            <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;">GOVERNMENT ID</div>
+            ${u.idUrl ? `<img src="${u.idUrl}" onclick="previewID(this.src)" style="width:160px;height:100px;border-radius:10px;object-fit:cover;cursor:pointer;border:2px solid var(--gold);">` : '<div style="width:160px;height:100px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.7rem;border:1px dashed var(--border);">No ID submitted</div>'}
+            <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">Click to preview full size</div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;">LEGAL NAME</div>
+            <div style="font-size:.85rem;font-weight:700;">${u.fullName || u.firstName || '—'}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Username: ${u.username || '—'}</div>
+            <div style="font-size:.72rem;color:var(--muted);">DOB/Age: ${u.dob || u.age || '—'}</div>
           </div>
         </div>
         <div class="verif-actions">
@@ -1075,7 +1084,9 @@ window.verifyUser = async function(uid, name, approve) {
       verificationStatus: approve ? 'approved' : 'rejected',
       realBadge: approve,
       verified: approve,
-      approvalStatus: approve ? 'approved' : 'rejected'
+      approvalStatus: approve ? 'approved' : 'rejected',
+      showMeOnApp: approve ? true : false,
+      pendingApproval: false
     });
     // Notify user
     await addDoc(collection(db, 'notifications'), {
@@ -1147,7 +1158,7 @@ async function loadUsers() {
 function renderUsers(users) {
   const tbody = document.getElementById('users-list');
   tbody.innerHTML = users.map(u => `<tr>
-    <td><strong>${u.firstName || '—'} ${u.lastName || ''}</strong></td>
+    <td><strong>${u.username || u.firstName || '—'}</strong><br><span style="color:var(--muted);font-size:.7rem;" title="Legal name">${u.fullName || u.firstName || ''}</span></td>
     <td style="color:var(--muted);font-size:.78rem;">${u.email || '—'}</td>
     <td>${planBadge(u.plan)}</td>
     <td>${isUserVerified(u) ? '<span style="color:var(--green);">✅ Verified</span>' : '<span style="color:var(--muted);">Not verified</span>'}</td>
@@ -1509,8 +1520,14 @@ function planBadge(plan) {
 }
 
 function statusBadge(u) {
-  if (u.status === 'banned') return '<span class="badge badge-banned">🚫 Banned</span>';
-  if (u.status === 'shadow') return '<span class="badge badge-shadow">👻 Shadow</span>';
+  if (u.status === 'banned' || u.banned || u.isBanned) return '<span class="badge badge-banned">🚫 Banned</span>';
+  if (u.status === 'shadow' || u.shadowBanned) return '<span class="badge badge-shadow">👻 Shadow</span>';
+  if (u.paused) {
+    const until = u.pausedUntil ? ' until ' + new Date(u.pausedUntil).toLocaleDateString() : '';
+    return '<span class="badge badge-pending">⏸ Paused' + until + '</span>';
+  }
+  if (u.approvalStatus === 'pending' || u.pendingApproval) return '<span class="badge badge-pending">⏳ Pending</span>';
+  if (u.approvalStatus === 'rejected') return '<span class="badge badge-banned">❌ Rejected</span>';
   if (u.emailVerified === false) return '<span class="badge badge-pending">⏳ Unverified</span>';
   return '<span class="badge badge-active">Active</span>';
 }
@@ -1731,6 +1748,22 @@ async function loadArchives(){
     </tr>`).join('');
 }
 
+function listenForNewSupportRequests(){
+  try {
+    const { onSnapshot, collection, query, where } = window._fbModular || {};
+    if(!onSnapshot) return;
+    const q = query(collection(db, 'supportRequests'), where('status', '==', 'open'));
+    onSnapshot(q, snap => {
+      const badge = document.getElementById('support-badge');
+      const count = snap.docs.length;
+      if(badge){ badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
+      // Flash the support nav item if there are new requests
+      const supportNav = document.querySelector('[onclick*="support"]');
+      if(supportNav && count > 0) supportNav.style.color = 'var(--gold)';
+    });
+  } catch(e) { /* onSnapshot may not be available */ }
+}
+
 async function loadSupportRequests(){
   const rows = [...await loadCollectionSafe('supportRequests'), ...await loadCollectionSafe('supportTickets')];
   const body = document.getElementById('support-list');
@@ -1738,15 +1771,30 @@ async function loadSupportRequests(){
   if(!rows.length){ body.innerHTML = '<tr><td colspan="7" class="loading">No support requests yet.</td></tr>'; return; }
   body.innerHTML = rows.map(r=>`
     <tr>
-      <td>${esc(r.name || r.userName || r.uid || '—')}</td>
-      <td>${esc(r.email || r.userEmail || '—')}</td>
-      <td>${esc(r.topic || r.type || 'Support')}</td>
-      <td>${esc(r.message || r.body || r.notes || '—')}</td>
+      <td><strong>${esc(r.name || r.userName || r.email || r.uid || '—')}</strong></td>
+      <td style="color:var(--muted);font-size:.78rem;">${esc(r.email || r.userEmail || '—')}</td>
+      <td><strong>${esc(r.topic || r.type || 'Support')}</strong></td>
+      <td style="max-width:280px;white-space:pre-wrap;font-size:.8rem;">${esc(r.message || r.body || r.reason || r.notes || r.note || '—')}</td>
       <td>${badgeStatus(r.status || 'open')}</td>
-      <td>${fmtDate(r.createdAt || r.timestamp)}</td>
-      <td class="actions-cell"><button class="act-btn act-approve" onclick="updateRecordStatus('${r._collection}','${r.id}','resolved')">Resolve</button></td>
+      <td style="color:var(--muted);font-size:.76rem;">${fmtDate(r.createdAt || r.timestamp)}</td>
+      <td class="actions-cell">
+        <button class="act-btn act-view" onclick='openSupportReply(${JSON.stringify(r._collection)},${JSON.stringify(r.id)},${JSON.stringify(r.email||r.userEmail||'')},${JSON.stringify(r.name||r.userName||'User')})'>Reply</button>
+        ${r.status !== 'resolved' ? `<button class="act-btn act-approve" onclick='updateRecordStatus(${JSON.stringify(r._collection)},${JSON.stringify(r.id)},"resolved")'>Resolve</button>` : '<span style="color:var(--muted);font-size:.72rem;">Resolved</span>'}
+      </td>
     </tr>`).join('');
 }
+
+window.openSupportReply = function(collectionName, docId, userEmail, userName){
+  const email = userEmail || '';
+  const subject = encodeURIComponent('876Match Support - Your Request');
+  const body = encodeURIComponent('Hi ' + (userName||'there') + ',\n\nThank you for reaching out to 876Match support.\n\n');
+  // Open email client with pre-filled reply
+  window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
+  // Mark as in-progress
+  if(collectionName && docId){
+    updateDoc(doc(db, collectionName, docId), {status:'in-progress', respondedAt: serverTimestamp()}).catch(()=>{});
+  }
+};
 
 window._marketingEmailsCache = [];
 async function loadMarketingOptIns(){
