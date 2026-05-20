@@ -1002,7 +1002,8 @@ input:focus,select:focus,textarea:focus{
         <div class="field-g"><label>Email</label><div class="iw"><span class="fi">✉</span><input type="email" id="reg-email" placeholder="your@email.com"></div></div>
         <div class="field-g"><label>Password</label><div class="iw"><span class="fi">🔑</span><input type="password" id="reg-pw" placeholder="Min 6 characters"></div></div>
         <div class="field-g"><label>I am a</label><div class="sw"><span class="fi">👤</span><select id="reg-gender"><option value="">Select...</option><option>Man</option><option>Woman</option><option>Non-binary</option><option>Prefer not to say</option></select></div></div>
-        <div class="field-g"><label>I'm interested in <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">🔒 private</span></label><div class="sw"><span class="fi">🔒</span><select id="reg-looking"><option value="">Select...</option><option value="women">Women</option><option value="men">Men</option><option value="everyone">Everyone</option></select></div></div>
+        <div class="field-g"><label>I'm interested in <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">visible on profile</span></label><div class="sw"><span class="fi">💛</span><select id="reg-looking"><option value="">Select...</option><option value="women">Women</option><option value="men">Men</option><option value="everyone">Everyone</option></select></div></div>
+          <div class="field-g"><label>What are you looking for? <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">visible on profile</span></label><div class="sw"><span class="fi">🎯</span><select id="reg-intention"><option value="">Select...</option><option value="serious">Something serious</option><option value="casual">Casual dating</option><option value="friendship">Friendship first</option><option value="open">Open to anything</option></select></div></div>
         <button class="btn-gold btn-full" onclick="ns(2)">Continue →</button>
       </div>
       <!-- STEP 2 -->
@@ -1146,6 +1147,10 @@ input:focus,select:focus,textarea:focus{
         <div id="id-ok" style="display:none;background:rgba(102,196,48,.07);border:1px solid rgba(102,196,48,.17);border-radius:12px;padding:11px;text-align:center;"><p style="color:var(--green);font-weight:700;font-size:.85rem;">✅ ID uploaded</p><p style="color:var(--muted);font-size:.7rem;margin-top:2px;">Stored securely. Never visible to other users.</p></div>
         <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px;margin:12px 0;">
           <p style="font-size:.74rem;color:var(--muted);line-height:1.55;">⏱ Most profiles are reviewed within a few hours — typically the same day.</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+          <input type="checkbox" id="reg-marketing" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;">
+          <label for="reg-marketing" style="font-size:.74rem;color:rgba(255,255,255,.45);line-height:1.4;cursor:pointer;">I'd like to receive updates, offers and promotions from 876Match and affiliated services. You can unsubscribe anytime.</label>
         </div>
         <button class="btn-gold btn-full" id="reg-btn" onclick="requireIDAndRegister()">📤 Submit & Enter 876Match</button>
         <p style="text-align:center;margin-top:10px;font-size:.68rem;color:rgba(255,255,255,.22);">By continuing you agree to our Terms of Service & Privacy Policy</p>
@@ -1449,6 +1454,7 @@ input:focus,select:focus,textarea:focus{
               <span class="itag" onclick="toggleTag(this,'ed-itags')">🎵 Music</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🍽 Foodie</span><span class="itag" onclick="toggleTag(this,'ed-itags')">✈️ Travel</span><span class="itag" onclick="toggleTag(this,'ed-itags')">💪 Fitness</span><span class="itag" onclick="toggleTag(this,'ed-itags')">📚 Reading</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🎮 Gaming</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🏖 Beach</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🎭 Arts</span><span class="itag" onclick="toggleTag(this,'ed-itags')">⚽ Sports</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🌿 Nature</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🎉 Parties</span><span class="itag" onclick="toggleTag(this,'ed-itags')">🎤 Dancehall</span>
             </div>
           </div>
+          <div class="field-g" style="margin-top:10px;"><label>What are you looking for?</label><div class="sw"><span class="fi">🎯</span><select id="ed-intention"><option value="">Select...</option><option value="serious">Something serious</option><option value="casual">Casual dating</option><option value="friendship">Friendship first</option><option value="open">Open to anything</option></select></div></div>
           <button class="btn-gold btn-full" onclick="saveProf()">Save Changes</button>
         </div>
       </div>
@@ -2394,6 +2400,9 @@ async function registerUser(){
       age:parseInt(age),
       gender:(document.getElementById('reg-gender')||{value:''}).value||"",
       lookingFor:(document.getElementById('reg-looking')||{value:''}).value||"",
+      intention:(document.getElementById('reg-intention')||{value:''}).value||"",
+      marketingConsent:!!(document.getElementById('reg-marketing')&&document.getElementById('reg-marketing').checked),
+      marketingConsentDate:document.getElementById('reg-marketing')&&document.getElementById('reg-marketing').checked ? new Date().toISOString() : null,
       email,
       bio:((document.getElementById('reg-bio')||{value:''}).value||'').trim(),
       height:((document.getElementById('reg-height')||{value:''}).value||'').trim(),
@@ -2642,10 +2651,19 @@ async function loadProfile(){
     }
     if(d.preferences){const p2=d.preferences;if(p2.ageMin&&p2.ageMax)document.getElementById('pd-a').textContent=p2.ageMin+' – '+p2.ageMax;if(p2.lookingFor)document.getElementById('pd-l').textContent=p2.lookingFor.charAt(0).toUpperCase()+p2.lookingFor.slice(1);if(p2.location)document.getElementById('pd-lo').textContent=p2.location.charAt(0).toUpperCase()+p2.location.slice(1);}
     if(d.situationshipStatus)document.getElementById('pd-s').textContent=d.situationshipStatus;
-    if(d.firstName)document.getElementById('ed-nm').value=d.firstName;
+    if(d.username||d.firstName) document.getElementById('ed-nm').value=d.username||d.firstName;
     if(d.bio)document.getElementById('ed-bio').value=d.bio;
     if(d.height)document.getElementById('ed-ht').value=d.height;
     if(d.job)document.getElementById('ed-job').value=d.job;
+    // Restore selected interests
+    const savedInts=Array.isArray(d.interests)?d.interests:[];
+    document.querySelectorAll('#ed-itags .itag').forEach(chip=>{
+      const txt=chip.textContent.trim();
+      chip.classList.toggle('sel', savedInts.some(s=>txt===s||txt.includes(s.replace(/[^\w]/g,'').substring(0,4))));
+    });
+    // Restore intention
+    const intEl=document.getElementById('ed-intention');
+    if(intEl&&d.intention)intEl.value=d.intention;
     renderBanners(plan);
   }catch(e){console.log('Profile load error:',e);}
 }
@@ -2679,8 +2697,26 @@ async function savePhs(){
   try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;if(auth&&auth.currentUser)await updateDoc(doc(db,"users",auth.currentUser.uid),{photos:userPhotos.map(p=>p.url),photoUrl:(userPhotos[0] && userPhotos[0].url)||""});}catch(e){}
 }
 async function saveProf(){
-  const nm=document.getElementById('ed-nm').value.trim();if(!nm){showToast("Please enter your name.");return;}
-  try{const auth=window._fbAuth;const db=window._fbDb;const {doc,updateDoc} = window._fb;await updateDoc(doc(db,"users",auth.currentUser.uid),{firstName:nm,bio:document.getElementById('ed-bio').value.trim(),height:document.getElementById('ed-ht').value.trim(),job:document.getElementById('ed-job').value.trim()});showToast("Profile saved! ✅");loadProfile();}catch(e){showToast("Save failed.");}
+  const nm=document.getElementById('ed-nm').value.trim();if(!nm){showToast("Please enter a display name.");return;}
+  try{
+    const auth=window._fbAuth;const db=window._fbDb;const fb=window._fb;
+    const interests=Array.from(document.querySelectorAll('#ed-itags .itag.sel')).map(c=>c.textContent.trim());
+    const intention=document.getElementById('ed-intention')?.value||'';
+    const status=document.getElementById('ed-status')?.value||'';
+    await fb.updateDoc(fb.doc(db,'users',auth.currentUser.uid),{
+      username:nm,
+      bio:document.getElementById('ed-bio').value.trim(),
+      height:document.getElementById('ed-ht').value.trim(),
+      job:document.getElementById('ed-job').value.trim(),
+      interests:interests,
+      intention:intention,
+      status:status
+    });
+    // Update local cache
+    if(window._userData){ window._userData.username=nm; window._userData.interests=interests; window._userData.intention=intention; }
+    showToast('Profile saved! ✅');
+    loadProfile();
+  }catch(e){console.error('saveProf error:',e);showToast('Save failed.');}
 }
 async function loadSettings(){
   try{const auth=window._fbAuth;if(auth&&auth.currentUser){const el=document.getElementById('set-em');if(el)el.textContent=auth.currentUser.email;}}catch(e){}
@@ -5118,7 +5154,21 @@ onAuthStateChanged(auth, async (user) => {
   };
   window.deleteAcc=function(){
     showMiniModal('Delete account','Before deleting, please tell us why you are leaving.', `<select id="delete-reason"><option>Found someone</option><option>Taking a break</option><option>Did not like matches</option><option>Privacy concerns</option><option>Too expensive</option><option>Technical issue</option><option>Other</option></select><textarea id="delete-note" placeholder="Optional note..."></textarea>`, async()=>{
-      try{const fb=window._fb; await fb.addDoc(fb.collection(window._fbDb,'supportRequests'),{uid:window._fbAuth.currentUser.uid,email:window._fbAuth.currentUser.email,topic:'Delete Account',reason:$('delete-reason').value,note:$('delete-note').value,status:'open',createdAt:fb.serverTimestamp()}); closeMiniModal(); showToast('Deletion request submitted for review.');}catch(e){showToast('Could not submit deletion request.');}
+      try{
+        const fb=window._fb; const u=window._fbAuth.currentUser;
+        if(!confirm('Permanently delete your account? This cannot be undone.')) return;
+        // Log reason
+        await fb.setDoc(fb.doc(window._fbDb,'adminAuditLog',u.uid+'_deleted'),{type:'accountDeleted',userId:u.uid,email:u.email,reason:$('delete-reason').value,note:($('delete-note')||{value:''}).value,deletedAt:fb.serverTimestamp()}).catch(()=>{});
+        // Delete user doc
+        await fb.deleteDoc(fb.doc(window._fbDb,'users',u.uid)).catch(()=>{});
+        // Delete Firebase Auth account
+        await u.delete();
+        closeMiniModal(); showToast('Account deleted. Goodbye 👋');
+        setTimeout(()=>go('login-screen'),1500);
+      }catch(e){
+        if(e.code==='auth/requires-recent-login'){ showToast('Please log out and log back in first, then try again.'); }
+        else { showToast('Could not delete. Email support@876match.com'); }
+      }
     });
   };
 
@@ -5512,7 +5562,7 @@ onAuthStateChanged(auth, async (user) => {
   function mapFirestoreUserToProfile(id, d){
     const photos = Array.isArray(d.photos) ? d.photos.map(p => typeof p === 'string' ? p : (p && (p.url || p.src || p.photoUrl))).filter(Boolean) : [];
     const photoUrl = d.photoUrl || d.profilePhoto || d.avatarUrl || d.avatar || photos[0] || '';
-    const first = d.username || d.displayName || d.firstName || d.name || 'Member';
+    const first = d.username || d.firstName || d.displayName || d.name || 'Member'; // username is public display name
     const age = d.age || (d.birthYear ? (new Date().getFullYear() - Number(d.birthYear)) : '');
     const tags = Array.isArray(d.interests) && d.interests.length ? d.interests.slice(0,4) : (Array.isArray(d.tags) ? d.tags.slice(0,4) : ['Real connection','Verified member']);
     const plan = normPlan(d.plan || d.tier || 'ting');
@@ -5620,44 +5670,60 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   async function createRealMatch(profile){
+    // Mutual match only — save a like, check if they already liked us
     const auth=window._fbAuth, db=window._fbDb;
     const me=auth && auth.currentUser;
     if(!me || !db || !profile || !profile.uid) return null;
     const theirUid=profile.uid || profile.id;
     const theirName=safeName(profile);
     const theirPhoto=safePhoto(profile);
-    const myName=(window._userData&&(window._userData.username||window._userData.displayName||window._userData.firstName))||'Me';
-    const myPhotos=window._userData && Array.isArray(window._userData.photos) ? window._userData.photos : [];
-    const myPhoto=(window._userData&&(window._userData.photoUrl||window._userData.profilePhoto||window._userData.avatarUrl)) || (myPhotos[0]&&(myPhotos[0].url||myPhotos[0])) || '';
+    const myName=(window._userData&&(window._userData.username||window._userData.firstName))||'Me';
+    const myPhotos=window._userData && Array.isArray(window._userData.photos)?window._userData.photos:[];
+    const myPhoto=(window._userData&&(window._userData.photoUrl||window._userData.profilePhoto||window._userData.avatarUrl))||(myPhotos[0]&&(myPhotos[0].url||myPhotos[0]))||'';
     const pairId=[me.uid,theirUid].sort().join('_');
+    const fb=window._fb;
     try{
-      const fb=window._fb;
+      // Save my like
+      await fb.setDoc(fb.doc(db,'swipes',me.uid+'_'+theirUid),{
+        from:me.uid, to:theirUid, dir:'right',
+        fromName:myName, fromPhoto:myPhoto,
+        ts:fb.serverTimestamp()
+      });
+      // Check if they already liked me
+      const theirLike=await fb.getDoc(fb.doc(db,'swipes',theirUid+'_'+me.uid));
+      if(!theirLike.exists() || theirLike.data().dir!=='right'){
+        // No mutual like yet — just saved the like, no match
+        return null;
+      }
+      // MUTUAL MATCH — create it
       await fb.setDoc(fb.doc(db,'matches',pairId),{
         id:pairId,
         users:[me.uid,theirUid],
         participants:{[me.uid]:true,[theirUid]:true},
         names:{[me.uid]:myName,[theirUid]:theirName},
         photos:{[me.uid]:myPhoto,[theirUid]:theirPhoto},
-        plans:{[me.uid]:getActivePlan(),[theirUid]:profile.plan||profile.tier||'ting'},
+        plans:{[me.uid]:getActivePlan(),[theirUid]:profile.plan||'ting'},
         createdAt:fb.serverTimestamp(),
         updatedAt:fb.serverTimestamp()
       },{merge:true});
-      await fb.updateDoc(fb.doc(db,'users',me.uid),{
-        matches:fb.arrayUnion({uid:theirUid,name:theirName,photoUrl:theirPhoto,plan:profile.plan||'',matchedAt:Date.now()})
-      }).catch(()=>{});
+      // Create conversation in Firestore
+      await fb.setDoc(fb.doc(db,'conversations',pairId),{
+        participants:[me.uid,theirUid],
+        partnerNames:{[me.uid]:myName,[theirUid]:theirName},
+        partnerPhotos:{[me.uid]:myPhoto,[theirUid]:theirPhoto},
+        lastMessage:'You matched! Say hello 👋',
+        lastMessageTime:Date.now(),
+        createdAt:fb.serverTimestamp()
+      },{merge:true});
+      // Send match email notification via Netlify function
       try{
-        const convId=pairId;
-        await window._rtdb.ref('conversations/'+convId).update({
-          participants:{[me.uid]:true,[theirUid]:true},
-          partnerNames:{[me.uid]:myName,[theirUid]:theirName},
-          partnerPhotos:{[me.uid]:myPhoto,[theirUid]:theirPhoto},
-          createdAt:Date.now(),
-          lastMessage:'',
-          lastMessageTime:Date.now()
-        });
-      }catch(rtde){ console.warn('RTDB conversation create failed', rtde); }
+        fetch('/.netlify/functions/send-match-email',{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({toUid:theirUid, fromName:myName, fromPhoto:myPhoto})
+        }).catch(()=>{});
+      }catch(e){}
       return {uid:theirUid,name:theirName,photoUrl:theirPhoto,plan:profile.plan||''};
-    }catch(e){ console.error('createRealMatch failed:',e); showToast('Match saved visually, but database save had an issue.'); return null; }
+    }catch(e){ console.error('createRealMatch failed:',e); return null; }
   }
 
   function updateMatchPopup(profile){
@@ -5707,8 +5773,15 @@ window.closeMatch=function(){ keepSwipingAfterMatch(); };
       try{ top.remove(); }catch(e){}
       if(dir==='right' && actedProfile){
         const saved=await createRealMatch(actedProfile);
-        window._lastMatchProfile=saved ? {...actedProfile,...saved} : actedProfile;
-        showMatch(window._lastMatchProfile);
+        if(saved){
+          // Mutual match confirmed
+          window._lastMatchProfile={...actedProfile,...saved};
+          showMatch(window._lastMatchProfile);
+        } else {
+          // Like saved but no mutual match yet — just move to next card
+          showToast("💛 Liked! If they like you back, it's a match.");
+          nextProfileCard();
+        }
       }else{
         nextProfileCard();
       }
