@@ -34,7 +34,7 @@ a{color:inherit;text-decoration:none;}
 button,input,select,textarea{font-family:inherit;}
 select option{background:#1a1a1a;color:#ffffff;font-family:inherit;}
 select{color:#ffffff;cursor:pointer;-webkit-appearance:auto;appearance:auto;}
-.screen{display:none;} .screen.active{display:block;}
+.screen{display:none;} .screen.active{display:block;} #chat-screen.active{display:flex;}
 #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
   background:rgba(20,20,20,.97);border:1px solid rgba(255,210,26,.4);
   color:#fff;padding:11px 22px;border-radius:50px;font-size:.85rem;
@@ -586,7 +586,8 @@ input:focus,select:focus,textarea:focus{
 .chat-input::placeholder{color:rgba(255,255,255,.3);}
 .chat-send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ffb800);border:none;color:#070707;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .22s;}
 .chat-send:hover{transform:scale(1.08);}
-.chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;color:var(--muted);text-align:center;padding:40px;}
+.chat-empty{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;color:var(--muted);text-align:center;padding:40px;}
+#chat-screen.active .chat-empty{display:flex;}
 .chat-day-label{text-align:center;font-size:.7rem;color:rgba(255,255,255,.28);padding:4px 12px;background:rgba(255,255,255,.05);border-radius:50px;margin:4px auto;width:fit-content;}
 .typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(255,255,255,.08);border-radius:18px;border-bottom-left-radius:4px;align-self:flex-start;width:fit-content;}
 .typing-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5);animation:typingPulse 1.2s ease infinite;}
@@ -799,7 +800,7 @@ input:focus,select:focus,textarea:focus{
         <span style="font-size:.76rem;color:rgba(255,255,255,0.32);">or</span>
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.09);"></div>
       </div>
-      <button onclick="showToast('Google sign-in coming soon!')"
+      <button onclick="signInWithGoogle()"
         style="width:100%;min-height:50px;border-radius:13px;
         border:1px solid rgba(255,210,26,0.4);background:transparent;
         color:rgba(255,255,255,0.7);font:inherit;font-weight:700;font-size:.88rem;
@@ -968,7 +969,7 @@ input:focus,select:focus,textarea:focus{
         <div class="field-g"><label>Password</label><div class="iw"><span class="fi">🔑</span><input type="password" id="login-pw" placeholder="Your password"></div></div>
         <button class="btn-gold btn-full" id="login-btn" onclick="loginUser()">Log In</button>
         <div class="divider">or</div>
-        <button class="google-btn btn-full" onclick="showToast('Google sign-in coming soon!')"><span style="font-weight:900;color:#4285F4;">G</span> Continue with Google</button>
+        <button class="google-btn btn-full" onclick="signInWithGoogle()"><span style="font-weight:900;color:#4285F4;">G</span> Continue with Google</button>
         <button class="btn-outline btn-full" onclick="forgotPw()" style="min-height:46px;font-size:.88rem;">Forgot password?</button>
       </div>
       <p style="text-align:center;margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.28);">Don't have an account? <span style="color:var(--gold);cursor:pointer;font-weight:700;" onclick="go('signup-screen')">Join free →</span></p>
@@ -1005,6 +1006,14 @@ input:focus,select:focus,textarea:focus{
         <div class="field-g"><label>I am a</label><div class="sw"><span class="fi">👤</span><select id="reg-gender"><option value="">Select...</option><option>Man</option><option>Woman</option><option>Non-binary</option><option>Prefer not to say</option></select></div></div>
         <div class="field-g"><label>I'm interested in <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">visible on profile</span></label><div class="sw"><span class="fi">💛</span><select id="reg-looking"><option value="">Select...</option><option value="women">Women</option><option value="men">Men</option><option value="everyone">Everyone</option></select></div></div>
           <div class="field-g"><label>What are you looking for? <span style="color:rgba(255,255,255,.28);font-size:.7rem;font-weight:400;">visible on profile</span></label><div class="sw"><span class="fi">🎯</span><select id="reg-intention"><option value="">Select...</option><option value="serious">Something serious</option><option value="casual">Casual dating</option><option value="friendship">Friendship first</option><option value="open">Open to anything</option></select></div></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin:10px 0 4px;">
+            <input type="checkbox" id="reg-marketing" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;">
+            <label for="reg-marketing" style="font-size:.74rem;color:rgba(255,255,255,.45);line-height:1.4;cursor:pointer;">I'd like to receive updates, offers and promotions from 876Match and affiliated services. Unsubscribe anytime.</label>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 12px;">
+            <input type="checkbox" id="reg-terms" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;" required>
+            <label for="reg-terms" style="font-size:.74rem;color:rgba(255,255,255,.6);line-height:1.4;cursor:pointer;"><span style="color:var(--gold);">*</span> I agree to the <a href="#" onclick="event.preventDefault();openPolicyScreen('terms')" style="color:var(--gold);text-decoration:underline;">Terms of Service</a> and <a href="#" onclick="event.preventDefault();openPolicyScreen('privacy')" style="color:var(--gold);text-decoration:underline;">Privacy Policy</a>. <span style="color:rgba(255,255,255,.35);">(Required)</span></label>
+          </div>
         <button class="btn-gold btn-full" onclick="ns(2)">Continue →</button>
       </div>
       <!-- STEP 2 -->
@@ -1148,10 +1157,6 @@ input:focus,select:focus,textarea:focus{
         <div id="id-ok" style="display:none;background:rgba(102,196,48,.07);border:1px solid rgba(102,196,48,.17);border-radius:12px;padding:11px;text-align:center;"><p style="color:var(--green);font-weight:700;font-size:.85rem;">✅ ID uploaded</p><p style="color:var(--muted);font-size:.7rem;margin-top:2px;">Stored securely. Never visible to other users.</p></div>
         <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px;margin:12px 0;">
           <p style="font-size:.74rem;color:var(--muted);line-height:1.55;">⏱ Most profiles are reviewed within a few hours — typically the same day.</p>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-          <input type="checkbox" id="reg-marketing" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;">
-          <label for="reg-marketing" style="font-size:.74rem;color:rgba(255,255,255,.45);line-height:1.4;cursor:pointer;">I'd like to receive updates, offers and promotions from 876Match and affiliated services. You can unsubscribe anytime.</label>
         </div>
         <button class="btn-gold btn-full" id="reg-btn" onclick="requireIDAndRegister()">📤 Submit & Enter 876Match</button>
         <p style="text-align:center;margin-top:10px;font-size:.68rem;color:rgba(255,255,255,.22);">By continuing you agree to our Terms of Service & Privacy Policy</p>
@@ -1911,7 +1916,7 @@ input:focus,select:focus,textarea:focus{
      REAL VERIFY
 ════════════════════════════════════ -->
 <!-- ══════════════════════════════════ CHAT SCREEN ══════════════════════════════════ -->
-<div id="chat-screen" class="screen" style="display:flex;flex-direction:column;height:100vh;">
+<div id="chat-screen" class="screen" style="flex-direction:column;height:100vh;">
   <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;">
     <button onclick="history.back()" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">← Back</button>
     <div id="chat-partner-av" style="width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--green));display:flex;align-items:center;justify-content:center;font-weight:900;color:#050505;"></div>
@@ -1920,7 +1925,7 @@ input:focus,select:focus,textarea:focus{
       <div id="chat-partner-status" style="font-size:.7rem;color:var(--muted);"></div>
     </div>
   </div>
-  <div id="chat-messages" class="chat-messages" style="flex:1;overflow-y:auto;">
+  <div id="chat-messages" class="chat-messages" style="flex:1;overflow-y:auto;overflow-x:hidden;">
     <div id="chat-empty" class="chat-empty">
       <div style="font-size:2rem;">💬</div>
       <div>Say hello! Start the conversation.</div>
@@ -2377,6 +2382,46 @@ async function uploadID(inp){
 }
 
 // ── REGISTER ──
+async function signInWithGoogle(){
+  try{
+    const {GoogleAuthProvider, signInWithPopup} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    const result = await signInWithPopup(window._fbAuth, provider);
+    const user = result.user;
+    const {getDoc, doc, setDoc, serverTimestamp} = window._fb;
+    const userSnap = await getDoc(doc(window._fbDb,'users',user.uid));
+    if(!userSnap.exists()){
+      // New Google signup — create basic record
+      await setDoc(doc(window._fbDb,'users',user.uid),{
+        email:user.email,
+        username:user.displayName?user.displayName.split(' ')[0]:'Member',
+        firstName:user.displayName||'',
+        fullName:user.displayName||'',
+        photoUrl:user.photoURL||'',
+        plan:'ting',
+        createdAt:serverTimestamp(),
+        approvalStatus:'pending',
+        pendingApproval:true,
+        signupMethod:'google'
+      });
+      showToast('Welcome! Complete your profile to get started.');
+      // Skip to step 2 of signup to fill in remaining details
+      go('signup-screen');
+      setTimeout(()=>{ try{ ns(2); }catch(e){} }, 300);
+    } else {
+      showToast('Welcome back! 👋');
+      go('dashboard');
+    }
+  }catch(e){
+    console.error('Google sign-in error:',e);
+    if(e.code==='auth/popup-blocked') showToast('Popups are blocked. Allow popups for 876match.com and try again.');
+    else if(e.code==='auth/cancelled-popup-request'||e.code==='auth/popup-closed-by-user') return;
+    else if(e.code==='auth/unauthorized-domain') showToast('Domain not authorized. Check Firebase Console → Authentication → Authorized Domains.');
+    else showToast('Google sign-in failed. Please try email instead.');
+  }
+}
+
 async function registerUser(){
   const email=((document.getElementById('reg-email')||{}).value||'').trim();
   const pw=((document.getElementById('reg-pw')||{}).value||'').trim();
@@ -2404,6 +2449,9 @@ async function registerUser(){
       intention:(document.getElementById('reg-intention')||{value:''}).value||"",
       marketingConsent:!!(document.getElementById('reg-marketing')&&document.getElementById('reg-marketing').checked),
       marketingConsentDate:document.getElementById('reg-marketing')&&document.getElementById('reg-marketing').checked ? new Date().toISOString() : null,
+      termsAccepted:true,
+      termsAcceptedAt:new Date().toISOString(),
+      termsVersion:'2026-05',
       email,
       bio:((document.getElementById('reg-bio')||{value:''}).value||'').trim(),
       height:((document.getElementById('reg-height')||{value:''}).value||'').trim(),
@@ -4014,9 +4062,11 @@ function ns(step) {
     var fn = (document.getElementById('reg-fn')||{value:''}).value.trim();
     var age = (document.getElementById('reg-age')||{value:''}).value;
     var gender = (document.getElementById('reg-gender')||{value:''}).value;
+    var termsChecked = document.getElementById('reg-terms') && document.getElementById('reg-terms').checked;
     if (!fn || !age || !email || !pw || !gender) { showToast('Please fill in all required fields.'); return; }
     if (parseInt(age) < 18) { showToast('You must be 18 or older to join.'); return; }
     if (pw.length < 6) { showToast('Password must be at least 6 characters.'); return; }
+    if (!termsChecked) { showToast('You must agree to the Terms of Service and Privacy Policy to continue.'); return; }
   }
   // Navigate to step
   document.querySelectorAll('.form-step').forEach(function(s){ s.classList.remove('active'); });
@@ -5596,14 +5646,32 @@ onAuthStateChanged(auth, async (user) => {
     try{
       const fb = window._fb;
       const u = window._fbAuth && window._fbAuth.currentUser; if(!u || !window._fbDb) return false;
+      // Only filter out profiles swiped in the last 24 hours
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      const swipesSnap = await fb.getDocs(fb.collection(window._fbDb,'swipes'));
+      const alreadySwiped = new Set();
+      swipesSnap.docs.forEach(d=>{
+        const data = d.data();
+        if(data.from === u.uid){
+          // Check timestamp — if swiped within last 24h, exclude
+          const ts = data.ts && data.ts.toDate ? data.ts.toDate().getTime() : (data.ts || 0);
+          if(ts > cutoff) alreadySwiped.add(data.to);
+        }
+      });
       const snap = await fb.getDocs(fb.collection(window._fbDb,'users'));
       const real = snap.docs
-        .filter(doc => doc.id !== u.uid)
+        .filter(doc => doc.id !== u.uid && !alreadySwiped.has(doc.id))
         .map(doc => mapFirestoreUserToProfile(doc.id, doc.data()))
         .filter(p => p.name && p.id);
       const countEl = document.getElementById('dash-vibe-count') || document.getElementById('vibe-count') || document.querySelector('[data-vibe-count]');
       if(countEl) countEl.textContent = String(real.length || 0);
-      if(!real.length) return false;
+      if(!real.length){
+        // All profiles swiped — show empty state
+        const stk = document.getElementById('cstk');
+        if(stk) stk.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:11px;"><div style="font-size:2.5rem;">🎯</div><p style="color:var(--muted);text-align:center;font-size:.85rem;">You\'ve seen everyone for now.<br><span style="color:var(--gold);">Check back soon for new members!</span></p></div>';
+        currentProfile = null;
+        return true;
+      }
       profiles.splice(0, profiles.length, ...real);
       cardCount = 0;
       renderProfileCard(profiles[0]);
